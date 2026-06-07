@@ -1,4 +1,9 @@
-import { isProduction, isReplayEnvironment, isSandboxEnvironment } from './environment.js';
+import {
+  isProduction,
+  isReplayEnvironment,
+  isSandboxEnvironment,
+  isHostedDemoEnvironment,
+} from './environment.js';
 
 /**
  * Hide dev-only UI in production and replay. Call once at game startup.
@@ -10,9 +15,18 @@ import { isProduction, isReplayEnvironment, isSandboxEnvironment } from './envir
  */
 export function applyProductionShell(options = {}) {
   const { elements = {}, extra = [], hidePrinciples = true } = options;
-  const env = isReplayEnvironment() ? 'replay' : isSandboxEnvironment() ? 'sandbox' : isProduction() ? 'production' : 'development';
-  const stripTestControls = isProduction() || isReplayEnvironment() || isSandboxEnvironment();
-  const stripComplianceDev = isProduction() || isReplayEnvironment();
+  const env = isReplayEnvironment()
+    ? 'replay'
+    : isSandboxEnvironment()
+      ? 'sandbox'
+      : isHostedDemoEnvironment()
+        ? 'hostedDemo'
+        : isProduction()
+          ? 'production'
+          : 'development';
+  const stripTestControls =
+    isProduction() || isHostedDemoEnvironment() || isReplayEnvironment() || isSandboxEnvironment();
+  const stripComplianceDev = isProduction() || isHostedDemoEnvironment() || isReplayEnvironment();
 
   if (!stripTestControls && !stripComplianceDev) {
     return { stripped: false, environment: env };

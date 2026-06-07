@@ -4,7 +4,7 @@
  * Stake passes rgs_url as host-only (no scheme), e.g. rgs_url=rgs.example.com
  */
 
-/** @typedef {'production' | 'sandbox' | 'development' | 'replay'} RgsEnvironment */
+/** @typedef {'production' | 'sandbox' | 'development' | 'hostedDemo' | 'replay'} RgsEnvironment */
 
 /**
  * @param {string} urlOrHost
@@ -127,6 +127,8 @@ export function describeRgsMode(environment) {
       return 'local mock RGS';
     case 'replay':
       return 'replay';
+    case 'hostedDemo':
+      return 'hosted demo (mock RGS)';
     default:
       return 'Stake RGS production';
   }

@@ -119,7 +119,7 @@ export function createGameBootstrap(options) {
     }
     refreshPlayerDisplay(parsed);
     refreshBetModes(parsed);
-    if (elements.autoplay) {
+    if (showDevTools() && elements.autoplay) {
       controls.setVisible(elements.autoplay, controls.canAutoplay);
     }
     auth.onConfigured?.(parsed, data);
@@ -128,11 +128,13 @@ export function createGameBootstrap(options) {
 
   function syncDevTools() {
     if (isReplayMode()) return;
-    if (elements.autoplay) {
-      controls.setVisible(elements.autoplay, controls.canAutoplay);
-    }
-    if (elements.newSession) {
-      elements.newSession.hidden = false;
+    if (showDevTools()) {
+      if (elements.autoplay) {
+        controls.setVisible(elements.autoplay, controls.canAutoplay);
+      }
+      if (elements.newSession) {
+        elements.newSession.hidden = false;
+      }
     }
     if (elements.complianceDev) {
       const show = showComplianceFooter();

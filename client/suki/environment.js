@@ -4,18 +4,33 @@
  * production  — live Stake iframe (external rgs_url + sessionID required)
  * sandbox     — ?sandbox=true (real remote RGS; compliance footer, no mock flags)
  * development — ?dev=true (local mock RGS, test URLs, mock flags)
+ * hostedDemo  — direct URL visit (e.g. Render demo); same-origin mock RGS, no dev UI
  * replay      — ?replay=true (recorded round, no live bet/event)
  */
 
 import { isReplayMode, isDevMode, isSandboxMode } from './config.js';
 
-/** @typedef {'production' | 'sandbox' | 'development' | 'replay'} SukiEnvironment */
+/** @typedef {'production' | 'sandbox' | 'development' | 'hostedDemo' | 'replay'} SukiEnvironment */
+
+/** Stake launch URL includes operator iframe params. */
+export function isStakeLaunch() {
+  if (typeof window === 'undefined') return false;
+  const params = new URLSearchParams(window.location.search);
+  return Boolean(params.get('rgs_url')?.trim() && params.get('sessionID')?.trim());
+}
+
+/** Public demo host (no Stake launch params) — play via same-origin mock RGS. */
+export function isHostedDemoMode() {
+  if (isReplayMode() || isDevMode() || isSandboxMode()) return false;
+  return !isStakeLaunch();
+}
 
 /** @returns {SukiEnvironment} */
 export function getEnvironment() {
   if (isReplayMode()) return 'replay';
   if (isSandboxMode()) return 'sandbox';
   if (isDevMode()) return 'development';
+  if (isHostedDemoMode()) return 'hostedDemo';
   return 'production';
 }
 
@@ -33,6 +48,10 @@ export function isDevelopment() {
 
 export function isReplayEnvironment() {
   return getEnvironment() === 'replay';
+}
+
+export function isHostedDemoEnvironment() {
+  return getEnvironment() === 'hostedDemo';
 }
 
 /** Dev/test UI (100-play, compliance footer, mock jurisdiction) — off in production. */

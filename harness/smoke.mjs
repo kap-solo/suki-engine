@@ -226,6 +226,14 @@ function runRgsConfigTests() {
 
   const sandboxVal = validateRgsConfig(prodCfg, 'sandbox');
   assert(sandboxVal.ok, 'sandbox accepts remote RGS');
+
+  const demoCfg = buildRgsConfig({
+    gameId: 'pure-plinko',
+    origin: 'https://pure-plinko.onrender.com',
+    searchParams: new URLSearchParams(''),
+  });
+  const demoVal = validateRgsConfig(demoCfg, 'hostedDemo');
+  assert(demoVal.ok, 'hosted demo accepts same-origin mock without Stake params');
 }
 
 function runBootstrapTests() {
