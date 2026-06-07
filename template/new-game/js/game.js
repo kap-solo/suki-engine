@@ -20,6 +20,9 @@ const game = createGameBootstrap({
       autoplay: autoplayBtn,
       // sessionTimer: document.getElementById('session-timer'),
       // sessionTimerContainer: document.getElementById('session-timer-stat'),
+      // balanceLabel: document.getElementById('balance-label'),
+      // betLabel: document.getElementById('bet-label'),
+      // dropButton: document.getElementById('drop-btn'),
     },
   },
   lifecycle: {

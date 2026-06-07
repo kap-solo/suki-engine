@@ -18,6 +18,8 @@ import {
 } from '../client/suki/rgsConfig.js';
 import { createGameBootstrap } from '../client/suki/gameBootstrap.js';
 import { formatSessionElapsed, createSessionTimer } from '../client/suki/sessionTimer.js';
+import { formatCurrencyAmount, createCurrencyFormatter } from '../client/suki/currency.js';
+import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
 
 const API = 1_000_000;
 const SAMPLE_STATE = [
@@ -210,6 +212,29 @@ function runBootstrapTests() {
   assert(typeof createGameBootstrap === 'function', 'createGameBootstrap exported');
 }
 
+function runCurrencyCopyTests() {
+  console.log('\nUnit — currency & social copy');
+
+  const usd = formatCurrencyAmount(12.5, 'USD', { locale: 'en' });
+  assert(usd.includes('12.50'), 'USD format');
+
+  const xgc = formatCurrencyAmount(100, 'XGC');
+  assert(xgc === 'GC 100.00', 'XGC social currency label');
+
+  const eur = createCurrencyFormatter({ currency: 'EUR', language: 'en' });
+  assert(eur.format(1).includes('1.00'), 'EUR formatter');
+
+  const real = createCopyPolicy({ socialCasino: false });
+  const social = createCopyPolicy({ socialCasino: true });
+  assert(real.term('balance') === 'Balance', 'real money balance label');
+  assert(social.term('balance') === 'Coins', 'social casino balance label');
+  assert(social.term('insufficientBalance').includes('coins'), 'social insufficient copy');
+
+  const label = { textContent: '' };
+  applyCopyLabels(social, { balanceLabel: label });
+  assert(label.textContent === 'Coins', 'applyCopyLabels updates HUD');
+}
+
 function runSessionTimerTests() {
   console.log('\nUnit — session timer');
   assert(formatSessionElapsed(0) === '00:00', 'zero elapsed');
@@ -260,6 +285,7 @@ async function main() {
   runUnitTests();
   runRgsConfigTests();
   runBootstrapTests();
+  runCurrencyCopyTests();
   runSessionTimerTests();
   await runPolicyTests();
 

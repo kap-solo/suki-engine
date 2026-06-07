@@ -2,6 +2,9 @@ export const API_MULT = 1_000_000;
 export const START_BALANCE_API = 1000 * API_MULT;
 
 export const JURISDICTION_MOCK = {
+  social: {
+    socialCasino: true,
+  },
   strict: {
     disabledTurbo: true,
     disabledSuperTurbo: true,

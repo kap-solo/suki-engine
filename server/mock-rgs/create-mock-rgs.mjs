@@ -4,6 +4,7 @@ import {
   JURISDICTION_MOCK,
   START_BALANCE_API,
 } from './defaults.mjs';
+import { injectMockError } from './inject-error.mjs';
 
 /**
  * @typedef {object} MockRgsConfig
@@ -88,9 +89,8 @@ export function createMockRgs(config) {
     const sessionID = body?.sessionID || 'local-demo';
 
     if (pathname === '/wallet/authenticate') {
-      if (body?._mock?.err_is) {
-        return error('ERR_IS', 'Mock session expired');
-      }
+      const authErr = injectMockError(body, 'authenticate', error);
+      if (authErr) return authErr;
 
       const session = getSession(sessionID);
       const jurisdiction = { ...DEFAULT_JURISDICTION };
@@ -114,11 +114,17 @@ export function createMockRgs(config) {
     }
 
     if (pathname === '/wallet/balance') {
+      const balanceErr = injectMockError(body, 'balance', error);
+      if (balanceErr) return balanceErr;
+
       const session = getSession(sessionID);
       return success({ balance: balanceObject(session) });
     }
 
     if (pathname === '/wallet/play') {
+      const playErr = injectMockError(body, 'play', error);
+      if (playErr) return playErr;
+
       const session = getSession(sessionID);
       const amount = Number(body.amount);
       if (!Number.isFinite(amount) || amount <= 0) {
@@ -153,6 +159,9 @@ export function createMockRgs(config) {
     }
 
     if (pathname === '/wallet/end-round') {
+      const endErr = injectMockError(body, 'end-round', error);
+      if (endErr) return endErr;
+
       const session = getSession(sessionID);
       const round = session.activeRound;
       if (!round?.active) {
@@ -181,6 +190,9 @@ export function createMockRgs(config) {
   }
 
   function handleBetEvent(body) {
+    const eventErr = injectMockError(body, 'bet-event', error);
+    if (eventErr) return eventErr;
+
     const sessionID = body?.sessionID || 'local-demo';
     const event = body?.event;
     if (event === undefined || event === null || event === '') {
@@ -192,6 +204,9 @@ export function createMockRgs(config) {
   }
 
   function handleBetAction(body) {
+    const actionErr = injectMockError(body, 'bet-action', error);
+    if (actionErr) return actionErr;
+
     const sessionID = body?.sessionID || 'local-demo';
     const action = body?.action;
     if (!action || typeof action !== 'string') {

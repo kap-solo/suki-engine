@@ -5,9 +5,11 @@ import { applyProductionShell } from './productionUi.js';
 import { createJurisdictionController } from './jurisdiction.js';
 import { createSukiLifecycle } from './lifecycle.js';
 import { showDevTools, showComplianceFooter } from './environment.js';
-import { getRgsConnectionInfo, isReplayMode } from '../rgs.js';
+import { getRgsConnectionInfo, getRgsParams, isReplayMode } from '../rgs.js';
 import { bootstrapPlayMode, attachBalanceRefresh } from './bootstrap.js';
 import { createSessionTimer } from './sessionTimer.js';
+import { createCurrencyFormatter } from './currency.js';
+import { createCopyPolicy, isSocialCasinoMode, applyCopyLabels } from './copy.js';
 
 /**
  * Single entry point — wires initSuki, production shell, jurisdiction, lifecycle, and RGS bootstrap.
@@ -35,14 +37,44 @@ export function createGameBootstrap(options) {
   const shellResult = applyProductionShell(shell);
 
   let rgsReady = false;
+  const elements = shell.elements ?? {};
+
+  let currency = createCurrencyFormatter();
+  let copy = createCopyPolicy();
+
+  function refreshPlayerDisplay(authParsed) {
+    if (authParsed?.currency) {
+      currency = createCurrencyFormatter({
+        currency: authParsed.currency,
+        language: getRgsParams().language,
+      });
+    }
+    copy = createCopyPolicy({
+      socialCasino: isSocialCasinoMode(jurisdiction.state),
+      overrides: auth.copyOverrides,
+    });
+    applyCopyLabels(copy, elements);
+  }
 
   const jurisdiction = createJurisdictionController(() => {
+    refreshPlayerDisplay();
     syncDevTools();
     onJurisdictionChange?.();
   });
 
   const controls = createControlPolicy(jurisdiction);
-  const elements = shell.elements ?? {};
+
+  const sessionTimer =
+    elements.sessionTimer || elements.sessionTimerContainer
+      ? createSessionTimer({
+          element: elements.sessionTimer ?? null,
+          container: elements.sessionTimerContainer ?? null,
+          controls,
+          getVisible: () => !isReplayMode() && controls.showSessionTimer,
+        })
+      : null;
+
+  refreshPlayerDisplay();
 
   function applyAuthConfig(data) {
     const parsed = parseAuthResponse(data, { defaultBetDisplay: auth.defaultBetDisplay });
@@ -50,6 +82,7 @@ export function createGameBootstrap(options) {
     if (showDevTools()) {
       jurisdiction.applyDevProfile(getJurisdictionProfileName());
     }
+    refreshPlayerDisplay(parsed);
     if (elements.autoplay) {
       controls.setVisible(elements.autoplay, controls.canAutoplay);
     }
@@ -107,6 +140,8 @@ export function createGameBootstrap(options) {
       setRgsReady,
       onReady: ui.onReady,
       onAuthRound: ui.onAuthRound,
+      connectingMessage: copy.term('connectingRgs'),
+      readyMessage: copy.term('setBetPrompt'),
     });
   }
 
@@ -122,6 +157,18 @@ export function createGameBootstrap(options) {
     },
     setRgsReady,
     sessionTimer,
+    get copy() {
+      return copy;
+    },
+    get currency() {
+      return currency;
+    },
+    formatCurrency(amount) {
+      return currency.format(amount);
+    },
+    syncCopy() {
+      refreshPlayerDisplay();
+    },
     start,
   };
 }

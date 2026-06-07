@@ -24,12 +24,15 @@ client/
     authConfig.js   — parseAuthResponse() from authenticate
     controlPolicy.js — jurisdiction → UI gating helpers
     sessionTimer.js  — createSessionTimer() for displaySessionTimer
+    currency.js      — formatCurrencyAmount() from auth currency
+    copy.js          — social casino UI terminology
 
 tools/
   validate-math.mjs — validate books + lookup bundle
 
 harness/
   smoke.mjs         — compliance smoke tests
+  err-scenarios.mjs — ERR_* policy matrix + mock injection
 
 server/
   host.mjs          — static files + RGS routes
@@ -73,6 +76,8 @@ template/new-game/  — copy to start a new title
 
 - `createGameBootstrap(options)` — initSuki + production shell + jurisdiction + lifecycle + RGS start
 - `createSessionTimer({ element, container, controls })` — elapsed session clock when `displaySessionTimer` is true
+- `createCurrencyFormatter({ currency, language })` — Intl + social codes (XGC → GC, XSC → SC)
+- `createCopyPolicy({ socialCasino })` — Balance/Coins, Bet/Play, etc.; preview with `?dev=true&social=true`
 - `reportBetAction(action, meta)` — `POST /bet/action` for in-round player picks
 - `parseAuthResponse(data)` — bet levels, currency, jurisdiction from authenticate
 - `createControlPolicy(jurisdiction)` — `canTurbo`, `canAutoplay`, `showRtp`, etc.
@@ -141,6 +146,22 @@ npm run test:sandbox
 ```
 
 Included in `npm run check` when sandbox env vars are set.
+
+## ERR scenario harness
+
+Test Stake error codes against mock RGS injection and client policy:
+
+```bash
+npm run test:errors
+```
+
+Dev games can trigger mock errors with `_mock` on wallet requests (see `server/mock-rgs/inject-error.mjs`):
+
+```js
+// ?dev=true only — ignored in production Stake RGS
+await authenticate(); // body includes getMockFlags() from URL
+// Or in harness: { _mock: { play_error: 'ERR_UE' } }
+```
 
 ## Compliance checklist
 

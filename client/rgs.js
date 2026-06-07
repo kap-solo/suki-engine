@@ -147,6 +147,11 @@ export {
   createGameBootstrap,
   createSessionTimer,
   formatSessionElapsed,
+  createCurrencyFormatter,
+  formatCurrencyAmount,
+  createCopyPolicy,
+  applyCopyLabels,
+  isSocialCasinoMode,
 } from './suki/bootstrap.js';
 
 /** @returns {{ game: string, version: string, mode: string, event: string, amountApi: number }} */

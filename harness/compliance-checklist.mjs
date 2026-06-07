@@ -32,6 +32,7 @@ function run(label, args, env = {}) {
 console.log('Suki compliance checklist');
 
 run('Smoke tests', [join(root, 'harness/smoke.mjs')]);
+run('ERR scenarios', [join(root, 'harness/err-scenarios.mjs')]);
 
 if (process.env.SUKI_RGS_URL && process.env.SUKI_SESSION_ID && process.env.SUKI_GAME_ID) {
   run('Stake RGS sandbox', [join(root, 'harness/sandbox-smoke.mjs')]);

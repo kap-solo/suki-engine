@@ -19,7 +19,7 @@ export { getDevComplianceLabel };
  */
 export async function bootstrapPlayMode(ctx) {
   const { applyAuthConfig, lifecycle, setMessage, onReady, setRgsReady } = ctx;
-  setMessage('Connecting to RGS…');
+  setMessage(ctx.connectingMessage ?? 'Connecting to RGS…');
 
   try {
     const environment = getEnvironment();
@@ -41,7 +41,7 @@ export async function bootstrapPlayMode(ctx) {
     ctx.onAuthRound?.(authOutcome);
 
     if (authOutcome.status === 'ready') {
-      setMessage('Set bet · press Drop.');
+      setMessage(ctx.readyMessage ?? 'Set bet · press Drop.');
     }
     onReady();
   } catch (err) {
@@ -68,3 +68,16 @@ export function attachBalanceRefresh(ctx) {
 
 export { createGameBootstrap } from './gameBootstrap.js';
 export { createSessionTimer, formatSessionElapsed } from './sessionTimer.js';
+export {
+  createCurrencyFormatter,
+  formatCurrencyAmount,
+  langToLocale,
+  SOCIAL_CURRENCY_LABELS,
+} from './currency.js';
+export {
+  createCopyPolicy,
+  applyCopyLabels,
+  isSocialCasinoMode,
+  REAL_MONEY_COPY,
+  SOCIAL_CASINO_COPY,
+} from './copy.js';
