@@ -57,6 +57,7 @@ export function createGameBootstrap(options) {
       language: params.language,
     });
     copy = createCopyPolicy({
+      lang: params.language,
       socialCasino: isSocialCasinoMode(jurisdiction.state),
       overrides: auth.copyOverrides,
     });
@@ -169,6 +170,12 @@ export function createGameBootstrap(options) {
     sessionTimer,
     get copy() {
       return copy;
+    },
+    get i18n() {
+      return copy.i18n;
+    },
+    t(key, vars) {
+      return copy.t(key, vars);
     },
     get currency() {
       return currency;

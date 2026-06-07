@@ -22,6 +22,7 @@ import { formatCurrencyAmount, createCurrencyFormatter } from '../client/suki/cu
 import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
 import { setPlayerCurrency, getPlayerCurrency } from '../client/suki/playerCurrency.js';
 import { parseAuthResponse } from '../client/suki/authConfig.js';
+import { createI18n, resolveLang } from '../client/suki/i18n.js';
 
 const API = 1_000_000;
 const SAMPLE_STATE = [
@@ -252,6 +253,28 @@ function runCurrencyCopyTests() {
   assert(parsed.currency === 'CAD', 'auth currency prefers balance over URL');
 }
 
+function runI18nTests() {
+  console.log('\nUnit — i18n scaffold');
+
+  assert(resolveLang('pt-BR') === 'en', 'unsupported locale falls back to en');
+  assert(resolveLang('de') === 'de', 'German locale resolved');
+
+  const enUi = createI18n({ lang: 'en', socialCasino: false });
+  const deUi = createI18n({ lang: 'de', socialCasino: false });
+  const enSocial = createI18n({ lang: 'en', socialCasino: true });
+
+  assert(enUi.t('balance') === 'Balance', 'en balance');
+  assert(deUi.t('balance') === 'Guthaben', 'de balance');
+  assert(enSocial.t('balance') === 'Coins', 'en social balance');
+  assert(deUi.t('setBetPrompt').includes('Drop'), 'de setBetPrompt');
+
+  const custom = createI18n({ lang: 'en', overrides: { drop: 'Launch' } });
+  assert(custom.t('drop') === 'Launch', 'per-game override');
+
+  const interpolated = createI18n({ lang: 'en', overrides: { drop: 'Drop {n}' } });
+  assert(interpolated.t('drop', { n: 3 }) === 'Drop 3', 'variable interpolation');
+}
+
 function runSessionTimerTests() {
   console.log('\nUnit — session timer');
   assert(formatSessionElapsed(0) === '00:00', 'zero elapsed');
@@ -303,6 +326,7 @@ async function main() {
   runRgsConfigTests();
   runBootstrapTests();
   runCurrencyCopyTests();
+  runI18nTests();
   runSessionTimerTests();
   await runPolicyTests();
 

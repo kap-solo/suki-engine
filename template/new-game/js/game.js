@@ -52,7 +52,7 @@ const game = createGameBootstrap({
   },
   ui: {
     setMessage,
-    onReady: () => setMessage('Ready — place a bet.'),
+    onReady: () => setMessage(game.t('setBetPrompt')),
   },
 });
 

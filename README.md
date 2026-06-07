@@ -26,6 +26,8 @@ client/
     sessionTimer.js  — createSessionTimer() for displaySessionTimer
     currency.js      — formatCurrencyAmount() from auth currency
     copy.js          — social casino UI terminology
+    i18n.js          — createI18n() string lookup
+    strings/         — locale tables (en, de scaffold)
 
 tools/
   validate-math.mjs — validate books + lookup bundle
@@ -78,6 +80,15 @@ template/new-game/  — copy to start a new title
 - `createSessionTimer({ element, container, controls })` — elapsed session clock when `displaySessionTimer` is true
 - `createCurrencyFormatter({ currency, language })` — Intl + social codes (XGC → GC, XSC → SC); set from auth via `game.formatCurrency()`
 - `getPlayerCurrency()` / `setPlayerCurrency()` — URL `?currency=` before auth, `balance.currency` after authenticate; `play()` uses automatically
+- `createI18n({ lang, socialCasino })` / `game.t('balance')` — locale strings from `lang` param; add locales in `client/suki/strings/`
+
+### Adding a locale
+
+1. Copy `client/suki/strings/en.js` → `fr.js` (translate `fr` + optional `frSocial`).
+2. Register in `strings/index.js` (`PACKS` + `SUPPORTED_LOCALES`).
+3. Stake passes `?lang=fr` — `createGameBootstrap` picks it up automatically.
+
+Preview German locally: `?dev=true&lang=de`
 - `createCopyPolicy({ socialCasino })` — Balance/Coins, Bet/Play, etc.; preview with `?dev=true&social=true`
 - `reportBetAction(action, meta)` — `POST /bet/action` for in-round player picks
 - `parseAuthResponse(data)` — bet levels, currency, jurisdiction from authenticate

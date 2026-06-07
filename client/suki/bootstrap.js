@@ -82,3 +82,4 @@ export {
   SOCIAL_CASINO_COPY,
 } from './copy.js';
 export { setPlayerCurrency, getPlayerCurrency, clearPlayerCurrency } from './playerCurrency.js';
+export { createI18n, resolveLang, SUPPORTED_LOCALES } from './i18n.js';

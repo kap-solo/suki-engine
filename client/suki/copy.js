@@ -1,51 +1,19 @@
 /**
- * UI copy policy — real-money vs social casino terminology.
- * Aligns with Stake web-sdk social=true / jurisdiction.socialCasino.
+ * UI copy policy — locale strings + social casino terminology.
+ * Built on createI18n(); use game.t() or copy.term() in games.
  */
 
 import { isDevMode } from './config.js';
+import { createI18n } from './i18n.js';
+import { en, enSocial } from './strings/en.js';
 
-/** @typedef {keyof typeof REAL_MONEY_COPY} CopyTerm */
+/** @typedef {keyof typeof en} CopyTerm */
 
-export const REAL_MONEY_COPY = {
-  balance: 'Balance',
-  bet: 'Bet',
-  betAmount: 'Bet amount',
-  lastResult: 'Last result',
-  drop: 'Drop',
-  playVerb: 'play',
-  insufficientBalance: 'Not enough balance.',
-  setBetPrompt: 'Set bet · press Drop.',
-  connectingRgs: 'Connecting to RGS…',
-  sessionPl: 'Session P/L',
-  sessionPlays: 'Session plays',
-  replayNote: 'Recorded round — not a live bet',
-  stakeReturned: 'push, stake returned',
-  won: 'won',
-  onAmount: 'on',
-  newSessionBalance: 'New session — balance',
-  autoplayStopped: 'Autoplay stopped — insufficient balance after',
-};
+/** @deprecated Use createI18n / game.t — kept for importers. */
+export const REAL_MONEY_COPY = { ...en };
 
-export const SOCIAL_CASINO_COPY = {
-  balance: 'Coins',
-  bet: 'Play',
-  betAmount: 'Play amount',
-  lastResult: 'Last result',
-  drop: 'Drop',
-  playVerb: 'play',
-  insufficientBalance: 'Not enough coins.',
-  setBetPrompt: 'Set play amount · press Drop.',
-  connectingRgs: 'Connecting…',
-  sessionPl: 'Session coins',
-  sessionPlays: 'Session plays',
-  replayNote: 'Recorded round — not a live play',
-  stakeReturned: 'push, play amount returned',
-  won: 'won',
-  onAmount: 'on',
-  newSessionBalance: 'New session — coins',
-  autoplayStopped: 'Autoplay stopped — insufficient coins after',
-};
+/** @deprecated Use createI18n with socialCasino — kept for importers. */
+export const SOCIAL_CASINO_COPY = { ...en, ...enSocial };
 
 /**
  * Dev override: ?social=true (Stake convention for social casino preview).
@@ -61,24 +29,34 @@ export function isSocialCasinoMode(jurisdictionState) {
 
 /**
  * @param {object} options
+ * @param {string} [options.lang]
  * @param {boolean} [options.socialCasino]
  * @param {Partial<typeof REAL_MONEY_COPY>} [options.overrides]
  */
 export function createCopyPolicy(options = {}) {
-  const { socialCasino = false, overrides = {} } = options;
-  const base = socialCasino ? SOCIAL_CASINO_COPY : REAL_MONEY_COPY;
-  const terms = { ...base, ...overrides };
+  const { lang, socialCasino = false, overrides = {} } = options;
+  const i18n = createI18n({ lang, socialCasino, overrides });
 
   return {
     get socialCasino() {
       return socialCasino;
     },
+    get lang() {
+      return i18n.lang;
+    },
+    get i18n() {
+      return i18n;
+    },
     get terms() {
-      return { ...terms };
+      return i18n.exportTerms();
     },
     /** @param {CopyTerm} key */
     term(key) {
-      return terms[key] ?? key;
+      return i18n.t(key);
+    },
+    /** @param {CopyTerm} key */
+    t(key, vars) {
+      return i18n.t(key, vars);
     },
   };
 }
