@@ -3,6 +3,7 @@ import {
   isReplayEnvironment,
   isSandboxEnvironment,
   isHostedDemoEnvironment,
+  showDevTools,
 } from './environment.js';
 
 /**
@@ -24,8 +25,7 @@ export function applyProductionShell(options = {}) {
         : isProduction()
           ? 'production'
           : 'development';
-  const stripTestControls =
-    isProduction() || isHostedDemoEnvironment() || isReplayEnvironment() || isSandboxEnvironment();
+  const stripTestControls = !showDevTools() || isReplayEnvironment();
   const stripComplianceDev = isProduction() || isHostedDemoEnvironment() || isReplayEnvironment();
 
   if (!stripTestControls && !stripComplianceDev) {

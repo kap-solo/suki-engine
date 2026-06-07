@@ -54,9 +54,28 @@ export function isHostedDemoEnvironment() {
   return getEnvironment() === 'hostedDemo';
 }
 
+/** Local prototype — same machine, same-origin mock RGS (e.g. start.bat on localhost). */
+export function isLocalMockRgsHost() {
+  if (typeof window === 'undefined') return false;
+  const params = new URLSearchParams(window.location.search);
+  const rgsUrlRaw = params.get('rgs_url')?.trim();
+  if (!rgsUrlRaw) return false;
+  try {
+    const page = new URL(window.location.href);
+    const host = page.hostname;
+    const isLocal =
+      host === 'localhost' || host === '127.0.0.1' || host === '[::1]';
+    if (!isLocal) return false;
+    const rgs = new URL(rgsUrlRaw, page.href);
+    return rgs.origin === page.origin;
+  } catch {
+    return false;
+  }
+}
+
 /** Dev/test UI (100-play, compliance footer, mock jurisdiction) — off in production. */
 export function showDevTools() {
-  return isDevelopment();
+  return isDevelopment() || isLocalMockRgsHost();
 }
 
 /** Mock _mock flags on authenticate — only in local development (not sandbox). */

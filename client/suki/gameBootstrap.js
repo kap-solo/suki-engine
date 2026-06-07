@@ -149,6 +149,9 @@ export function createGameBootstrap(options) {
   function syncDevTools() {
     if (isReplayMode()) return;
     if (showDevTools()) {
+      if (elements.testControls) {
+        elements.testControls.hidden = false;
+      }
       if (elements.autoplay) {
         controls.setVisible(elements.autoplay, controls.canAutoplay);
       }
