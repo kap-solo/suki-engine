@@ -11,6 +11,7 @@ import {
  * @property {string} replayVersion
  * @property {(session: object, body: object) => object | { error: { code: string, message: string } }} resolvePlay
  * @property {(event: string, amountQuery: string | null, ctx: { replayStore: Map<string, object> }) => object | null} resolveReplay
+ * @property {(session: object, body: object) => object | { error: { code: string, message: string } }} [resolveAction]
  * @property {object} [betConfig] — min/max/step bet levels for authenticate
  */
 
@@ -23,6 +24,7 @@ export function createMockRgs(config) {
     replayVersion,
     resolvePlay,
     resolveReplay,
+    resolveAction = null,
     betConfig = {
       minBet: 1 * API_MULT,
       maxBet: 1000 * API_MULT,
@@ -189,6 +191,33 @@ export function createMockRgs(config) {
     return success({ event: String(event) });
   }
 
+  function handleBetAction(body) {
+    const sessionID = body?.sessionID || 'local-demo';
+    const action = body?.action;
+    if (!action || typeof action !== 'string') {
+      return error('ERR_VAL', 'Missing action');
+    }
+
+    const session = getSession(sessionID);
+    const round = session.activeRound;
+    if (!round?.active) {
+      return error('ERR_VAL', 'No active round for bet/action');
+    }
+
+    if (resolveAction) {
+      const result = resolveAction(session, body);
+      if (result?.error) return result;
+      if (result && typeof result === 'object') {
+        Object.assign(round, result);
+      }
+    }
+
+    return success({
+      balance: balanceObject(session),
+      action: round,
+    });
+  }
+
   function handleReplayRequest(game, version, mode, event, amountQuery) {
     const modeNorm = String(mode || '').toLowerCase();
     if (game !== gameId || version !== replayVersion || modeNorm !== 'base') {
@@ -217,6 +246,7 @@ export function createMockRgs(config) {
   return {
     handleRgsRequest,
     handleBetEvent,
+    handleBetAction,
     handleReplayRequest,
   };
 }

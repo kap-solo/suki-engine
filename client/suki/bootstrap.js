@@ -1,6 +1,8 @@
 import { authenticate, fetchBalance, isReplayMode } from '../rgs.js';
 import { messageForRgsCode, isSessionFatal } from './errors.js';
 import { getDevComplianceLabel } from './config.js';
+import { rgsOfflineMessage } from './productionUi.js';
+import { withRgsCall } from './rgsTransport.js';
 
 export { getDevComplianceLabel };
 
@@ -18,7 +20,7 @@ export async function bootstrapPlayMode(ctx) {
   setMessage('Connecting to RGS…');
 
   try {
-    const data = await authenticate();
+    const data = await withRgsCall(() => authenticate());
     applyAuthConfig(data);
     setRgsReady(true);
 
@@ -36,7 +38,7 @@ export async function bootstrapPlayMode(ctx) {
     console.error(err);
     const code = String(err.message);
     setRgsReady(false);
-    setMessage(isSessionFatal(code) ? messageForRgsCode(code) : 'RGS unavailable — run: node server.mjs');
+    setMessage(isSessionFatal(code) ? messageForRgsCode(code) : rgsOfflineMessage());
   }
 }
 

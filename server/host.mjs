@@ -75,7 +75,12 @@ export function createSukiHost({
       return;
     }
 
-    if (req.method === 'POST' && (url.pathname.startsWith('/wallet/') || url.pathname === '/bet/event')) {
+    if (
+      req.method === 'POST' &&
+      (url.pathname.startsWith('/wallet/') ||
+        url.pathname === '/bet/event' ||
+        url.pathname === '/bet/action')
+    ) {
       let body = '';
       req.on('data', (chunk) => {
         body += chunk;
@@ -90,10 +95,14 @@ export function createSukiHost({
           return;
         }
 
-        const result =
-          url.pathname === '/bet/event'
-            ? rgs.handleBetEvent(parsed)
-            : rgs.handleRgsRequest(url.pathname, parsed);
+      let result;
+      if (url.pathname === '/bet/event') {
+        result = rgs.handleBetEvent(parsed);
+      } else if (url.pathname === '/bet/action') {
+        result = rgs.handleBetAction?.(parsed);
+      } else {
+        result = rgs.handleRgsRequest(url.pathname, parsed);
+      }
         if (!result) {
           res.writeHead(404, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: { code: 'ERR_VAL', message: 'Not found' } }));

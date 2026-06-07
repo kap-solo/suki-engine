@@ -8,6 +8,8 @@
  */
 
 import { createMockRgs } from '../server/mock-rgs/create-mock-rgs.mjs';
+import { classifyRgsError } from '../client/suki/errors.js';
+import { withRgsCall } from '../client/suki/rgsTransport.js';
 
 const API = 1_000_000;
 const SAMPLE_STATE = [
@@ -87,6 +89,13 @@ function runUnitTests() {
   const ev1 = rgs.handleBetEvent({ sessionID, gameID: 'smoke-test', event: '1' });
   assert(ev1.event === '1', 'bet/event 1 recorded');
 
+  const action = rgs.handleBetAction({ sessionID, gameID: 'smoke-test', action: 'PICK_0' });
+  assert(!action.error, 'bet/action on active round');
+  assert(action.action?.active === true, 'bet/action returns active round');
+
+  const badAction = rgs.handleBetAction({ sessionID: 'no-round', gameID: 'smoke-test', action: 'PICK_0' });
+  assert(badAction.error?.code === 'ERR_VAL', 'bet/action rejected without active round');
+
   const end = rgs.handleRgsRequest('/wallet/end-round', { sessionID, gameID: 'smoke-test' });
   assert(!end.error, 'end-round succeeds');
   assert(end.replayEvent, 'replay event id returned');
@@ -158,9 +167,25 @@ async function runIntegrationTests(baseUrl) {
   assert(!replay.error, 'book replay GET');
 }
 
+async function runPolicyTests() {
+  console.log('\nUnit — error policy & transport');
+  assert(classifyRgsError('ERR_UE').retryable, 'ERR_UE is retryable');
+  assert(!classifyRgsError('ERR_IPB').retryable, 'ERR_IPB is not retryable');
+  assert(classifyRgsError('ERR_BE').shouldResumeRound, 'ERR_BE resumes round');
+
+  let attempts = 0;
+  const value = await withRgsCall(async () => {
+    attempts += 1;
+    if (attempts < 2) throw new Error('ERR_GEN');
+    return 'ok';
+  }, { delayMs: 10 });
+  assert(value === 'ok' && attempts === 2, 'withRgsCall retries then succeeds');
+}
+
 async function main() {
   console.log('Suki Engine — compliance smoke');
   runUnitTests();
+  await runPolicyTests();
 
   const url = process.env.SUKI_SMOKE_URL;
   if (process.env.SUKI_RUN_INTEGRATION === '1' && url) {

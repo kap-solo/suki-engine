@@ -19,11 +19,14 @@ export const JURISDICTION_PROFILES = {
 };
 
 const DEFAULTS = {
+  socialCasino: false,
+  disabledFullscreen: false,
   disabledTurbo: false,
   disabledSuperTurbo: false,
   disabledAutoplay: false,
   disabledSpacebar: false,
   disabledSlamstop: false,
+  disabledBuyFeature: true,
   displayNetPosition: true,
   displayRTP: true,
   displaySessionTimer: false,

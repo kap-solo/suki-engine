@@ -10,10 +10,13 @@
     "client",
     "server",
     "template",
-    "harness"
+    "harness",
+    "tools"
   ],
   "scripts": {
-    "test:smoke": "node harness/smoke.mjs"
+    "test:smoke": "node harness/smoke.mjs",
+    "validate-math": "node tools/validate-math.mjs",
+    "check": "node harness/compliance-checklist.mjs"
   },
   "engines": {
     "node": ">=20"

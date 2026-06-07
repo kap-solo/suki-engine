@@ -20,6 +20,11 @@ client/
     jurisdiction.js — regional UI gating
     bootstrap.js    — authenticate on load
     lifecycle.js    — play → book events → end-round
+    authConfig.js   — parseAuthResponse() from authenticate
+    controlPolicy.js — jurisdiction → UI gating helpers
+
+tools/
+  validate-math.mjs — validate books + lookup bundle
 
 harness/
   smoke.mjs         — compliance smoke tests
@@ -60,6 +65,37 @@ template/new-game/  — copy to start a new title
 
 6. `npm install && node server.mjs`
 7. `npm run test:smoke` in Suki-Engine (unit tests; add `SUKI_SMOKE_URL` for live host)
+8. `npm run validate-math ./data` — verify math bundle before shipping
+
+## Tier 2 APIs
+
+- `reportBetAction(action, meta)` — `POST /bet/action` for in-round player picks
+- `parseAuthResponse(data)` — bet levels, currency, jurisdiction from authenticate
+- `createControlPolicy(jurisdiction)` — `canTurbo`, `canAutoplay`, `showRtp`, etc.
+
+## Production mode
+
+Without `?dev=true`, Suki runs in **production** — no mock flags, no dev UI.
+
+```js
+import { applyProductionShell } from '@kap-solo/suki-engine/client/rgs.js';
+
+applyProductionShell({
+  elements: {
+    complianceDev: document.getElementById('compliance-dev'),
+    testControls: document.querySelector('.test-row'),
+  },
+});
+```
+
+Mark dev-only nodes with `data-suki-dev` in HTML. Use `?dev=true` locally for compliance footer and test buttons.
+
+## Compliance checklist
+
+```bash
+npm run check
+npm run check -- --math ../Pure-Plinko/data
+```
 
 ## Reference game
 

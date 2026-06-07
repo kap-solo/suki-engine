@@ -107,6 +107,20 @@ export async function reportBetEvent(eventIndex) {
   return rgsPost('/bet/event', { sessionID, gameID, event: String(eventIndex) });
 }
 
+/** Player decision during an active round (skipped in replay mode). */
+export async function reportBetAction(action, meta) {
+  if (isReplayModeConfig()) return;
+  const { sessionID, gameID } = getRgsParams();
+  const body = { sessionID, gameID, action };
+  if (meta) body.meta = meta;
+  return rgsPost('/bet/action', body);
+}
+
+export { parseAuthResponse } from './suki/authConfig.js';
+export { createControlPolicy } from './suki/controlPolicy.js';
+export { applyProductionShell, rgsOfflineMessage } from './suki/productionUi.js';
+export { withRgsCall } from './suki/rgsTransport.js';
+
 /** @returns {{ game: string, version: string, mode: string, event: string, amountApi: number }} */
 export function getReplayParams() {
   const params = new URLSearchParams(window.location.search);
