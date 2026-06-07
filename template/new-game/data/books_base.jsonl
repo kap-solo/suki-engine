@@ -1,0 +1,3 @@
+{"id":1,"payoutMultiplier":0,"events":[{"index":0,"type":"gameReveal","symbol":"Cherry","multiplier":0},{"index":1,"type":"setTotalWin","amount":0},{"index":2,"type":"finalWin","amount":0}]}
+{"id":2,"payoutMultiplier":100,"events":[{"index":0,"type":"gameReveal","symbol":"Lemon","multiplier":1},{"index":1,"type":"setTotalWin","amount":100},{"index":2,"type":"finalWin","amount":100}]}
+{"id":3,"payoutMultiplier":200,"events":[{"index":0,"type":"gameReveal","symbol":"Star","multiplier":2},{"index":1,"type":"setTotalWin","amount":200},{"index":2,"type":"finalWin","amount":200}]}

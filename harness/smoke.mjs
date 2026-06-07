@@ -167,31 +167,34 @@ async function post(baseUrl, path, body) {
 }
 
 async function runIntegrationTests(baseUrl) {
-  console.log(`\nIntegration — ${baseUrl}`);
+  const gameID = process.env.SUKI_INTEGRATION_GAME_ID || 'pure-plinko';
+  const eventType = process.env.SUKI_INTEGRATION_EVENT_TYPE || 'plinkoDrop';
+
+  console.log(`\nIntegration — ${baseUrl} (${gameID})`);
   const sessionID = `live-${Date.now()}`;
   const base = baseUrl.replace(/\/$/, '');
 
   const auth = await post(base, '/wallet/authenticate', {
     sessionID,
-    gameID: 'pure-plinko',
+    gameID,
     language: 'en',
   });
   assert(!auth.error, 'authenticate');
-  assert(auth.config?.gameID === 'pure-plinko', 'game id');
+  assert(auth.config?.gameID === gameID, 'game id');
 
   const play = await post(base, '/wallet/play', {
     sessionID,
-    gameID: 'pure-plinko',
+    gameID,
     amount: API,
     mode: 'BASE',
   });
   assert(!play.error, 'play');
-  assert(play.round?.state?.some((e) => e.type === 'plinkoDrop'), 'plinkoDrop in state');
+  assert(play.round?.state?.some((e) => e.type === eventType), `${eventType} in state`);
 
-  const end = await post(base, '/wallet/end-round', { sessionID, gameID: 'pure-plinko' });
+  const end = await post(base, '/wallet/end-round', { sessionID, gameID });
   assert(!end.error, 'end-round');
 
-  const replayRes = await fetch(`${base}/bet/replay/pure-plinko/1/base/1?amount=${API}`);
+  const replayRes = await fetch(`${base}/bet/replay/${gameID}/1/base/1?amount=${API}`);
   const replay = await replayRes.json();
   assert(!replay.error, 'book replay GET');
 }

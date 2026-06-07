@@ -1,0 +1,15 @@
+{
+  "name": "my-game",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "validate-math": "node node_modules/@kap-solo/suki-engine/tools/validate-math.mjs ./data"
+  },
+  "dependencies": {
+    "@kap-solo/suki-engine": "file:../.."
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

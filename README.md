@@ -46,34 +46,28 @@ template/new-game/  — copy to start a new title
 
 ## Quick start (new game)
 
-1. Copy `template/new-game/` into your game repo.
-2. Add to `package.json`:
+Copy the runnable starter:
 
-   ```json
-   {
-     "dependencies": {
-       "@kap-solo/suki-engine": "file:../Suki-Engine"
-     }
-   }
-   ```
+```bash
+cp -r template/new-game ../my-new-game
+cd ../my-new-game
+npm install && npm start
+```
 
-3. Wire the shell with `createGameBootstrap()` (calls `initSuki` internally).
-4. Implement `createMockRgs({ resolvePlay, resolveReplay })` for your math bundle.
-5. Add an import map in `index.html`:
+Open http://127.0.0.1:5174/?dev=true — authenticate, bet, play, and settle work out of the box with stub math (3 outcomes).
 
-   ```html
-   <script type="importmap">
-   {
-     "imports": {
-       "@kap-solo/suki-engine/": "/vendor/suki-engine/"
-     }
-   }
-   </script>
-   ```
+See **`template/new-game/README.md`** for the rename checklist (`gameId`, handlers, `data/` books).
 
-6. `npm install && node server.mjs`
-7. `npm run test:smoke` in Suki-Engine (unit tests; add `SUKI_SMOKE_URL` for live host)
-8. `npm run validate-math ./data` — verify math bundle before shipping
+When publishing outside this monorepo, set the dependency to `github:kap-solo/suki-engine#main`.
+
+Before shipping:
+
+```bash
+npm run validate-math ./data
+cd ../Suki-Engine && npm run check -- --math ../my-new-game/data
+```
+
+CI on `main` runs full `npm run check` (smoke + ERR + compliance report + template math) and `npm run test:integration` (live host routes via `template/new-game`).
 
 ## Tier 2 APIs
 
