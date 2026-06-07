@@ -163,7 +163,7 @@ async function main() {
   runUnitTests();
 
   const url = process.env.SUKI_SMOKE_URL;
-  if (url) {
+  if (process.env.SUKI_RUN_INTEGRATION === '1' && url) {
     try {
       await runIntegrationTests(url);
     } catch (err) {
@@ -171,7 +171,7 @@ async function main() {
       console.error(`  ✗ integration failed: ${err.message}`);
     }
   } else {
-    console.log('\n(skip integration — set SUKI_SMOKE_URL to test a live host)');
+    console.log('\n(skip integration — set SUKI_RUN_INTEGRATION=1 and SUKI_SMOKE_URL for live host)');
   }
 
   console.log(`\n${passed} passed, ${failed} failed`);
