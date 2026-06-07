@@ -5,12 +5,14 @@ import { applyProductionShell } from './productionUi.js';
 import { createJurisdictionController } from './jurisdiction.js';
 import { createSukiLifecycle } from './lifecycle.js';
 import { showDevTools, showComplianceFooter } from './environment.js';
-import { getRgsConnectionInfo, getRgsParams, isReplayMode } from '../rgs.js';
+import { getRgsConnectionInfo, getRgsParams } from '../rgs.js';
 import { bootstrapPlayMode, attachBalanceRefresh } from './bootstrap.js';
 import { createSessionTimer } from './sessionTimer.js';
 import { createCurrencyFormatter } from './currency.js';
 import { createCopyPolicy, isSocialCasinoMode, applyCopyLabels } from './copy.js';
 import { setPlayerCurrency, getPlayerCurrency } from './playerCurrency.js';
+import { createBetModePolicy } from './betModes.js';
+import { isReplayMode } from './config.js';
 
 /**
  * Single entry point — wires initSuki, production shell, jurisdiction, lifecycle, and RGS bootstrap.
@@ -19,7 +21,7 @@ import { setPlayerCurrency, getPlayerCurrency } from './playerCurrency.js';
  * @param {{ gameId: string, replayVersion?: string, sessionStorageKey?: string }} options.suki
  * @param {Parameters<typeof applyProductionShell>[0]} [options.shell]
  * @param {Omit<Parameters<typeof createSukiLifecycle>[0], 'jurisdiction'>} options.lifecycle
- * @param {{ defaultBetDisplay?: number, onConfigured?: (auth: object, data: object) => void }} [options.auth]
+ * @param {{ defaultBetDisplay?: number, gameModes?: Array<{ name: string, cost?: number }>, defaultMode?: string, onConfigured?: (auth: object, data: object) => void }} [options.auth]
  * @param {object} options.ui
  * @param {(text: string) => void} options.ui.setMessage
  * @param {() => void} [options.ui.syncHud]
@@ -72,6 +74,28 @@ export function createGameBootstrap(options) {
 
   const controls = createControlPolicy(jurisdiction);
 
+  function replayModeFromUrl() {
+    if (!isReplayMode()) return null;
+    return new URLSearchParams(window.location.search).get('mode') || 'base';
+  }
+
+  let betModePolicy = createBetModePolicy({
+    gameModes: auth.gameModes,
+    controls,
+    defaultMode: auth.defaultMode,
+    replayMode: replayModeFromUrl(),
+  });
+
+  function refreshBetModes(parsed) {
+    betModePolicy = createBetModePolicy({
+      authBetModes: parsed?.betModes,
+      gameModes: auth.gameModes,
+      controls,
+      defaultMode: auth.defaultMode,
+      replayMode: replayModeFromUrl(),
+    });
+  }
+
   const sessionTimer =
     elements.sessionTimer || elements.sessionTimerContainer
       ? createSessionTimer({
@@ -94,6 +118,7 @@ export function createGameBootstrap(options) {
       jurisdiction.applyDevProfile(getJurisdictionProfileName());
     }
     refreshPlayerDisplay(parsed);
+    refreshBetModes(parsed);
     if (elements.autoplay) {
       controls.setVisible(elements.autoplay, controls.canAutoplay);
     }
@@ -124,6 +149,7 @@ export function createGameBootstrap(options) {
   const lifecycle = createSukiLifecycle({
     jurisdiction,
     ...lifecycleDeps,
+    getBetModePolicy: () => betModePolicy,
   });
 
   function setRgsReady(ready) {
@@ -176,6 +202,9 @@ export function createGameBootstrap(options) {
     },
     t(key, vars) {
       return copy.t(key, vars);
+    },
+    get betModes() {
+      return betModePolicy;
     },
     get currency() {
       return currency;

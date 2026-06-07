@@ -32,6 +32,9 @@ export function createMockRgs(config) {
       stepBet: 1 * API_MULT,
       defaultBetLevel: 1 * API_MULT,
       betLevels: [1, 5, 10].map((d) => d * API_MULT),
+      betModes: {
+        BASE: { mode: 'BASE', costMultiplier: 1, feature: false },
+      },
     },
   } = config;
 
@@ -72,7 +75,7 @@ export function createMockRgs(config) {
     replayStore.set(event, {
       game: gameId,
       version: replayVersion,
-      mode: 'base',
+      mode: String(round.mode || 'BASE').toLowerCase(),
       round: {
         amount: round.amount,
         payout: round.payout,
@@ -238,9 +241,15 @@ export function createMockRgs(config) {
   }
 
   function handleReplayRequest(game, version, mode, event, amountQuery) {
-    const modeNorm = String(mode || '').toLowerCase();
-    if (game !== gameId || version !== replayVersion || modeNorm !== 'base') {
+    const modeNorm = String(mode || 'base').toLowerCase();
+    if (game !== gameId || version !== replayVersion) {
       return error('ERR_VAL', 'Invalid replay route');
+    }
+    const allowedModes = Object.keys(betConfig.betModes ?? { base: {} }).map((k) =>
+      String(k).toLowerCase(),
+    );
+    if (allowedModes.length && !allowedModes.includes(modeNorm)) {
+      return error('ERR_VAL', 'Invalid replay mode');
     }
     if (!event) {
       return error('ERR_VAL', 'Missing replay event');

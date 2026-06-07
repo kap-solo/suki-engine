@@ -21,6 +21,7 @@ import { shouldReportBetEvents } from './environment.js';
  * @param {(amountApi: number) => void} deps.setBetFromApi
  * @param {(round: object) => object} deps.buildSettledResult
  * @param {string} [deps.playingMessage='Playing…']
+ * @param {() => object | null | undefined} [deps.getBetModePolicy] — createBetModePolicy()
  */
 export function createSukiLifecycle(deps) {
   const {
@@ -35,6 +36,7 @@ export function createSukiLifecycle(deps) {
     setBetFromApi,
     buildSettledResult,
     playingMessage = 'Playing…',
+    getBetModePolicy,
   } = deps;
 
   const bookPlayer = createBookPlayer({ handlers });
@@ -105,7 +107,11 @@ export function createSukiLifecycle(deps) {
   }
 
   async function executeDrop({ animate = true } = {}) {
-    const playRes = await play({ amountApi: getBetApi(), mode: 'BASE' });
+    const policy = getBetModePolicy?.();
+    const baseBetApi = getBetApi();
+    const amountApi = policy ? policy.playAmountApi(baseBetApi) : baseBetApi;
+    const mode = policy ? policy.rgsModeForPlay() : 'BASE';
+    const playRes = await play({ amountApi, mode });
     applyBalance(playRes.balance);
     return completeRound(playRes.round, { animate });
   }

@@ -23,6 +23,7 @@ client/
     lifecycle.js    — play → book events → end-round
     authConfig.js   — parseAuthResponse() from authenticate
     controlPolicy.js — jurisdiction → UI gating helpers
+    betModes.js      — createBetModePolicy() for BASE / buy / activate modes
     sessionTimer.js  — createSessionTimer() for displaySessionTimer
     currency.js      — formatCurrencyAmount() from auth currency
     copy.js          — social casino UI terminology
@@ -93,6 +94,28 @@ Preview German locally: `?dev=true&lang=de`
 - `reportBetAction(action, meta)` — `POST /bet/action` for in-round player picks
 - `parseAuthResponse(data)` — bet levels, currency, jurisdiction from authenticate
 - `createControlPolicy(jurisdiction)` — `canTurbo`, `canAutoplay`, `showRtp`, etc.
+- `createBetModePolicy({ authBetModes, gameModes, controls })` — merge math modes + RGS `betModes`; `playAmountApi()`, `rgsModeForPlay()`, buy/activate gating via `disabledBuyFeature`
+
+### Bet modes (buy feature / bonus ready)
+
+Pass math modes from `index.json` and read `game.betModes` after auth:
+
+```js
+const game = createGameBootstrap({
+  auth: {
+    gameModes: [
+      { name: 'base', cost: 1 },
+      // { name: 'bonus', cost: 100 },  // when math bundle ships
+    ],
+    onConfigured(auth) { /* bet levels */ },
+  },
+  // ...
+});
+
+// After auth: game.betModes.modes, game.betModes.playAmountApi(baseBetApi)
+// lifecycle.executeDrop() debits base × costMultiplier and sends correct RGS mode
+// Buy UI: game.betModes.buyModes() gated by game.controls.canBuyFeature
+```
 
 ```js
 import { createGameBootstrap } from '@kap-solo/suki-engine/client/rgs.js';

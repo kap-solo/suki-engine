@@ -156,6 +156,12 @@ export {
 } from './suki/bootstrap.js';
 export { setPlayerCurrency, getPlayerCurrency, clearPlayerCurrency } from './suki/playerCurrency.js';
 export { createI18n, resolveLang, SUPPORTED_LOCALES } from './suki/i18n.js';
+export {
+  createBetModePolicy,
+  normalizeModeKey,
+  toRgsMode,
+  parseGameModesFromIndex,
+} from './suki/betModes.js';
 
 /** @returns {{ game: string, version: string, mode: string, event: string, amountApi: number }} */
 export function getReplayParams() {

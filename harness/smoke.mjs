@@ -23,6 +23,14 @@ import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
 import { setPlayerCurrency, getPlayerCurrency } from '../client/suki/playerCurrency.js';
 import { parseAuthResponse } from '../client/suki/authConfig.js';
 import { createI18n, resolveLang } from '../client/suki/i18n.js';
+import {
+  createBetModePolicy,
+  normalizeModeKey,
+  toRgsMode,
+  parseGameModesFromIndex,
+} from '../client/suki/betModes.js';
+import { createControlPolicy } from '../client/suki/controlPolicy.js';
+import { createJurisdictionController } from '../client/suki/jurisdiction.js';
 
 const API = 1_000_000;
 const SAMPLE_STATE = [
@@ -222,6 +230,96 @@ function runBootstrapTests() {
   assert(typeof createGameBootstrap === 'function', 'createGameBootstrap exported');
 }
 
+function runBetModeTests() {
+  console.log('\nUnit — bet modes');
+
+  assert(normalizeModeKey('BASE') === 'base', 'normalizeModeKey lowercases');
+  assert(toRgsMode('bonus') === 'BONUS', 'toRgsMode uppercases');
+
+  const fromIndex = parseGameModesFromIndex({
+    modes: [{ name: 'base', cost: 1 }, { name: 'bonus', cost: 100 }],
+  });
+  assert(fromIndex.length === 2 && fromIndex[1].cost === 100, 'parseGameModesFromIndex');
+
+  const jurisdiction = createJurisdictionController(() => {});
+  jurisdiction.mergeFromServer({ disabledBuyFeature: false });
+  const controls = createControlPolicy(jurisdiction);
+
+  const policy = createBetModePolicy({
+    gameModes: [
+      { name: 'base', cost: 1 },
+      { name: 'bonus', cost: 100 },
+    ],
+    authBetModes: {
+      BASE: { mode: 'BASE', costMultiplier: 1, feature: false },
+      BONUS: { mode: 'BONUS', costMultiplier: 100, feature: true },
+    },
+    controls,
+  });
+
+  assert(policy.modes.length === 2, 'catalog has base + bonus');
+  assert(policy.playAmountApi(API) === API, 'base play amount');
+  assert(policy.setActiveMode('bonus'), 'select bonus mode');
+  assert(policy.playAmountApi(API) === 100 * API, 'bonus play amount = base × 100');
+  assert(policy.rgsModeForPlay() === 'BONUS', 'RGS mode for bonus');
+
+  const blockedJurisdiction = createJurisdictionController(() => {});
+  const blockedControls = createControlPolicy(blockedJurisdiction);
+  const blockedPolicy = createBetModePolicy({
+    gameModes: [
+      { name: 'base', cost: 1 },
+      { name: 'bonus', cost: 100 },
+    ],
+    authBetModes: {
+      BONUS: { mode: 'BONUS', costMultiplier: 100, feature: true },
+    },
+    controls: blockedControls,
+  });
+  assert(!blockedPolicy.canSelectMode('bonus'), 'buy blocked when disabledBuyFeature');
+  assert(blockedPolicy.setActiveMode('bonus') === false, 'setActiveMode rejects blocked buy');
+
+  const rgs = createMockRgs({
+    gameId: 'mode-smoke',
+    replayVersion: '1',
+    betConfig: {
+      minBet: API,
+      maxBet: 100 * API,
+      stepBet: API,
+      defaultBetLevel: API,
+      betLevels: [API],
+      betModes: {
+        BASE: { mode: 'BASE', costMultiplier: 1, feature: false },
+        BONUS: { mode: 'BONUS', costMultiplier: 100, feature: true },
+      },
+    },
+    resolvePlay(_session, body) {
+      return {
+        payout: 0,
+        payoutMultiplier: 0,
+        state: SAMPLE_STATE,
+        mode: body.mode,
+      };
+    },
+    resolveReplay() {
+      return null;
+    },
+  });
+
+  const auth = rgs.handleRgsRequest('/wallet/authenticate', {
+    sessionID: 'mode-smoke',
+    gameID: 'mode-smoke',
+  });
+  assert(auth.config?.betModes?.BONUS?.costMultiplier === 100, 'mock auth exposes betModes');
+
+  const bonusPlay = rgs.handleRgsRequest('/wallet/play', {
+    sessionID: 'mode-smoke',
+    gameID: 'mode-smoke',
+    amount: 100 * API,
+    mode: 'BONUS',
+  });
+  assert(!bonusPlay.error && bonusPlay.round?.mode === 'BONUS', 'mock play accepts BONUS mode');
+}
+
 function runCurrencyCopyTests() {
   console.log('\nUnit — currency & social copy');
 
@@ -325,6 +423,7 @@ async function main() {
   runUnitTests();
   runRgsConfigTests();
   runBootstrapTests();
+  runBetModeTests();
   runCurrencyCopyTests();
   runI18nTests();
   runSessionTimerTests();
