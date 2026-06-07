@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Game — Suki starter</title>
+    <link rel="stylesheet" href="/vendor/suki-engine/client/suki/stakeLayout.css" />
     <link rel="stylesheet" href="css/style.css" />
     <script type="importmap">
       {
@@ -14,75 +15,91 @@
     </script>
   </head>
   <body>
-    <main class="layout">
-      <header>
+    <main class="layout suki-stake-shell">
+      <div class="suki-bg suki-bg-mobile-l" aria-hidden="true"></div>
+      <div class="suki-bg suki-bg-mobile-ms" aria-hidden="true"></div>
+      <div class="suki-bg suki-bg-landscape" aria-hidden="true"></div>
+
+      <header class="suki-brand">
         <h1 id="game-title">My Game</h1>
         <p class="subtitle" id="game-subtitle">Suki Engine starter — one play, one result</p>
       </header>
 
-      <div id="replay-banner" class="replay-banner" hidden>
+      <div id="replay-banner" class="replay-banner suki-replay-banner" hidden>
         <span class="replay-label">Replay</span>
         <span class="replay-note" id="replay-note">Recorded round — not a live bet</span>
       </div>
 
-      <section class="hud" id="balance-hud" aria-label="Balance">
-        <div class="stat">
-          <span class="label" id="balance-label">Balance</span>
-          <span class="value" id="balance">$0.00</span>
+      <aside class="suki-flank-left" aria-hidden="true">
+        <div class="suki-flank-slot">
+          <span class="suki-flank-placeholder">Character</span>
         </div>
-        <div class="stat">
-          <span class="label" id="bet-label">Bet</span>
-          <span class="value" id="bet-display">$1.00</span>
+      </aside>
+
+      <section class="suki-game-core">
+        <section class="hud" id="balance-hud" aria-label="Balance">
+          <div class="stat">
+            <span class="label" id="balance-label">Balance</span>
+            <span class="value" id="balance">$0.00</span>
+          </div>
+          <div class="stat">
+            <span class="label" id="bet-label">Bet</span>
+            <span class="value" id="bet-display">$1.00</span>
+          </div>
+          <div class="stat stat-wide">
+            <span class="label" id="last-result-label">Last result</span>
+            <span class="value" id="last-result">—</span>
+          </div>
+          <div class="stat" id="session-timer-stat" hidden>
+            <span class="label">Session time</span>
+            <span class="value tabular" id="session-timer">00:00</span>
+          </div>
+        </section>
+
+        <div class="stage" id="outcome-stage" aria-live="polite">
+          <div class="outcome-card" id="outcome-card">
+            <span class="outcome-symbol" id="outcome-symbol">?</span>
+            <span class="outcome-mult" id="outcome-mult">—</span>
+          </div>
         </div>
-        <div class="stat" style="grid-column: 1 / -1">
-          <span class="label" id="last-result-label">Last result</span>
-          <span class="value" id="last-result">—</span>
-        </div>
-        <div class="stat" id="session-timer-stat" hidden>
-          <span class="label">Session time</span>
-          <span class="value tabular" id="session-timer">00:00</span>
-        </div>
+
+        <p class="message" id="message">Connecting…</p>
       </section>
 
-      <div class="stage" id="outcome-stage" aria-live="polite">
-        <div class="outcome-card" id="outcome-card">
-          <span class="outcome-symbol" id="outcome-symbol">?</span>
-          <span class="outcome-mult" id="outcome-mult">—</span>
+      <div class="suki-controls-slot">
+        <div class="controls" id="play-controls">
+          <div class="mode-row" id="mode-row" aria-label="Play mode" hidden></div>
+          <p class="mode-cost" id="mode-cost" hidden></p>
+          <div class="bet-row" id="bet-chips" aria-label="Bet amount"></div>
+          <button id="play-btn" type="button">Play</button>
+          <div class="test-row" data-suki-dev>
+            <button id="autoplay-btn" type="button" class="test-btn">100 play</button>
+            <button id="new-session-btn" type="button" class="test-btn">New session</button>
+          </div>
+          <button id="copy-replay-btn" type="button" class="test-btn copy-replay-btn" data-suki-dev hidden>
+            Copy replay link
+          </button>
+        </div>
+
+        <div class="controls" id="replay-controls" hidden>
+          <button id="replay-again-btn" type="button" class="test-btn">Replay again</button>
         </div>
       </div>
 
-      <p class="message" id="message">Connecting…</p>
+      <footer class="suki-footer">
+        <p class="stats" id="stats"></p>
+        <p class="compliance-dev" id="compliance-dev" data-suki-dev hidden></p>
+      </footer>
 
-      <div class="controls" id="play-controls">
-        <div class="mode-row" id="mode-row" aria-label="Play mode" hidden></div>
-        <p class="mode-cost" id="mode-cost" hidden></p>
-        <div class="bet-row" id="bet-chips" aria-label="Bet amount"></div>
-        <button id="play-btn" type="button">Play</button>
-        <div class="test-row" data-suki-dev>
-          <button id="autoplay-btn" type="button" class="test-btn">100 play</button>
-          <button id="new-session-btn" type="button" class="test-btn">New session</button>
-        </div>
-        <button id="copy-replay-btn" type="button" class="test-btn copy-replay-btn" data-suki-dev hidden>
-          Copy replay link
-        </button>
-      </div>
-
-      <div class="controls" id="replay-controls" hidden>
-        <button id="replay-again-btn" type="button" class="test-btn">Replay again</button>
-      </div>
-
-      <p class="stats" id="stats"></p>
-      <p class="compliance-dev" id="compliance-dev" data-suki-dev hidden></p>
-
-      <aside class="principles" data-suki-dev>
+      <aside class="principles suki-dev-aside" data-suki-dev>
         <strong>Suki starter checklist</strong>
         <ul>
           <li>Rename <code>gameId</code> in <code>js/config.js</code> and <code>server/game-rgs.mjs</code>.</li>
-          <li>Replace <code>gameReveal</code> handler and books in <code>data/</code>.</li>
-          <li>Outcome comes from RGS — client animation is presentation only.</li>
-          <li>Buy bonus UI uses <code>game.betModes</code> — see <code>js/config.js</code> + <code>data/index.json</code>.</li>
-          <li>Stake screens toolbar in <code>?dev=true</code> — test all seven iframe sizes.</li>
-          <li>Local dev: <code>?dev=true</code> · strict timer: <code>?dev=true&amp;jurisdiction=strict</code></li>
+          <li>Put gameplay inside <code>.suki-game-core</code> — designed at Mobile L (425×812).</li>
+          <li>Replace portrait backgrounds (<code>.suki-bg-mobile-l</code> / <code>-ms</code>) and landscape art.</li>
+          <li>Swap the <code>.suki-flank-left</code> placeholder for your character animation.</li>
+          <li>Controls live in <code>.suki-controls-slot</code> (bottom on portrait, right on landscape).</li>
+          <li>Stake screens: <code>?dev=true</code> toolbar — check <code>mobile-l</code>, <code>mobile-s</code>, <code>popout-s</code>.</li>
         </ul>
       </aside>
     </main>

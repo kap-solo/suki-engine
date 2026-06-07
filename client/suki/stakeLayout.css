@@ -1,0 +1,276 @@
+/**
+ * Suki Stake layout shell — Mobile L reference, landscape flanks.
+ * Link from index.html: /vendor/suki-engine/client/suki/stakeLayout.css
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* ── Shell grid ─────────────────────────────────────────────── */
+
+.suki-stake-shell {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  display: grid;
+  overflow: hidden;
+  color: #e8edf4;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.suki-screen-frame .suki-stake-shell {
+  min-height: 0;
+}
+
+/* Portrait: logo → replay → L-proportion core → bottom controls */
+.suki-stake-shell {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto auto;
+  grid-template-areas:
+    'brand'
+    'replay'
+    'core'
+    'controls'
+    'footer'
+    'dev';
+}
+
+/* Landscape: logo top-left, character left, L core center, desktop UI right */
+.suki-stake-shell[data-suki-orientation='landscape'] {
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.2fr);
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    'brand brand brand'
+    'flankL core controls'
+    'footer footer footer'
+    'dev dev dev';
+}
+
+.suki-brand {
+  grid-area: brand;
+  z-index: 2;
+  padding: 0.65rem 0.85rem 0.35rem;
+}
+
+.suki-stake-shell[data-suki-orientation='landscape'] .suki-brand {
+  justify-self: start;
+  text-align: left;
+}
+
+.suki-stake-shell[data-suki-orientation='portrait'] .suki-brand {
+  text-align: center;
+}
+
+.suki-brand h1 {
+  margin: 0;
+  font-size: clamp(1.05rem, 4vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.suki-brand .subtitle {
+  margin: 0.25rem 0 0;
+  color: #8b97a8;
+  font-size: 0.82rem;
+}
+
+.suki-replay-banner {
+  grid-area: replay;
+  z-index: 2;
+  margin: 0 0.75rem;
+}
+
+.suki-stake-shell[data-suki-orientation='landscape'] .suki-replay-banner {
+  display: none;
+}
+
+.suki-flank-left {
+  grid-area: flankL;
+  z-index: 2;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  min-width: 0;
+}
+
+.suki-stake-shell[data-suki-orientation='landscape'] .suki-flank-left {
+  display: flex;
+}
+
+.suki-flank-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 14rem;
+  min-height: 6rem;
+  border: 1px dashed #334155;
+  border-radius: 12px;
+  background: rgba(10, 12, 16, 0.55);
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.suki-game-core {
+  grid-area: core;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 0.75rem;
+}
+
+/* Mobile L — full-bleed portrait (design reference) */
+.suki-stake-shell[data-suki-orientation='portrait'][data-suki-portrait-family='mobile-l']
+  .suki-game-core {
+  max-width: var(--suki-ref-w, 425px);
+  height: 100%;
+}
+
+/* Mobile M / S — L-proportion core centered; wider bg fills sides */
+.suki-stake-shell[data-suki-orientation='portrait'][data-suki-portrait-family='mobile-ms']
+  .suki-game-core {
+  width: auto;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  aspect-ratio: 425 / 812;
+  justify-self: center;
+  align-self: center;
+  padding: 0 0.35rem;
+}
+
+/* Landscape — L-proportion core column, full shell height */
+.suki-stake-shell[data-suki-orientation='landscape'] .suki-game-core {
+  width: var(--suki-core-w, auto);
+  max-width: 100%;
+  height: 100%;
+  aspect-ratio: 425 / 812;
+  justify-self: center;
+  align-self: stretch;
+  padding: 0 0.35rem;
+}
+
+.suki-controls-slot {
+  grid-area: controls;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem 0.85rem;
+  min-width: 0;
+}
+
+.suki-stake-shell[data-suki-orientation='landscape'] .suki-controls-slot {
+  justify-content: center;
+  max-width: 22rem;
+  padding: 0.65rem 0.85rem 0.65rem 0.35rem;
+}
+
+.suki-footer {
+  grid-area: footer;
+  z-index: 2;
+  padding: 0 0.75rem 0.65rem;
+  text-align: center;
+}
+
+.suki-dev-aside {
+  grid-area: dev;
+  z-index: 2;
+  margin: 0 0.75rem 0.75rem;
+  max-height: 8rem;
+  overflow: auto;
+}
+
+.suki-stake-shell[data-suki-orientation='landscape'] .suki-dev-aside {
+  max-height: 5rem;
+}
+
+/* Popout S — landscape shell, flanks usually too tight; hide by default */
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-flank-left {
+  display: none;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-controls-slot {
+  max-width: 11rem;
+  padding: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-brand h1 {
+  font-size: 0.9rem;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-brand .subtitle {
+  display: none;
+}
+
+/* ── Backgrounds ────────────────────────────────────────────── */
+
+.suki-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.suki-bg-mobile-l {
+  display: none;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 0%, #1a2740 0%, transparent 58%),
+    linear-gradient(180deg, #0a1018 0%, #06080c 100%);
+}
+
+.suki-bg-mobile-ms {
+  display: none;
+  background:
+    linear-gradient(90deg, #141c28 0%, #0a1018 18%, #0a1018 82%, #141c28 100%),
+    radial-gradient(ellipse 70% 50% at 50% 35%, #1a2740 0%, transparent 65%),
+    #06080c;
+}
+
+.suki-bg-landscape {
+  display: none;
+  background:
+    radial-gradient(ellipse 45% 80% at 12% 50%, #1a2030 0%, transparent 55%),
+    radial-gradient(ellipse 35% 70% at 88% 50%, #142030 0%, transparent 50%),
+    linear-gradient(180deg, #0b1018 0%, #06080c 100%);
+}
+
+.suki-stake-shell[data-suki-orientation='portrait'][data-suki-portrait-family='mobile-l']
+  .suki-bg-mobile-l,
+.suki-stake-shell[data-suki-orientation='portrait']:not([data-suki-portrait-family])
+  .suki-bg-mobile-l {
+  display: block;
+}
+
+.suki-stake-shell[data-suki-orientation='portrait'][data-suki-portrait-family='mobile-ms']
+  .suki-bg-mobile-ms {
+  display: block;
+}
+
+.suki-stake-shell[data-suki-orientation='landscape'] .suki-bg-landscape {
+  display: block;
+}

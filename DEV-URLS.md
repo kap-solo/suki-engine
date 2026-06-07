@@ -74,6 +74,8 @@ Swap host/port for template or Render, e.g.:
 
 https://pure-plinko.onrender.com/?dev=true&screen=popout-s
 
+**Layout QA (template shell):** `mobile-l` (design reference) · `mobile-s` (M/S background + centered core) · `desktop` (landscape flanks) · `popout-s` (tight landscape — customize per game).
+
 ---
 
 ## Stake sandbox (when you have credentials)

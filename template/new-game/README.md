@@ -51,11 +51,17 @@ When publishing outside this monorepo, point Suki at GitHub:
 "@kap-solo/suki-engine": "github:kap-solo/suki-engine#main"
 ```
 
+## Stake layout shell
+
+The template ships with Suki’s **Mobile L-first** layout (see main README). Gameplay goes in `.suki-game-core`; replace the three `.suki-bg-*` layers and the `.suki-flank-left` placeholder. Controls are already wired to sit at the bottom on portrait and on the right in landscape.
+
+Test with `?dev=true` and cycle **mobile-l**, **mobile-s**, **desktop**, and **popout-s**.
+
 ## Project layout
 
 ```
-index.html          — HUD + import map
-css/style.css       — minimal shell
+index.html          — Stake shell + import map + stakeLayout.css
+css/style.css       — game presentation (HUD, stage, controls)
 js/
   config.js         — game constants (rename first)
   game.js           — presentation + createGameBootstrap wiring

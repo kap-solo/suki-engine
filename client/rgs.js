@@ -170,6 +170,15 @@ export {
   createScreenRegistry,
   initStakeScreenPreview,
 } from './suki/screenPreview.js';
+export {
+  STAKE_LAYOUT_REF,
+  STAKE_CORE_ASPECT,
+  PORTRAIT_FAMILY,
+  applyStakeScreenContext,
+  initStakeLayout,
+  resolveOrientation,
+  resolvePortraitFamily,
+} from './suki/stakeLayout.js';
 
 /** @returns {{ game: string, version: string, mode: string, event: string, amountApi: number }} */
 export function getReplayParams() {

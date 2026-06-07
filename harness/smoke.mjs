@@ -18,6 +18,13 @@ import {
 } from '../client/suki/rgsConfig.js';
 import { createGameBootstrap } from '../client/suki/gameBootstrap.js';
 import { STAKE_SCREENS, createScreenRegistry } from '../client/suki/stakeScreens.js';
+import {
+  STAKE_LAYOUT_REF,
+  STAKE_CORE_ASPECT,
+  applyStakeScreenContext,
+  resolveOrientation,
+  resolvePortraitFamily,
+} from '../client/suki/stakeLayout.js';
 import { formatSessionElapsed, createSessionTimer } from '../client/suki/sessionTimer.js';
 import { formatCurrencyAmount, createCurrencyFormatter } from '../client/suki/currency.js';
 import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
@@ -260,6 +267,35 @@ function runScreenPreviewTests() {
   assert(extended.get('tablet-test')?.width === 768, 'extra screen by id');
 }
 
+function runStakeLayoutTests() {
+  console.log('\nUnit — Stake layout shell');
+  assert(STAKE_LAYOUT_REF.width === 425 && STAKE_LAYOUT_REF.height === 812, 'Mobile L layout reference');
+  assert(Math.abs(STAKE_CORE_ASPECT - 425 / 812) < 0.0001, 'core aspect from Mobile L');
+
+  const desktop = STAKE_SCREENS[0];
+  const mobileM = STAKE_SCREENS[5];
+  const mobileL = STAKE_SCREENS[4];
+
+  assert(resolveOrientation(desktop, 1200, 675) === 'landscape', 'desktop is landscape');
+  assert(resolveOrientation(mobileM, 375, 667) === 'portrait', 'mobile M is portrait');
+  assert(resolvePortraitFamily(mobileL, 425, 812) === 'mobile-l', 'mobile L portrait family');
+  assert(resolvePortraitFamily(mobileM, 375, 667) === 'mobile-ms', 'mobile M uses M/S family');
+  assert(resolvePortraitFamily(STAKE_SCREENS[6], 320, 568) === 'mobile-ms', 'mobile S uses M/S family');
+  assert(resolvePortraitFamily(null, 425, 812) === 'mobile-l', 'infer tall portrait ratio');
+  assert(resolvePortraitFamily(null, 375, 667) === 'mobile-ms', 'infer standard portrait ratio');
+  assert(resolvePortraitFamily(desktop, 1200, 675) === '', 'landscape has no portrait family');
+
+  const root = {
+    dataset: {},
+    style: { setProperty() {} },
+    getBoundingClientRect: () => ({ width: 375, height: 667 }),
+  };
+  applyStakeScreenContext(root, { screen: mobileM });
+  assert(root.dataset.sukiOrientation === 'portrait', 'apply portrait orientation');
+  assert(root.dataset.sukiPortraitFamily === 'mobile-ms', 'apply M/S family');
+  assert(root.dataset.sukiScreen === 'mobile-m', 'apply screen id');
+}
+
 function runBetModeTests() {
   console.log('\nUnit — bet modes');
 
@@ -458,6 +494,7 @@ async function main() {
   runRgsConfigTests();
   runBootstrapTests();
   runScreenPreviewTests();
+  runStakeLayoutTests();
   runBetModeTests();
   runCurrencyCopyTests();
   runI18nTests();

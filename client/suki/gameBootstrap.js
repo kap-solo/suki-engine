@@ -14,6 +14,7 @@ import { setPlayerCurrency, getPlayerCurrency } from './playerCurrency.js';
 import { createBetModePolicy } from './betModes.js';
 import { isReplayMode } from './config.js';
 import { initStakeScreenPreview } from './screenPreview.js';
+import { initStakeLayout } from './stakeLayout.js';
 
 /**
  * Single entry point — wires initSuki, production shell, jurisdiction, lifecycle, and RGS bootstrap.
@@ -40,6 +41,8 @@ export function createGameBootstrap(options) {
   initSuki(suki);
   const shellResult = applyProductionShell(shell);
 
+  const layoutRoot = shell.stakeLayout?.root ?? shell.screenPreview?.root ?? null;
+
   const screenPreview =
     showDevTools() && shell.screenPreview?.root
       ? initStakeScreenPreview({
@@ -48,6 +51,13 @@ export function createGameBootstrap(options) {
           onScreenChange: shell.screenPreview.onScreenChange,
         })
       : null;
+
+  const stakeLayout = layoutRoot
+    ? initStakeLayout({
+        root: layoutRoot,
+        getActiveScreen: () => screenPreview?.getScreen() ?? null,
+      })
+    : null;
 
   let rgsReady = false;
   const elements = shell.elements ?? {};
@@ -219,6 +229,7 @@ export function createGameBootstrap(options) {
       return betModePolicy;
     },
     screenPreview,
+    stakeLayout,
     get currency() {
       return currency;
     },

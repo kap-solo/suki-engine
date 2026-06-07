@@ -281,7 +281,7 @@ const game = createGameBootstrap({
       replayNote: replayNoteEl,
       dropButton: playBtn,
     },
-    screenPreview: { root: document.querySelector('.layout') },
+    screenPreview: { root: document.querySelector('.suki-stake-shell') },
   },
   lifecycle: {
     handlers: {

@@ -74,6 +74,7 @@ CI on `main` runs full `npm run check` (smoke + ERR + compliance report + templa
 ## Tier 2 APIs
 
 - `createGameBootstrap(options)` — initSuki + production shell + jurisdiction + lifecycle + RGS start
+- `initStakeLayout()` / `stakeLayout.css` — Mobile L-first shell; orientation + portrait-family context on `main.suki-stake-shell`
 - `STAKE_SCREENS` / `createScreenRegistry()` / `initStakeScreenPreview()` — dev toolbar for Stake Engine iframe sizes (`?dev=true`)
 - `createSessionTimer({ element, container, controls })` — elapsed session clock when `displaySessionTimer` is true
 - `createCurrencyFormatter({ currency, language })` — Intl + social codes (XGC → GC, XSC → SC); set from auth via `game.formatCurrency()`
@@ -147,6 +148,27 @@ applyProductionShell({
 
 Mark dev-only nodes with `data-suki-dev` in HTML. Use `?dev=true` locally for compliance footer and test buttons.
 
+## Stake layout shell (template default)
+
+New games copy a **Mobile L-first** shell: gameplay lives in `.suki-game-core` (425×812 reference), controls in `.suki-controls-slot` (bottom on portrait, right on landscape), character slot in `.suki-flank-left`.
+
+| Portrait family | Screens | Background |
+|-----------------|---------|------------|
+| **mobile-l** | Mobile L | `.suki-bg-mobile-l` (full-bleed tall) |
+| **mobile-ms** | Mobile M, Mobile S | `.suki-bg-mobile-ms` (wider; L-proportion core centered) |
+| **landscape** | Desktop, laptop, popouts | `.suki-bg-landscape` + flanks |
+
+`createGameBootstrap` calls `initStakeLayout` automatically when `shell.screenPreview.root` (or `shell.stakeLayout.root`) points at `main.suki-stake-shell`. The root gets `data-suki-orientation`, `data-suki-portrait-family`, and CSS vars (`--suki-vw`, `--suki-core-w`, etc.).
+
+**index.html** must include:
+
+```html
+<link rel="stylesheet" href="/vendor/suki-engine/client/suki/stakeLayout.css" />
+<main class="suki-stake-shell">…</main>
+```
+
+Popout S uses the landscape shell but hides the character flank by default — tune per game.
+
 ## Stake screen preview (dev)
 
 In `?dev=true`, wire the official Stake Engine iframe sizes via `createGameBootstrap`:
@@ -154,7 +176,7 @@ In `?dev=true`, wire the official Stake Engine iframe sizes via `createGameBoots
 ```js
 const game = createGameBootstrap({
   shell: {
-    screenPreview: { root: document.querySelector('.layout') },
+    screenPreview: { root: document.querySelector('.suki-stake-shell') },
     // optional: extraScreens: [{ id: 'custom', label: 'My tablet', width: 768, height: 1024 }],
   },
   // ...
