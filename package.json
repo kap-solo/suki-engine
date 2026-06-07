@@ -16,7 +16,8 @@
   "scripts": {
     "test:smoke": "node harness/smoke.mjs",
     "validate-math": "node tools/validate-math.mjs",
-    "check": "node harness/compliance-checklist.mjs"
+    "check": "node harness/compliance-checklist.mjs",
+    "test:sandbox": "node harness/sandbox-smoke.mjs"
   },
   "engines": {
     "node": ">=20"

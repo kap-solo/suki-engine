@@ -33,6 +33,12 @@ console.log('Suki compliance checklist');
 
 run('Smoke tests', [join(root, 'harness/smoke.mjs')]);
 
+if (process.env.SUKI_RGS_URL && process.env.SUKI_SESSION_ID && process.env.SUKI_GAME_ID) {
+  run('Stake RGS sandbox', [join(root, 'harness/sandbox-smoke.mjs')]);
+} else {
+  console.log('\n(skip sandbox — set SUKI_RGS_URL, SUKI_SESSION_ID, SUKI_GAME_ID for live RGS)');
+}
+
 if (mathDir) {
   run('Math validation', [join(root, 'tools/validate-math.mjs'), mathDir]);
 } else {

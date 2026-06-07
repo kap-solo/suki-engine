@@ -10,6 +10,12 @@
 import { createMockRgs } from '../server/mock-rgs/create-mock-rgs.mjs';
 import { classifyRgsError } from '../client/suki/errors.js';
 import { withRgsCall } from '../client/suki/rgsTransport.js';
+import {
+  buildRgsConfig,
+  normalizeRgsBase,
+  validateRgsConfig,
+  isLocalRgsUrl,
+} from '../client/suki/rgsConfig.js';
 
 const API = 1_000_000;
 const SAMPLE_STATE = [
@@ -167,6 +173,35 @@ async function runIntegrationTests(baseUrl) {
   assert(!replay.error, 'book replay GET');
 }
 
+function runRgsConfigTests() {
+  console.log('\nUnit — RGS config');
+  assert(normalizeRgsBase('rgs.stake-engine.com') === 'https://rgs.stake-engine.com', 'host-only rgs_url');
+  assert(normalizeRgsBase('https://rgs.example.com/') === 'https://rgs.example.com', 'trim trailing slash');
+  assert(isLocalRgsUrl('http://127.0.0.1:5174'), 'detect local RGS');
+  assert(!isLocalRgsUrl('https://rgs.stake-engine.com'), 'remote RGS not local');
+
+  const prodCfg = buildRgsConfig({
+    gameId: 'pure-plinko',
+    origin: 'http://127.0.0.1:5174',
+    searchParams: new URLSearchParams('rgs_url=rgs.stake-engine.com&sessionID=abc'),
+  });
+  const prodVal = validateRgsConfig(prodCfg, 'production');
+  assert(prodVal.ok, 'production valid with rgs_url + sessionID');
+
+  const badProd = validateRgsConfig(
+    buildRgsConfig({
+      gameId: 'pure-plinko',
+      origin: 'http://127.0.0.1:5174',
+      searchParams: new URLSearchParams(''),
+    }),
+    'production',
+  );
+  assert(!badProd.ok, 'production rejects missing rgs_url');
+
+  const sandboxVal = validateRgsConfig(prodCfg, 'sandbox');
+  assert(sandboxVal.ok, 'sandbox accepts remote RGS');
+}
+
 async function runPolicyTests() {
   console.log('\nUnit — error policy & transport');
   assert(classifyRgsError('ERR_UE').retryable, 'ERR_UE is retryable');
@@ -185,6 +220,7 @@ async function runPolicyTests() {
 async function main() {
   console.log('Suki Engine — compliance smoke');
   runUnitTests();
+  runRgsConfigTests();
   await runPolicyTests();
 
   const url = process.env.SUKI_SMOKE_URL;

@@ -5,9 +5,10 @@ import {
   getSessionStorageKey,
   isReplayMode as isReplayModeConfig,
   getMockFlags,
-  isDevMode,
 } from './suki/config.js';
 import { messageForRgsCode } from './suki/errors.js';
+import { buildRgsConfig, describeRgsMode } from './suki/rgsConfig.js';
+import { getEnvironment } from './suki/environment.js';
 
 export { initSuki, getSukiConfig, getDevComplianceLabel, getJurisdictionProfileName } from './suki/config.js';
 export { messageForRgsCode, classifyRgsError, applyRgsError, isSessionFatal } from './suki/errors.js';
@@ -16,10 +17,19 @@ export {
   isProduction,
   isDevelopment,
   isReplayEnvironment,
+  isSandboxEnvironment,
   showDevTools,
+  showComplianceFooter,
   shouldReportBetEvents,
 } from './suki/environment.js';
-export { isDevMode } from './suki/config.js';
+export {
+  buildRgsConfig,
+  normalizeRgsBase,
+  validateRgsConfig,
+  isLocalRgsUrl,
+  describeRgsMode,
+} from './suki/rgsConfig.js';
+export { isDevMode, isSandboxMode } from './suki/config.js';
 export { isReplayMode } from './suki/config.js';
 export { API_AMOUNT_MULTIPLIER } from './money.js';
 
@@ -45,18 +55,29 @@ export function startNewRgsSession() {
   return sessionID;
 }
 
-/** @returns {{ rgsUrl: string, sessionID: string, language: string, gameID: string }} */
+/** @returns {ReturnType<typeof buildRgsConfig>} */
 export function getRgsParams() {
-  const params = new URLSearchParams(window.location.search);
-  const rgsUrl = (params.get('rgs_url') || window.location.origin).replace(/\/$/, '');
-  const sessionID = getSessionID();
-  const language = params.get('lang') || 'en';
-  const gameID = params.get('gameID') || getGameId();
-  return { rgsUrl, sessionID, language, gameID };
+  return buildRgsConfig({
+    gameId: getGameId(),
+    storedSessionID: getSessionID(),
+    origin: window.location.origin,
+    searchParams: new URLSearchParams(window.location.search),
+  });
+}
+
+/** Connection summary for dev/sandbox compliance footer. */
+export function getRgsConnectionInfo() {
+  const config = getRgsParams();
+  return {
+    ...config,
+    environment: getEnvironment(),
+    modeLabel: describeRgsMode(getEnvironment()),
+  };
 }
 
 async function rgsPost(path, body) {
   const { rgsUrl } = getRgsParams();
+  // Stake host-only rgs_url is normalized to https:// in buildRgsConfig
   const response = await fetch(`${rgsUrl}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

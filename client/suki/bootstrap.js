@@ -1,8 +1,10 @@
-import { authenticate, fetchBalance, isReplayMode } from '../rgs.js';
+import { authenticate, fetchBalance, getRgsParams, isReplayMode } from '../rgs.js';
 import { messageForRgsCode, isSessionFatal } from './errors.js';
 import { getDevComplianceLabel } from './config.js';
 import { rgsOfflineMessage } from './productionUi.js';
 import { withRgsCall } from './rgsTransport.js';
+import { validateRgsConfig } from './rgsConfig.js';
+import { getEnvironment } from './environment.js';
 
 export { getDevComplianceLabel };
 
@@ -20,6 +22,14 @@ export async function bootstrapPlayMode(ctx) {
   setMessage('Connecting to RGS…');
 
   try {
+    const environment = getEnvironment();
+    const validation = validateRgsConfig(getRgsParams(), environment);
+    if (!validation.ok) {
+      setRgsReady(false);
+      setMessage(validation.issues.join(' · '));
+      return;
+    }
+
     const data = await withRgsCall(() => authenticate());
     applyAuthConfig(data);
     setRgsReady(true);

@@ -40,6 +40,11 @@ export function isDevMode() {
   return new URLSearchParams(window.location.search).get('dev') === 'true';
 }
 
+/** Stake RGS sandbox — real remote RGS with ?sandbox=true (not local mock). */
+export function isSandboxMode() {
+  return new URLSearchParams(window.location.search).get('sandbox') === 'true';
+}
+
 export function isReplayMode() {
   return new URLSearchParams(window.location.search).get('replay') === 'true';
 }
@@ -62,7 +67,10 @@ export function getJurisdictionProfileName() {
 
 export function getDevComplianceLabel() {
   const mock = getMockFlags();
-  const parts = [`jurisdiction: ${getJurisdictionProfileName()}`];
+  const parts = [];
+  if (isSandboxMode()) parts.push('sandbox RGS');
+  else if (isDevMode()) parts.push('dev mock RGS');
+  parts.push(`jurisdiction: ${getJurisdictionProfileName()}`);
   if (mock?.err_is) parts.push('mock ERR_IS');
   return parts.join(' · ');
 }

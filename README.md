@@ -90,6 +90,38 @@ applyProductionShell({
 
 Mark dev-only nodes with `data-suki-dev` in HTML. Use `?dev=true` locally for compliance footer and test buttons.
 
+## Stake RGS sandbox mode
+
+Test against **real Stake RGS** (not local mock) with `?sandbox=true` and iframe params:
+
+```
+https://your-game.example/?sandbox=true&rgs_url=rgs.stake-engine.com&sessionID=<from-stake>&lang=en
+```
+
+| Mode | URL | RGS target |
+|------|-----|------------|
+| development | `?dev=true` | local mock (same origin) |
+| sandbox | `?sandbox=true` + `rgs_url` + `sessionID` | remote Stake RGS |
+| production | Stake iframe params only | remote Stake RGS (no dev UI) |
+
+`rgs_url` is **host-only** (Stake convention) — Suki normalizes to `https://`.
+
+### CLI sandbox smoke
+
+```bash
+# Dry-run: authenticate + balance only
+SUKI_RGS_URL=rgs.stake-engine.com \
+SUKI_SESSION_ID=your-session-id \
+SUKI_GAME_ID=pure-plinko \
+SUKI_RGS_DRY_RUN=1 \
+npm run test:sandbox
+
+# Full wallet flow (places a real bet on sandbox!)
+npm run test:sandbox
+```
+
+Included in `npm run check` when sandbox env vars are set.
+
 ## Compliance checklist
 
 ```bash

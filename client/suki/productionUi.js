@@ -1,4 +1,4 @@
-import { isProduction, isReplayEnvironment } from './environment.js';
+import { isProduction, isReplayEnvironment, isSandboxEnvironment } from './environment.js';
 
 /**
  * Hide dev-only UI in production and replay. Call once at game startup.
@@ -10,14 +10,15 @@ import { isProduction, isReplayEnvironment } from './environment.js';
  */
 export function applyProductionShell(options = {}) {
   const { elements = {}, extra = [], hidePrinciples = true } = options;
-  const strip = isProduction() || isReplayEnvironment();
+  const env = isReplayEnvironment() ? 'replay' : isSandboxEnvironment() ? 'sandbox' : isProduction() ? 'production' : 'development';
+  const stripTestControls = isProduction() || isReplayEnvironment() || isSandboxEnvironment();
+  const stripComplianceDev = isProduction() || isReplayEnvironment();
 
-  if (!strip) {
-    return { stripped: false, environment: isReplayEnvironment() ? 'replay' : 'development' };
+  if (!stripTestControls && !stripComplianceDev) {
+    return { stripped: false, environment: env };
   }
 
-  const nodes = [
-    elements.complianceDev,
+  const testNodes = [
     elements.testControls,
     elements.copyReplay,
     elements.newSession,
@@ -26,24 +27,26 @@ export function applyProductionShell(options = {}) {
     ...extra,
   ];
 
-  if (hidePrinciples && elements.devAside) {
-    nodes.push(elements.devAside);
+  if (stripTestControls) {
+    for (const el of testNodes) {
+      if (el) el.hidden = true;
+    }
+    document.querySelectorAll('[data-suki-dev]').forEach((el) => {
+      if (el.id !== 'compliance-dev') el.hidden = true;
+    });
   }
 
-  for (const el of nodes) {
-    if (el) el.hidden = true;
+  if (stripComplianceDev && elements.complianceDev) {
+    elements.complianceDev.hidden = true;
   }
 
-  document.querySelectorAll('[data-suki-dev]').forEach((el) => {
-    el.hidden = true;
-  });
-
-  return { stripped: true, environment: isReplayEnvironment() ? 'replay' : 'production' };
+  return { stripped: true, environment: env };
 }
 
 /** Player-facing message when RGS is unreachable. */
 export function rgsOfflineMessage() {
-  return isProduction()
-    ? 'Game temporarily unavailable — try again shortly.'
-    : 'RGS unavailable — run: node server.mjs';
+  if (isProduction() || isSandboxEnvironment()) {
+    return 'Game temporarily unavailable — try again shortly.';
+  }
+  return 'RGS unavailable — run: node server.mjs';
 }
