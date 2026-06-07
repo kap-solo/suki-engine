@@ -14,6 +14,7 @@ export const JURISDICTION_PROFILES = {
     disabledSlamstop: true,
     displayNetPosition: false,
     displayRTP: false,
+    displaySessionTimer: true,
     minimumRoundDuration: 2500,
   },
 };

@@ -67,3 +67,4 @@ export function attachBalanceRefresh(ctx) {
 }
 
 export { createGameBootstrap } from './gameBootstrap.js';
+export { createSessionTimer, formatSessionElapsed } from './sessionTimer.js';

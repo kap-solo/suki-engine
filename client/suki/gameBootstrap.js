@@ -7,6 +7,7 @@ import { createSukiLifecycle } from './lifecycle.js';
 import { showDevTools, showComplianceFooter } from './environment.js';
 import { getRgsConnectionInfo, isReplayMode } from '../rgs.js';
 import { bootstrapPlayMode, attachBalanceRefresh } from './bootstrap.js';
+import { createSessionTimer } from './sessionTimer.js';
 
 /**
  * Single entry point — wires initSuki, production shell, jurisdiction, lifecycle, and RGS bootstrap.
@@ -53,6 +54,7 @@ export function createGameBootstrap(options) {
       controls.setVisible(elements.autoplay, controls.canAutoplay);
     }
     auth.onConfigured?.(parsed, data);
+    sessionTimer?.sync();
   }
 
   function syncDevTools() {
@@ -71,6 +73,7 @@ export function createGameBootstrap(options) {
         elements.complianceDev.textContent = `${conn.modeLabel} · ${conn.rgsUrl} · ${getDevComplianceLabel()}`;
       }
     }
+    sessionTimer?.sync();
     ui.onSyncDevTools?.();
   }
 
@@ -118,6 +121,7 @@ export function createGameBootstrap(options) {
       return rgsReady;
     },
     setRgsReady,
+    sessionTimer,
     start,
   };
 }

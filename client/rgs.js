@@ -141,7 +141,13 @@ export { parseAuthResponse } from './suki/authConfig.js';
 export { createControlPolicy } from './suki/controlPolicy.js';
 export { applyProductionShell, rgsOfflineMessage } from './suki/productionUi.js';
 export { withRgsCall } from './suki/rgsTransport.js';
-export { bootstrapPlayMode, attachBalanceRefresh, createGameBootstrap } from './suki/bootstrap.js';
+export {
+  bootstrapPlayMode,
+  attachBalanceRefresh,
+  createGameBootstrap,
+  createSessionTimer,
+  formatSessionElapsed,
+} from './suki/bootstrap.js';
 
 /** @returns {{ game: string, version: string, mode: string, event: string, amountApi: number }} */
 export function getReplayParams() {

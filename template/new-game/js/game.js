@@ -18,6 +18,8 @@ const game = createGameBootstrap({
       complianceDev: document.getElementById('compliance-dev'),
       testControls: document.querySelector('[data-suki-dev]'),
       autoplay: autoplayBtn,
+      // sessionTimer: document.getElementById('session-timer'),
+      // sessionTimerContainer: document.getElementById('session-timer-stat'),
     },
   },
   lifecycle: {

@@ -17,6 +17,7 @@ import {
   isLocalRgsUrl,
 } from '../client/suki/rgsConfig.js';
 import { createGameBootstrap } from '../client/suki/gameBootstrap.js';
+import { formatSessionElapsed, createSessionTimer } from '../client/suki/sessionTimer.js';
 
 const API = 1_000_000;
 const SAMPLE_STATE = [
@@ -133,6 +134,7 @@ function runUnitTests() {
     _mock: { jurisdiction: 'strict' },
   });
   assert(strict.config?.jurisdiction?.disabledAutoplay === true, 'strict jurisdiction mock');
+  assert(strict.config?.jurisdiction?.displaySessionTimer === true, 'strict session timer');
 }
 
 async function post(baseUrl, path, body) {
@@ -208,6 +210,36 @@ function runBootstrapTests() {
   assert(typeof createGameBootstrap === 'function', 'createGameBootstrap exported');
 }
 
+function runSessionTimerTests() {
+  console.log('\nUnit — session timer');
+  assert(formatSessionElapsed(0) === '00:00', 'zero elapsed');
+  assert(formatSessionElapsed(65_000) === '01:05', 'minutes and seconds');
+  assert(formatSessionElapsed(3_661_000) === '1:01:01', 'hours included');
+
+  const el = { hidden: true, textContent: '' };
+  const wrap = { hidden: true };
+  let visible = false;
+  const timer = createSessionTimer({
+    element: el,
+    container: wrap,
+    getVisible: () => visible,
+    tickMs: 60_000,
+  });
+
+  timer.sync();
+  assert(el.hidden && wrap.hidden, 'hidden when jurisdiction off');
+
+  visible = true;
+  timer.sync();
+  assert(!el.hidden && !wrap.hidden, 'visible when jurisdiction on');
+  assert(el.textContent === '00:00', 'initial display');
+
+  timer.reset();
+  assert(timer.getElapsedMs() < 2000, 'reset restarts elapsed');
+
+  timer.destroy();
+}
+
 async function runPolicyTests() {
   console.log('\nUnit — error policy & transport');
   assert(classifyRgsError('ERR_UE').retryable, 'ERR_UE is retryable');
@@ -228,6 +260,7 @@ async function main() {
   runUnitTests();
   runRgsConfigTests();
   runBootstrapTests();
+  runSessionTimerTests();
   await runPolicyTests();
 
   const url = process.env.SUKI_SMOKE_URL;

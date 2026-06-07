@@ -23,6 +23,7 @@ client/
     lifecycle.js    — play → book events → end-round
     authConfig.js   — parseAuthResponse() from authenticate
     controlPolicy.js — jurisdiction → UI gating helpers
+    sessionTimer.js  — createSessionTimer() for displaySessionTimer
 
 tools/
   validate-math.mjs — validate books + lookup bundle
@@ -71,6 +72,7 @@ template/new-game/  — copy to start a new title
 ## Tier 2 APIs
 
 - `createGameBootstrap(options)` — initSuki + production shell + jurisdiction + lifecycle + RGS start
+- `createSessionTimer({ element, container, controls })` — elapsed session clock when `displaySessionTimer` is true
 - `reportBetAction(action, meta)` — `POST /bet/action` for in-round player picks
 - `parseAuthResponse(data)` — bet levels, currency, jurisdiction from authenticate
 - `createControlPolicy(jurisdiction)` — `canTurbo`, `canAutoplay`, `showRtp`, etc.
