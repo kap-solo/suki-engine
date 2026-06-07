@@ -11,6 +11,7 @@ export const JURISDICTION_MOCK = {
     disabledAutoplay: true,
     disabledSpacebar: true,
     disabledSlamstop: true,
+    disabledBuyFeature: true,
     displayNetPosition: false,
     displayRTP: false,
     displaySessionTimer: true,

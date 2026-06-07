@@ -142,6 +142,50 @@ h1 {
   gap: 0.65rem;
 }
 
+.mode-row {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid #2a3344;
+  border-radius: 8px;
+  background: #12161e;
+  color: #8b97a8;
+  cursor: pointer;
+}
+
+.mode-btn.active {
+  border-color: #38bdf8;
+  background: #0f2a3d;
+  color: #7dd3fc;
+}
+
+.mode-btn.buy.active {
+  border-color: #fbbf24;
+  background: #2a1f08;
+  color: #fde68a;
+}
+
+.mode-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.mode-cost {
+  margin: 0;
+  text-align: center;
+  font-size: 0.78rem;
+  color: #8b97a8;
+}
+
 .bet-row {
   display: flex;
   gap: 0.5rem;

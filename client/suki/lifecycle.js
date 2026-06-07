@@ -41,6 +41,14 @@ export function createSukiLifecycle(deps) {
 
   const bookPlayer = createBookPlayer({ handlers });
 
+  function syncBaseBetFromRound(round) {
+    const policy = getBetModePolicy?.();
+    const baseBetApi = policy
+      ? policy.baseBetApiFromPlayAmount(round.amount, round.mode)
+      : round.amount;
+    setBetFromApi(baseBetApi);
+  }
+
   async function waitMinRoundDuration(roundStartMs) {
     const minMs = jurisdiction.minRoundDurationMs;
     const elapsed = Date.now() - roundStartMs;
@@ -54,7 +62,7 @@ export function createSukiLifecycle(deps) {
    * @param {{ animate?: boolean, recordSession?: boolean, lastEvent?: string | null, meta?: object }} [options]
    */
   async function completeRound(round, { animate = true, recordSession = true, lastEvent = null, meta = {} } = {}) {
-    setBetFromApi(round.amount);
+    syncBaseBetFromRound(round);
 
     const events = sortBookEvents(round.state);
     const lastEventIndex =
@@ -127,7 +135,7 @@ export function createSukiLifecycle(deps) {
 
   function showCompletedRound(round) {
     if (!round?.state?.length) return false;
-    setBetFromApi(round.amount);
+    syncBaseBetFromRound(round);
     onStaticRound?.(round);
     return buildSettledResult(round);
   }

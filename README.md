@@ -2,6 +2,8 @@
 
 Minimal, Stake-shaped game shell for custom browser games.
 
+**Local URLs, Render links, and Stake screen sizes:** see [DEV-URLS.md](./DEV-URLS.md).
+
 **RGS lifecycle · replay · jurisdiction · mock server**
 
 Games built on Suki handle presentation and math; the engine handles wallet flow, compliance flags, and prototype RGS routes.
@@ -72,6 +74,7 @@ CI on `main` runs full `npm run check` (smoke + ERR + compliance report + templa
 ## Tier 2 APIs
 
 - `createGameBootstrap(options)` — initSuki + production shell + jurisdiction + lifecycle + RGS start
+- `STAKE_SCREENS` / `createScreenRegistry()` / `initStakeScreenPreview()` — dev toolbar for Stake Engine iframe sizes (`?dev=true`)
 - `createSessionTimer({ element, container, controls })` — elapsed session clock when `displaySessionTimer` is true
 - `createCurrencyFormatter({ currency, language })` — Intl + social codes (XGC → GC, XSC → SC); set from auth via `game.formatCurrency()`
 - `getPlayerCurrency()` / `setPlayerCurrency()` — URL `?currency=` before auth, `balance.currency` after authenticate; `play()` uses automatically
@@ -143,6 +146,34 @@ applyProductionShell({
 ```
 
 Mark dev-only nodes with `data-suki-dev` in HTML. Use `?dev=true` locally for compliance footer and test buttons.
+
+## Stake screen preview (dev)
+
+In `?dev=true`, wire the official Stake Engine iframe sizes via `createGameBootstrap`:
+
+```js
+const game = createGameBootstrap({
+  shell: {
+    screenPreview: { root: document.querySelector('.layout') },
+    // optional: extraScreens: [{ id: 'custom', label: 'My tablet', width: 768, height: 1024 }],
+  },
+  // ...
+});
+```
+
+Default screens (also `?screen=desktop` etc.):
+
+| ID | Label | Size |
+|----|-------|------|
+| `desktop` | Desktop | 1200 × 675 |
+| `laptop` | Laptop | 1024 × 576 |
+| `popout-l` | Popout L | 800 × 450 |
+| `popout-s` | Popout S | 400 × 225 |
+| `mobile-l` | Mobile L | 1275 × 2436 |
+| `mobile-m` | Mobile M | 1125 × 2001 |
+| `mobile-s` | Mobile S | 960 × 1704 |
+
+Add more with `extraScreens` or `createScreenRegistry([...])`. Toolbar is hidden in production and hosted demo.
 
 ## Stake RGS sandbox mode
 
@@ -220,11 +251,17 @@ Local development uses a sibling folder:
 "@kap-solo/suki-engine": "file:../Suki-Engine"
 ```
 
-Games depend on Suki via GitHub (Render / CI):
+Games depend on Suki via GitHub (Render / CI). **Pin to a commit hash** so deploys do not drift when `main` moves:
 
 ```json
-"@kap-solo/suki-engine": "github:kap-solo/suki-engine#main"
+"@kap-solo/suki-engine": "github:kap-solo/suki-engine#dbc79c8"
 ```
+
+Bump deliberately after engine changes: edit the hash in `package.json`, run `npm install`, commit `package.json` + `package-lock.json`, and smoke-test the game.
+
+**Render / CI:** lockfile `resolved` must use `git+https://github.com/...`, not `git+ssh://` (no SSH keys on the host). `render.yaml` rewrites SSH→HTTPS before `npm ci`.
+
+Use `#main` only for active engine development (not production deploys).
 
 **Local engine development** — link the sibling folder instead of re-installing from GitHub:
 

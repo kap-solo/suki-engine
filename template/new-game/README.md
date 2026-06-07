@@ -1,6 +1,8 @@
 # My Game — Suki Engine starter
 
-Copy this folder to start a new Stake-shaped browser game. Outcomes come from the mock RGS; your client only presents `round.state` book events.
+Copy this folder to start a new Stake-shaped browser game.
+
+**URL cheat sheet:** [../../DEV-URLS.md](../../DEV-URLS.md) Outcomes come from the mock RGS; your client only presents `round.state` book events.
 
 ## Quick start
 
@@ -13,18 +15,34 @@ Open http://127.0.0.1:5174/?dev=true
 
 | URL flag | Purpose |
 |----------|---------|
-| `?dev=true` | Mock RGS, compliance footer, test buttons |
+| `?dev=true` | Mock RGS, compliance footer, test buttons, Stake screen toolbar |
+| `?dev=true&screen=popout-s` | Start in Popout S (400 × 225) |
 | `?dev=true&jurisdiction=strict` | Session timer + disabled turbo/autoplay |
 | `?dev=true&social=true` | Social casino copy (coins / play) |
 | `?dev=true&lang=de` | German UI strings |
 | `?replay=true&event=…` | Replay a completed round |
 
+## Bet modes (buy feature scaffold)
+
+The template ships **base** + **buy bonus** (100× base bet) wired through Suki:
+
+| File | Role |
+|------|------|
+| `data/index.json` | Math modes (`base`, `bonus`) + book/weight paths |
+| `js/config.js` | `GAME_MODES` — keep in sync with `index.json` |
+| `server/game-rgs.mjs` | `betModes` on authenticate + mode-aware `resolvePlay` |
+| `js/game.js` | Mode selector UI → `game.betModes.setActiveMode()` |
+
+After auth, `lifecycle.executeDrop()` debits `baseBet × costMultiplier` and sends the correct RGS `mode`.
+
+Preview buy gating: `?dev=true&jurisdiction=strict` (disables buy when `disabledBuyFeature` is on).
+
 ## Rename checklist (game #2 in ~10 min)
 
-1. **`js/config.js`** — `GAME.id`, `GAME.title`, RTP label
-2. **`server/game-rgs.mjs`** — `GAME_ID`, `REPLAY_VERSION` (must match config)
+1. **`js/config.js`** — `GAME.id`, `GAME.title`, RTP label, `GAME_MODES`
+2. **`server/game-rgs.mjs`** — `GAME_ID`, `REPLAY_VERSION`, `betModes`, mode packs
 3. **`js/game.js`** — `sessionStorageKey`, book event handlers (`gameReveal` → your types)
-4. **`data/`** — `index.json`, lookup CSV, books JSONL
+4. **`data/`** — `index.json`, lookup CSV, books JSONL per mode
 5. **`package.json`** — `name` field
 
 When publishing outside this monorepo, point Suki at GitHub:

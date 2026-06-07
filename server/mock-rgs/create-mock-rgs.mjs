@@ -14,6 +14,7 @@ import { injectMockError } from './inject-error.mjs';
  * @property {(event: string, amountQuery: string | null, ctx: { replayStore: Map<string, object> }) => object | null} resolveReplay
  * @property {(session: object, body: object) => object | { error: { code: string, message: string } }} [resolveAction]
  * @property {object} [betConfig] — min/max/step bet levels for authenticate
+ * @property {object} [jurisdictionDefaults] — merged over DEFAULT_JURISDICTION on authenticate
  */
 
 /**
@@ -26,6 +27,7 @@ export function createMockRgs(config) {
     resolvePlay,
     resolveReplay,
     resolveAction = null,
+    jurisdictionDefaults = {},
     betConfig = {
       minBet: 1 * API_MULT,
       maxBet: 1000 * API_MULT,
@@ -100,7 +102,7 @@ export function createMockRgs(config) {
         session.currency = String(body._mock.currency);
       }
 
-      const jurisdiction = { ...DEFAULT_JURISDICTION };
+      const jurisdiction = { ...DEFAULT_JURISDICTION, ...jurisdictionDefaults };
       const mockProfile = body?._mock?.jurisdiction;
       if (mockProfile && JURISDICTION_MOCK[mockProfile]) {
         Object.assign(jurisdiction, JURISDICTION_MOCK[mockProfile]);

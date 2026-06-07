@@ -165,6 +165,11 @@ export {
   toRgsMode,
   parseGameModesFromIndex,
 } from './suki/betModes.js';
+export {
+  STAKE_SCREENS,
+  createScreenRegistry,
+  initStakeScreenPreview,
+} from './suki/screenPreview.js';
 
 /** @returns {{ game: string, version: string, mode: string, event: string, amountApi: number }} */
 export function getReplayParams() {

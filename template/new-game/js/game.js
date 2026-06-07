@@ -16,7 +16,7 @@ import {
   requestReplay,
   startNewRgsSession,
 } from '@kap-solo/suki-engine/client/rgs.js';
-import { BET_OPTIONS, DEFAULT_BET, GAME } from './config.js';
+import { BET_OPTIONS, DEFAULT_BET, GAME, GAME_MODES } from './config.js';
 import { buildGameSettledResult, parseGameReveal } from './round.js';
 
 const balanceEl = document.getElementById('balance');
@@ -36,6 +36,8 @@ const statsEl = document.getElementById('stats');
 const complianceDevEl = document.getElementById('compliance-dev');
 const sessionTimerStat = document.getElementById('session-timer-stat');
 const sessionTimerEl = document.getElementById('session-timer');
+const modeRow = document.getElementById('mode-row');
+const modeCostEl = document.getElementById('mode-cost');
 const betChips = document.getElementById('bet-chips');
 const outcomeCard = document.getElementById('outcome-card');
 const outcomeSymbol = document.getElementById('outcome-symbol');
@@ -96,11 +98,74 @@ async function animateReveal(event) {
   showOutcome(event, { animate: true });
 }
 
+function playCostDisplay() {
+  const baseApi = displayToApi(bet);
+  const playApi = game.betModes.playAmountApi(baseApi);
+  return apiToDisplay(playApi);
+}
+
+function modeButtonLabel(mode) {
+  if (mode.key === 'base') return 'Base';
+  if (mode.type === 'buy') return `Buy bonus ×${mode.costMultiplier}`;
+  if (mode.type === 'activate') return `Ante ×${mode.costMultiplier}`;
+  return mode.key;
+}
+
+function playButtonLabel() {
+  if (game.betModes.isBuyMode()) return 'Buy & play';
+  return copyTerm('drop');
+}
+
+function renderModeSelector() {
+  modeRow.innerHTML = '';
+  const modes = game.betModes.modes;
+  if (modes.length <= 1) {
+    modeRow.hidden = true;
+    modeCostEl.hidden = true;
+    return;
+  }
+
+  modeRow.hidden = false;
+  for (const mode of modes) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.dataset.mode = mode.key;
+    btn.className = `mode-btn${mode.key === game.betModes.activeKey ? ' active' : ''}${mode.type === 'buy' ? ' buy' : ''}`;
+    btn.textContent = modeButtonLabel(mode);
+    if (mode.type === 'buy' && !game.controls.canBuyFeature) {
+      btn.title = 'Buy feature disabled for this jurisdiction';
+    }
+    btn.addEventListener('click', () => selectMode(mode.key));
+    modeRow.appendChild(btn);
+  }
+  syncModeCostHint();
+}
+
+function selectMode(key) {
+  if (playing || autoplaying) return;
+  if (!game.betModes.setActiveMode(key)) return;
+  renderModeSelector();
+  syncHud();
+  syncControls();
+}
+
+function syncModeCostHint() {
+  const active = game.betModes.getActiveMode();
+  if (!active || active.costMultiplier <= 1) {
+    modeCostEl.hidden = true;
+    return;
+  }
+  modeCostEl.hidden = false;
+  modeCostEl.textContent = `Play cost ${fmt(playCostDisplay())} — base ${fmt(bet)} × ${active.costMultiplier}`;
+}
+
 function syncHud() {
   balanceEl.textContent = replayMode ? '—' : fmt(balance);
   betEl.textContent = fmt(bet);
   const rtpPart = game.controls.showRtp ? ` · target RTP ${GAME.targetRtpPercent}%` : '';
-  statsEl.textContent = `Starter math · 3 outcomes · Stake-shaped lifecycle${rtpPart}`;
+  const modePart = game.betModes.modes.length > 1 ? ' · base + buy bonus' : '';
+  statsEl.textContent = `Starter math · 3 outcomes · Stake-shaped lifecycle${modePart}${rtpPart}`;
+  syncModeCostHint();
 }
 
 function displayRoundResult({ symbol, multiplier, payout, profit }) {
@@ -150,8 +215,14 @@ function syncControls() {
     chip.disabled = busy;
   }
 
+  for (const btn of modeRow.querySelectorAll('button')) {
+    const key = btn.dataset.mode;
+    btn.disabled = busy || !game.betModes.canSelectMode(key);
+    btn.classList.toggle('active', key === game.betModes.activeKey);
+  }
+
   if (autoplaying || !game.rgsReady) {
-    playBtn.textContent = copyTerm('drop');
+    playBtn.textContent = playButtonLabel();
     playBtn.classList.remove('fast');
     playBtn.disabled = true;
     return;
@@ -163,14 +234,14 @@ function syncControls() {
       playBtn.classList.add('fast');
       playBtn.disabled = false;
     } else {
-      playBtn.textContent = copyTerm('drop');
+      playBtn.textContent = playButtonLabel();
       playBtn.classList.remove('fast');
       playBtn.disabled = true;
     }
     return;
   }
 
-  playBtn.textContent = copyTerm('drop');
+  playBtn.textContent = playButtonLabel();
   playBtn.classList.remove('fast');
   playBtn.disabled = false;
 }
@@ -210,6 +281,7 @@ const game = createGameBootstrap({
       replayNote: replayNoteEl,
       dropButton: playBtn,
     },
+    screenPreview: { root: document.querySelector('.layout') },
   },
   lifecycle: {
     handlers: {
@@ -236,8 +308,7 @@ const game = createGameBootstrap({
     playingMessage: 'Playing…',
     onRoundSettled: (round, result) => {
       const payout = apiToDisplay(result.payoutApi);
-      const betDisplay = apiToDisplay(round.amount);
-      bet = betDisplay;
+      const debitDisplay = apiToDisplay(round.amount);
       syncHud();
 
       const replayEvent = result.replayEvent || `${getSessionID()}-${round.roundID}`;
@@ -253,7 +324,7 @@ const game = createGameBootstrap({
         symbol: result.symbol,
         multiplier: result.multiplier,
         payout,
-        profit: payout - betDisplay,
+        profit: payout - debitDisplay,
       });
     },
     setMessage,
@@ -264,7 +335,7 @@ const game = createGameBootstrap({
   },
   auth: {
     defaultBetDisplay: DEFAULT_BET,
-    gameModes: [{ name: 'base', cost: 1 }],
+    gameModes: GAME_MODES,
     onConfigured(auth) {
       if (auth.balanceDisplay != null) {
         balance = auth.balanceDisplay;
@@ -274,6 +345,7 @@ const game = createGameBootstrap({
         bet = auth.defaultBetDisplay ?? betOptions[0];
         renderBetChips();
       }
+      renderModeSelector();
     },
   },
   ui: {
@@ -288,6 +360,7 @@ const game = createGameBootstrap({
     onAuthRound: handleAuthRoundOutcome,
   },
   onJurisdictionChange: () => {
+    renderModeSelector();
     syncControls();
     syncHud();
   },
@@ -296,13 +369,16 @@ const game = createGameBootstrap({
 
 const { controls, lifecycle, applyAuthConfig, syncDevTools } = game;
 
+renderModeSelector();
+
 async function onPlay() {
   if (playing || autoplaying) return;
   if (!game.rgsReady) {
     setMessage(copyTerm('connectingRgs'));
     return;
   }
-  if (balance < bet) {
+  const playCost = playCostDisplay();
+  if (balance < playCost) {
     setMessage(copyTerm('insufficientBalance'));
     return;
   }
@@ -332,14 +408,14 @@ async function onPlay() {
 
 async function onAutoplay100() {
   if (playing || autoplaying || !controls.canAutoplay) return;
-  if (!game.rgsReady || balance < bet) return;
+  if (!game.rgsReady || balance < playCostDisplay()) return;
 
   autoplaying = true;
   syncControls();
   let count = 0;
   try {
     for (let i = 0; i < 100; i += 1) {
-      if (balance < bet) {
+      if (balance < playCostDisplay()) {
         setMessage(`${copyTerm('autoplayStopped')} ${count} plays.`);
         break;
       }
@@ -475,4 +551,5 @@ if (replayMode) {
 renderBetChips();
 syncHud();
 syncDevTools();
+syncControls();
 game.start();

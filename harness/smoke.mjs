@@ -17,6 +17,7 @@ import {
   isLocalRgsUrl,
 } from '../client/suki/rgsConfig.js';
 import { createGameBootstrap } from '../client/suki/gameBootstrap.js';
+import { STAKE_SCREENS, createScreenRegistry } from '../client/suki/stakeScreens.js';
 import { formatSessionElapsed, createSessionTimer } from '../client/suki/sessionTimer.js';
 import { formatCurrencyAmount, createCurrencyFormatter } from '../client/suki/currency.js';
 import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
@@ -241,6 +242,23 @@ function runBootstrapTests() {
   assert(typeof createGameBootstrap === 'function', 'createGameBootstrap exported');
 }
 
+function runScreenPreviewTests() {
+  console.log('\nUnit — Stake screen preview');
+  assert(STAKE_SCREENS.length === 7, 'default seven Stake screens');
+  assert(STAKE_SCREENS[0].id === 'desktop' && STAKE_SCREENS[0].width === 1200, 'desktop screen');
+
+  const registry = createScreenRegistry();
+  assert(registry.get('popout-s')?.height === 225, 'resolve popout-s');
+  assert(registry.resolveIdFromUrl('?screen=mobile-m') === 'mobile-m', 'parse screen URL param');
+  assert(registry.resolveIdFromUrl('?screen=unknown') === null, 'ignore unknown screen');
+
+  const extended = createScreenRegistry([
+    { id: 'tablet-test', label: 'Tablet test', width: 768, height: 1024, orientation: 'portrait' },
+  ]);
+  assert(extended.screens.length === 8, 'append extra screen');
+  assert(extended.get('tablet-test')?.width === 768, 'extra screen by id');
+}
+
 function runBetModeTests() {
   console.log('\nUnit — bet modes');
 
@@ -273,6 +291,10 @@ function runBetModeTests() {
   assert(policy.setActiveMode('bonus'), 'select bonus mode');
   assert(policy.playAmountApi(API) === 100 * API, 'bonus play amount = base × 100');
   assert(policy.rgsModeForPlay() === 'BONUS', 'RGS mode for bonus');
+  assert(
+    policy.baseBetApiFromPlayAmount(100 * API, 'BONUS') === API,
+    'base bet recovered from bonus debit',
+  );
 
   const blockedJurisdiction = createJurisdictionController(() => {});
   const blockedControls = createControlPolicy(blockedJurisdiction);
@@ -434,6 +456,7 @@ async function main() {
   runUnitTests();
   runRgsConfigTests();
   runBootstrapTests();
+  runScreenPreviewTests();
   runBetModeTests();
   runCurrencyCopyTests();
   runI18nTests();

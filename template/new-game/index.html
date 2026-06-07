@@ -54,6 +54,8 @@
       <p class="message" id="message">Connecting…</p>
 
       <div class="controls" id="play-controls">
+        <div class="mode-row" id="mode-row" aria-label="Play mode" hidden></div>
+        <p class="mode-cost" id="mode-cost" hidden></p>
         <div class="bet-row" id="bet-chips" aria-label="Bet amount"></div>
         <button id="play-btn" type="button">Play</button>
         <div class="test-row" data-suki-dev>
@@ -78,6 +80,8 @@
           <li>Rename <code>gameId</code> in <code>js/config.js</code> and <code>server/game-rgs.mjs</code>.</li>
           <li>Replace <code>gameReveal</code> handler and books in <code>data/</code>.</li>
           <li>Outcome comes from RGS — client animation is presentation only.</li>
+          <li>Buy bonus UI uses <code>game.betModes</code> — see <code>js/config.js</code> + <code>data/index.json</code>.</li>
+          <li>Stake screens toolbar in <code>?dev=true</code> — test all seven iframe sizes.</li>
           <li>Local dev: <code>?dev=true</code> · strict timer: <code>?dev=true&amp;jurisdiction=strict</code></li>
         </ul>
       </aside>

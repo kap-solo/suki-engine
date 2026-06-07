@@ -13,6 +13,7 @@ import { createCopyPolicy, isSocialCasinoMode, applyCopyLabels } from './copy.js
 import { setPlayerCurrency, getPlayerCurrency } from './playerCurrency.js';
 import { createBetModePolicy } from './betModes.js';
 import { isReplayMode } from './config.js';
+import { initStakeScreenPreview } from './screenPreview.js';
 
 /**
  * Single entry point — wires initSuki, production shell, jurisdiction, lifecycle, and RGS bootstrap.
@@ -38,6 +39,15 @@ export function createGameBootstrap(options) {
 
   initSuki(suki);
   const shellResult = applyProductionShell(shell);
+
+  const screenPreview =
+    showDevTools() && shell.screenPreview?.root
+      ? initStakeScreenPreview({
+          root: shell.screenPreview.root,
+          extraScreens: shell.screenPreview.extraScreens,
+          onScreenChange: shell.screenPreview.onScreenChange,
+        })
+      : null;
 
   let rgsReady = false;
   const elements = shell.elements ?? {};
@@ -208,6 +218,7 @@ export function createGameBootstrap(options) {
     get betModes() {
       return betModePolicy;
     },
+    screenPreview,
     get currency() {
       return currency;
     },

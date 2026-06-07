@@ -161,6 +161,22 @@ export function createBetModePolicy(options = {}) {
       const mult = getActiveMode().costMultiplier ?? 1;
       return Math.round(baseBetApi * mult);
     },
+    /**
+     * Recover chip/base bet from a debited play amount (round.amount).
+     * @param {number} playAmountApi
+     * @param {string} [rgsMode] — round.mode from RGS (e.g. BASE, BONUS)
+     */
+    baseBetApiFromPlayAmount(playAmountApi, rgsMode) {
+      let mult = 1;
+      if (rgsMode) {
+        const norm = toRgsMode(rgsMode);
+        const entry = catalog.find((m) => m.rgsMode === norm);
+        mult = entry?.costMultiplier ?? 1;
+      } else {
+        mult = getActiveMode().costMultiplier ?? 1;
+      }
+      return Math.round(playAmountApi / mult);
+    },
     canSelectMode,
     canBuyFeature() {
       return controls?.canBuyFeature ?? true;
