@@ -92,7 +92,7 @@ export function createGameMenu(options) {
   popup.appendChild(list);
   wrap.appendChild(trigger);
   brand.appendChild(wrap);
-  shell.append(backdrop, popup);
+  shell.appendChild(popup);
 
   let open = false;
 
