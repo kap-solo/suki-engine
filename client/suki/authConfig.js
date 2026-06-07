@@ -3,7 +3,7 @@ import { apiToDisplay } from '../money.js';
 /**
  * Normalise /wallet/authenticate response for game UI.
  * @param {object} data — authenticate response
- * @param {{ defaultBetDisplay?: number }} [options]
+ * @param {{ defaultBetDisplay?: number, urlCurrency?: string }} [options]
  */
 export function parseAuthResponse(data, options = {}) {
   const config = data?.config ?? {};
@@ -25,7 +25,7 @@ export function parseAuthResponse(data, options = {}) {
   return {
     balance,
     balanceDisplay: balance ? apiToDisplay(balance.amount) : null,
-    currency: balance?.currency ?? 'USD',
+    currency: balance?.currency ?? options.urlCurrency ?? 'USD',
     gameId: config.gameID ?? null,
     minBetApi: config.minBet ?? null,
     maxBetApi: config.maxBet ?? null,

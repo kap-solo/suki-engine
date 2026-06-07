@@ -76,7 +76,8 @@ template/new-game/  — copy to start a new title
 
 - `createGameBootstrap(options)` — initSuki + production shell + jurisdiction + lifecycle + RGS start
 - `createSessionTimer({ element, container, controls })` — elapsed session clock when `displaySessionTimer` is true
-- `createCurrencyFormatter({ currency, language })` — Intl + social codes (XGC → GC, XSC → SC)
+- `createCurrencyFormatter({ currency, language })` — Intl + social codes (XGC → GC, XSC → SC); set from auth via `game.formatCurrency()`
+- `getPlayerCurrency()` / `setPlayerCurrency()` — URL `?currency=` before auth, `balance.currency` after authenticate; `play()` uses automatically
 - `createCopyPolicy({ socialCasino })` — Balance/Coins, Bet/Play, etc.; preview with `?dev=true&social=true`
 - `reportBetAction(action, meta)` — `POST /bet/action` for in-round player picks
 - `parseAuthResponse(data)` — bet levels, currency, jurisdiction from authenticate

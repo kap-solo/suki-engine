@@ -20,6 +20,8 @@ import { createGameBootstrap } from '../client/suki/gameBootstrap.js';
 import { formatSessionElapsed, createSessionTimer } from '../client/suki/sessionTimer.js';
 import { formatCurrencyAmount, createCurrencyFormatter } from '../client/suki/currency.js';
 import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
+import { setPlayerCurrency, getPlayerCurrency } from '../client/suki/playerCurrency.js';
+import { parseAuthResponse } from '../client/suki/authConfig.js';
 
 const API = 1_000_000;
 const SAMPLE_STATE = [
@@ -137,6 +139,13 @@ function runUnitTests() {
   });
   assert(strict.config?.jurisdiction?.disabledAutoplay === true, 'strict jurisdiction mock');
   assert(strict.config?.jurisdiction?.displaySessionTimer === true, 'strict session timer');
+
+  const eurAuth = rgs.handleRgsRequest('/wallet/authenticate', {
+    sessionID: 'eur-test',
+    gameID: 'smoke-test',
+    _mock: { currency: 'EUR' },
+  });
+  assert(eurAuth.balance?.currency === 'EUR', 'mock auth returns EUR from _mock.currency');
 }
 
 async function post(baseUrl, path, body) {
@@ -233,6 +242,14 @@ function runCurrencyCopyTests() {
   const label = { textContent: '' };
   applyCopyLabels(social, { balanceLabel: label });
   assert(label.textContent === 'Coins', 'applyCopyLabels updates HUD');
+
+  setPlayerCurrency('EUR');
+  assert(getPlayerCurrency('USD') === 'EUR', 'player currency after set');
+  setPlayerCurrency(null);
+  assert(getPlayerCurrency('GBP') === 'GBP', 'player currency falls back to URL');
+
+  const parsed = parseAuthResponse({ balance: { amount: API, currency: 'CAD' } }, { urlCurrency: 'USD' });
+  assert(parsed.currency === 'CAD', 'auth currency prefers balance over URL');
 }
 
 function runSessionTimerTests() {

@@ -9,6 +9,7 @@ import {
 import { messageForRgsCode } from './suki/errors.js';
 import { buildRgsConfig, describeRgsMode } from './suki/rgsConfig.js';
 import { getEnvironment } from './suki/environment.js';
+import { getPlayerCurrency } from './suki/playerCurrency.js';
 
 export { initSuki, getSukiConfig, getDevComplianceLabel, getJurisdictionProfileName } from './suki/config.js';
 export { messageForRgsCode, classifyRgsError, applyRgsError, isSessionFatal } from './suki/errors.js';
@@ -105,13 +106,13 @@ export async function fetchBalance() {
   return data.balance;
 }
 
-export async function play({ amountApi, currency = 'USD', mode = 'BASE' }) {
-  const { sessionID, gameID } = getRgsParams();
+export async function play({ amountApi, currency, mode = 'BASE' } = {}) {
+  const { sessionID, gameID, currency: urlCurrency } = getRgsParams();
   return rgsPost('/wallet/play', {
     sessionID,
     gameID,
     amount: amountApi,
-    currency,
+    currency: currency ?? getPlayerCurrency(urlCurrency),
     mode,
   });
 }
@@ -153,6 +154,7 @@ export {
   applyCopyLabels,
   isSocialCasinoMode,
 } from './suki/bootstrap.js';
+export { setPlayerCurrency, getPlayerCurrency, clearPlayerCurrency } from './suki/playerCurrency.js';
 
 /** @returns {{ game: string, version: string, mode: string, event: string, amountApi: number }} */
 export function getReplayParams() {

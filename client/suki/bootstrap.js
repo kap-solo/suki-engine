@@ -81,3 +81,4 @@ export {
   REAL_MONEY_COPY,
   SOCIAL_CASINO_COPY,
 } from './copy.js';
+export { setPlayerCurrency, getPlayerCurrency, clearPlayerCurrency } from './playerCurrency.js';

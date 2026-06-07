@@ -57,6 +57,8 @@ export function getMockFlags() {
   const jurisdiction = params.get('jurisdiction');
   if (jurisdiction) flags.jurisdiction = jurisdiction;
   if (params.get('mock_err_is') === 'true') flags.err_is = true;
+  const currency = params.get('currency');
+  if (currency) flags.currency = currency;
   return Object.keys(flags).length ? flags : null;
 }
 

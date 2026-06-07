@@ -10,6 +10,7 @@ import { bootstrapPlayMode, attachBalanceRefresh } from './bootstrap.js';
 import { createSessionTimer } from './sessionTimer.js';
 import { createCurrencyFormatter } from './currency.js';
 import { createCopyPolicy, isSocialCasinoMode, applyCopyLabels } from './copy.js';
+import { setPlayerCurrency, getPlayerCurrency } from './playerCurrency.js';
 
 /**
  * Single entry point — wires initSuki, production shell, jurisdiction, lifecycle, and RGS bootstrap.
@@ -39,16 +40,22 @@ export function createGameBootstrap(options) {
   let rgsReady = false;
   const elements = shell.elements ?? {};
 
-  let currency = createCurrencyFormatter();
+  const initialParams = getRgsParams();
+  setPlayerCurrency(initialParams.currency);
+  let currency = createCurrencyFormatter({
+    currency: initialParams.currency,
+    language: initialParams.language,
+  });
   let copy = createCopyPolicy();
 
   function refreshPlayerDisplay(authParsed) {
-    if (authParsed?.currency) {
-      currency = createCurrencyFormatter({
-        currency: authParsed.currency,
-        language: getRgsParams().language,
-      });
-    }
+    const params = getRgsParams();
+    const code = authParsed?.currency ?? getPlayerCurrency(params.currency);
+    setPlayerCurrency(code);
+    currency = createCurrencyFormatter({
+      currency: code,
+      language: params.language,
+    });
     copy = createCopyPolicy({
       socialCasino: isSocialCasinoMode(jurisdiction.state),
       overrides: auth.copyOverrides,
@@ -77,7 +84,10 @@ export function createGameBootstrap(options) {
   refreshPlayerDisplay();
 
   function applyAuthConfig(data) {
-    const parsed = parseAuthResponse(data, { defaultBetDisplay: auth.defaultBetDisplay });
+    const parsed = parseAuthResponse(data, {
+      defaultBetDisplay: auth.defaultBetDisplay,
+      urlCurrency: getRgsParams().currency,
+    });
     jurisdiction.mergeFromServer(parsed.jurisdiction);
     if (showDevTools()) {
       jurisdiction.applyDevProfile(getJurisdictionProfileName());

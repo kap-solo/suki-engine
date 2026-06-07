@@ -93,6 +93,10 @@ export function createMockRgs(config) {
       if (authErr) return authErr;
 
       const session = getSession(sessionID);
+      if (body?._mock?.currency) {
+        session.currency = String(body._mock.currency);
+      }
+
       const jurisdiction = { ...DEFAULT_JURISDICTION };
       const mockProfile = body?._mock?.jurisdiction;
       if (mockProfile && JURISDICTION_MOCK[mockProfile]) {
