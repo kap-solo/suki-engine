@@ -163,15 +163,15 @@ const game = createGameBootstrap({
 
 Default screens (also `?screen=desktop` etc.):
 
-| ID | Label | Size |
-|----|-------|------|
-| `desktop` | Desktop | 1200 × 675 |
-| `laptop` | Laptop | 1024 × 576 |
-| `popout-l` | Popout L | 800 × 450 |
-| `popout-s` | Popout S | 400 × 225 |
-| `mobile-l` | Mobile L | 1275 × 2436 |
-| `mobile-m` | Mobile M | 1125 × 2001 |
-| `mobile-s` | Mobile S | 960 × 1704 |
+| ID | Label | Preview frame (CSS px) | Stake Engine physical |
+|----|-------|------------------------|------------------------|
+| `desktop` | Desktop | 1200 × 675 | same |
+| `laptop` | Laptop | 1024 × 576 | same |
+| `popout-l` | Popout L | 800 × 450 | same |
+| `popout-s` | Popout S | 400 × 225 | same |
+| `mobile-l` | Mobile L | 425 × 812 | 1275 × 2436 @3x |
+| `mobile-m` | Mobile M | 375 × 667 | 1125 × 2001 @3x |
+| `mobile-s` | Mobile S | 320 × 568 | 960 × 1704 @3x |
 
 Add more with `extraScreens` or `createScreenRegistry([...])`. Toolbar is hidden in production and hosted demo.
 

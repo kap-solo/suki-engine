@@ -58,15 +58,17 @@ Add `&screen=<id>` to start in a fixed iframe size. Toolbar can switch without r
 
 Base: `http://127.0.0.1:5174/?dev=true`
 
-| Screen | ID | Size | Example |
-|--------|-----|------|---------|
-| Desktop | `desktop` | 1200 × 675 | http://127.0.0.1:5174/?dev=true&screen=desktop |
-| Laptop | `laptop` | 1024 × 576 | http://127.0.0.1:5174/?dev=true&screen=laptop |
-| Popout L | `popout-l` | 800 × 450 | http://127.0.0.1:5174/?dev=true&screen=popout-l |
-| Popout S | `popout-s` | 400 × 225 | http://127.0.0.1:5174/?dev=true&screen=popout-s |
-| Mobile L | `mobile-l` | 1275 × 2436 | http://127.0.0.1:5174/?dev=true&screen=mobile-l |
-| Mobile M | `mobile-m` | 1125 × 2001 | http://127.0.0.1:5174/?dev=true&screen=mobile-m |
-| Mobile S | `mobile-s` | 960 × 1704 | http://127.0.0.1:5174/?dev=true&screen=mobile-s |
+Mobile rows use **CSS/logical** preview size (Stake physical ÷ 3). Landscape sizes are already CSS pixels.
+
+| Screen | ID | Preview (CSS) | Stake physical | Example |
+|--------|-----|---------------|----------------|---------|
+| Desktop | `desktop` | 1200 × 675 | same | http://127.0.0.1:5174/?dev=true&screen=desktop |
+| Laptop | `laptop` | 1024 × 576 | same | http://127.0.0.1:5174/?dev=true&screen=laptop |
+| Popout L | `popout-l` | 800 × 450 | same | http://127.0.0.1:5174/?dev=true&screen=popout-l |
+| Popout S | `popout-s` | 400 × 225 | same | http://127.0.0.1:5174/?dev=true&screen=popout-s |
+| Mobile L | `mobile-l` | 425 × 812 | 1275 × 2436 @3x | http://127.0.0.1:5174/?dev=true&screen=mobile-l |
+| Mobile M | `mobile-m` | 375 × 667 | 1125 × 2001 @3x | http://127.0.0.1:5174/?dev=true&screen=mobile-m |
+| Mobile S | `mobile-s` | 320 × 568 | 960 × 1704 @3x | http://127.0.0.1:5174/?dev=true&screen=mobile-s |
 
 Swap host/port for template or Render, e.g.:
 

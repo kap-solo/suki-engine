@@ -246,6 +246,7 @@ function runScreenPreviewTests() {
   console.log('\nUnit — Stake screen preview');
   assert(STAKE_SCREENS.length === 7, 'default seven Stake screens');
   assert(STAKE_SCREENS[0].id === 'desktop' && STAKE_SCREENS[0].width === 1200, 'desktop screen');
+  assert(STAKE_SCREENS[4].width === 425 && STAKE_SCREENS[4].stakeWidth === 1275, 'mobile L logical @3x');
 
   const registry = createScreenRegistry();
   assert(registry.get('popout-s')?.height === 225, 'resolve popout-s');

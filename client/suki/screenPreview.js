@@ -83,7 +83,11 @@ function ensureStyles() {
 }
 
 function formatSize(screen) {
-  return `${screen.width} × ${screen.height}`;
+  const logical = `${screen.width} × ${screen.height}`;
+  if (screen.stakeWidth && screen.stakeHeight && (screen.devicePixelRatio ?? 1) > 1) {
+    return `${logical} (Stake ${screen.stakeWidth}×${screen.stakeHeight} @${screen.devicePixelRatio}x)`;
+  }
+  return logical;
 }
 
 /**

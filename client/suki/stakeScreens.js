@@ -1,15 +1,35 @@
 /**
  * Stake Engine iframe "screens" — fixed QA viewports from the provider setup.
- * Games should lay out and test against these in dev (?dev=true).
+ *
+ * Landscape sizes are CSS pixels. Mobile sizes in Stake Engine are physical
+ * pixels at 3× DPR — we use logical (÷3) dimensions for the dev preview frame
+ * so browser testing matches iframe layout width/height.
  */
 
 /** @typedef {object} StakeScreen
  * @property {string} id — URL param value (?screen=desktop)
  * @property {string} label — toolbar display name
- * @property {number} width
+ * @property {number} width — CSS/logical pixels (dev preview frame)
  * @property {number} height
+ * @property {number} [stakeWidth] — physical pixels in Stake Engine setup
+ * @property {number} [stakeHeight]
+ * @property {number} [devicePixelRatio=1]
  * @property {'landscape' | 'portrait'} [orientation]
  */
+
+/** @param {number} stakeWidth @param {number} stakeHeight @param {number} [dpr=3] */
+function mobileScreen(id, label, stakeWidth, stakeHeight, dpr = 3) {
+  return {
+    id,
+    label,
+    width: Math.round(stakeWidth / dpr),
+    height: Math.round(stakeHeight / dpr),
+    stakeWidth,
+    stakeHeight,
+    devicePixelRatio: dpr,
+    orientation: 'portrait',
+  };
+}
 
 /** Default seven screens from Stake Engine setup. */
 export const STAKE_SCREENS = [
@@ -17,9 +37,9 @@ export const STAKE_SCREENS = [
   { id: 'laptop', label: 'Laptop', width: 1024, height: 576, orientation: 'landscape' },
   { id: 'popout-l', label: 'Popout L', width: 800, height: 450, orientation: 'landscape' },
   { id: 'popout-s', label: 'Popout S', width: 400, height: 225, orientation: 'landscape' },
-  { id: 'mobile-l', label: 'Mobile L', width: 1275, height: 2436, orientation: 'portrait' },
-  { id: 'mobile-m', label: 'Mobile M', width: 1125, height: 2001, orientation: 'portrait' },
-  { id: 'mobile-s', label: 'Mobile S', width: 960, height: 1704, orientation: 'portrait' },
+  mobileScreen('mobile-l', 'Mobile L', 1275, 2436),
+  mobileScreen('mobile-m', 'Mobile M', 1125, 2001),
+  mobileScreen('mobile-s', 'Mobile S', 960, 1704),
 ];
 
 /**
