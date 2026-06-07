@@ -75,6 +75,7 @@ CI on `main` runs full `npm run check` (smoke + ERR + compliance report + templa
 
 - `createGameBootstrap(options)` — initSuki + production shell + jurisdiction + lifecycle + RGS start
 - `initStakeLayout()` / `stakeLayout.css` — Mobile L-first shell; orientation + portrait-family context on `main.suki-stake-shell`
+- `createBetUi()` / `betUi.css` — standard betting controls (modes, chips, play, dev row); portrait + landscape skins
 - `STAKE_SCREENS` / `createScreenRegistry()` / `initStakeScreenPreview()` — dev toolbar for Stake Engine iframe sizes (`?dev=true`)
 - `createSessionTimer({ element, container, controls })` — elapsed session clock when `displaySessionTimer` is true
 - `createCurrencyFormatter({ currency, language })` — Intl + social codes (XGC → GC, XSC → SC); set from auth via `game.formatCurrency()`
@@ -168,6 +169,23 @@ New games copy a **Mobile L-first** shell: gameplay lives in `.suki-game-core` (
 ```
 
 Popout S uses the landscape shell but hides the character flank by default — tune per game.
+
+## Standard betting UI
+
+Mount before `createGameBootstrap`, pass `betUi.elements` into `shell.elements`, then `betUi.bind({ game, onPlay, … })`:
+
+```html
+<link rel="stylesheet" href="/vendor/suki-engine/client/suki/betUi.css" />
+<div class="suki-controls-slot" id="bet-ui-root"></div>
+```
+
+```js
+const betUi = createBetUi({ root: document.getElementById('bet-ui-root'), showModeRow: true });
+const game = createGameBootstrap({ shell: { elements: { dropButton: betUi.elements.dropButton, … } } });
+betUi.bind({ game, getBet: () => bet, setBet: (v) => { bet = v; }, onPlay: () => onPlay(), … });
+```
+
+Visual design lives in `betUi.css` (functional scaffold today — customize per game via CSS vars or overrides).
 
 ## Stake screen preview (dev)
 

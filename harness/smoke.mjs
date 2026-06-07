@@ -25,6 +25,7 @@ import {
   resolveOrientation,
   resolvePortraitFamily,
 } from '../client/suki/stakeLayout.js';
+import { createBetUi, modeButtonLabel, resolvePlayButtonState } from '../client/suki/betUi.js';
 import { formatSessionElapsed, createSessionTimer } from '../client/suki/sessionTimer.js';
 import { formatCurrencyAmount, createCurrencyFormatter } from '../client/suki/currency.js';
 import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
@@ -296,6 +297,36 @@ function runStakeLayoutTests() {
   assert(root.dataset.sukiScreen === 'mobile-m', 'apply screen id');
 }
 
+function runBetUiTests() {
+  console.log('\nUnit — bet UI');
+  assert(typeof createBetUi === 'function', 'createBetUi exported');
+  assert(
+    resolvePlayButtonState({
+      replayMode: false,
+      busy: true,
+      playing: true,
+      autoplaying: false,
+      rgsReady: true,
+      canTurbo: true,
+      playLabel: 'Drop',
+    }).turbo,
+    'turbo state while playing',
+  );
+  assert(
+    resolvePlayButtonState({
+      replayMode: false,
+      busy: false,
+      playing: false,
+      autoplaying: false,
+      rgsReady: true,
+      canTurbo: true,
+      playLabel: 'Play',
+    }).label === 'Play',
+    'idle play label',
+  );
+  assert(modeButtonLabel({ key: 'bonus', type: 'buy', costMultiplier: 100 }) === 'Buy bonus ×100', 'buy mode label');
+}
+
 function runBetModeTests() {
   console.log('\nUnit — bet modes');
 
@@ -495,6 +526,7 @@ async function main() {
   runBootstrapTests();
   runScreenPreviewTests();
   runStakeLayoutTests();
+  runBetUiTests();
   runBetModeTests();
   runCurrencyCopyTests();
   runI18nTests();

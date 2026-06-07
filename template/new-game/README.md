@@ -53,7 +53,7 @@ When publishing outside this monorepo, point Suki at GitHub:
 
 ## Stake layout shell
 
-The template ships with Suki’s **Mobile L-first** layout (see main README). Gameplay goes in `.suki-game-core`; replace the three `.suki-bg-*` layers and the `.suki-flank-left` placeholder. Controls are already wired to sit at the bottom on portrait and on the right in landscape.
+The template ships with Suki’s **Mobile L-first** layout and **`createBetUi`** betting controls (see main README). Gameplay goes in `.suki-game-core`; replace backgrounds and character flank. Betting UI mounts in `#bet-ui-root` — restyle via `betUi.css` when you finalize the template look.
 
 Test with `?dev=true` and cycle **mobile-l**, **mobile-s**, **desktop**, and **popout-s**.
 

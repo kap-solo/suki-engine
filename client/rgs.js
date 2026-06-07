@@ -179,6 +179,11 @@ export {
   resolveOrientation,
   resolvePortraitFamily,
 } from './suki/stakeLayout.js';
+export {
+  createBetUi,
+  modeButtonLabel,
+  resolvePlayButtonState,
+} from './suki/betUi.js';
 
 /** @returns {{ game: string, version: string, mode: string, event: string, amountApi: number }} */
 export function getReplayParams() {

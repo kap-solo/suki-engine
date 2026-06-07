@@ -1,0 +1,195 @@
+/**
+ * Suki standard betting UI — functional scaffold (visual design TBD).
+ * Portrait = bottom controls · Landscape = right sidebar.
+ */
+
+.suki-bet-ui-root {
+  width: 100%;
+}
+
+.suki-bet-ui {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: 100%;
+}
+
+.suki-bet-play-panel,
+.suki-bet-replay-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.suki-bet-modes {
+  display: flex;
+  gap: 0.45rem;
+  justify-content: center;
+}
+
+.suki-bet-mode-btn {
+  flex: 1;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid #2a3344;
+  border-radius: 8px;
+  background: #12161e;
+  color: #8b97a8;
+  cursor: pointer;
+}
+
+.suki-bet-mode-btn.active {
+  border-color: #38bdf8;
+  background: #0f2a3d;
+  color: #7dd3fc;
+}
+
+.suki-bet-mode-btn.buy.active {
+  border-color: #fbbf24;
+  background: #2a1f08;
+  color: #fde68a;
+}
+
+.suki-bet-mode-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.suki-bet-mode-cost {
+  margin: 0;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #8b97a8;
+}
+
+.suki-bet-chips {
+  display: flex;
+  gap: 0.45rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.suki-bet-chip {
+  flex: 1;
+  min-width: 3.25rem;
+  max-width: 5rem;
+  padding: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid #2a3344;
+  background: #12161e;
+  color: #e8edf4;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.suki-bet-chip.active {
+  border-color: #38bdf8;
+  background: #0f2a3d;
+  color: #7dd3fc;
+}
+
+.suki-bet-chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.suki-bet-play {
+  padding: 0.85rem 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #0ea5e9, #0284c7);
+  color: #fff;
+  cursor: pointer;
+}
+
+.suki-bet-play.turbo {
+  background: linear-gradient(180deg, #ef4444, #b91c1c);
+}
+
+.suki-bet-play:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.suki-bet-dev {
+  display: flex;
+  gap: 0.45rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.suki-bet-dev-btn {
+  flex: 1;
+  min-width: 0;
+  max-width: 9rem;
+  padding: 0.38rem 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid #2a3344;
+  border-radius: 8px;
+  background: #12161e;
+  color: #8b97a8;
+  cursor: pointer;
+}
+
+.suki-bet-copy-replay {
+  max-width: none;
+  width: 100%;
+}
+
+.suki-bet-dev-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Portrait — large touch targets */
+.suki-stake-shell[data-suki-orientation='portrait'] .suki-bet-play {
+  padding: 0.9rem 1rem;
+}
+
+/* Landscape — compact sidebar stack */
+.suki-stake-shell[data-suki-orientation='landscape'] .suki-bet-ui {
+  gap: 0.45rem;
+}
+
+.suki-stake-shell[data-suki-orientation='landscape'] .suki-bet-chips {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.suki-stake-shell[data-suki-orientation='landscape'] .suki-bet-chip {
+  max-width: none;
+}
+
+.suki-stake-shell[data-suki-orientation='landscape'] .suki-bet-modes {
+  flex-direction: column;
+}
+
+.suki-stake-shell[data-suki-orientation='landscape'] .suki-bet-play {
+  width: 100%;
+}
+
+/* Popout S — tighter chips grid */
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-bet-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-bet-play {
+  padding: 0.55rem 0.65rem;
+  font-size: 0.82rem;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-bet-dev {
+  display: none;
+}

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Game — Suki starter</title>
     <link rel="stylesheet" href="/vendor/suki-engine/client/suki/stakeLayout.css" />
+    <link rel="stylesheet" href="/vendor/suki-engine/client/suki/betUi.css" />
     <link rel="stylesheet" href="css/style.css" />
     <script type="importmap">
       {
@@ -66,25 +67,7 @@
         <p class="message" id="message">Connecting…</p>
       </section>
 
-      <div class="suki-controls-slot">
-        <div class="controls" id="play-controls">
-          <div class="mode-row" id="mode-row" aria-label="Play mode" hidden></div>
-          <p class="mode-cost" id="mode-cost" hidden></p>
-          <div class="bet-row" id="bet-chips" aria-label="Bet amount"></div>
-          <button id="play-btn" type="button">Play</button>
-          <div class="test-row" data-suki-dev>
-            <button id="autoplay-btn" type="button" class="test-btn">100 play</button>
-            <button id="new-session-btn" type="button" class="test-btn">New session</button>
-          </div>
-          <button id="copy-replay-btn" type="button" class="test-btn copy-replay-btn" data-suki-dev hidden>
-            Copy replay link
-          </button>
-        </div>
-
-        <div class="controls" id="replay-controls" hidden>
-          <button id="replay-again-btn" type="button" class="test-btn">Replay again</button>
-        </div>
-      </div>
+      <div class="suki-controls-slot" id="bet-ui-root"></div>
 
       <footer class="suki-footer">
         <p class="stats" id="stats"></p>
@@ -98,7 +81,7 @@
           <li>Put gameplay inside <code>.suki-game-core</code> — designed at Mobile L (425×812).</li>
           <li>Replace portrait backgrounds (<code>.suki-bg-mobile-l</code> / <code>-ms</code>) and landscape art.</li>
           <li>Swap the <code>.suki-flank-left</code> placeholder for your character animation.</li>
-          <li>Controls live in <code>.suki-controls-slot</code> (bottom on portrait, right on landscape).</li>
+          <li>Betting UI mounts in <code>#bet-ui-root</code> via <code>createBetUi()</code> — customize in <code>betUi.css</code>.</li>
           <li>Stake screens: <code>?dev=true</code> toolbar — check <code>mobile-l</code>, <code>mobile-s</code>, <code>popout-s</code>.</li>
         </ul>
       </aside>
