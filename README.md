@@ -198,11 +198,20 @@ await authenticate(); // body includes getMockFlags() from URL
 // Or in harness: { _mock: { play_error: 'ERR_UE' } }
 ```
 
-## Compliance checklist
+## Compliance checklist & report
 
 ```bash
 npm run check
 npm run check -- --math ../Pure-Plinko/data
+npm run check -- --math ../Pure-Plinko/data --out=./compliance-report.md
+```
+
+Runs smoke + ERR scenarios (+ optional sandbox + math validation), then prints a **one-page compliance report** suitable for a Stake provider outline: test results, RGS contract checklist, jurisdiction coverage, readiness estimates, and remaining gaps.
+
+With live sandbox credentials:
+
+```bash
+SUKI_RGS_URL=rgs.stake-engine.com SUKI_SESSION_ID=... SUKI_GAME_ID=pure-plinko npm run check
 ```
 
 ## Reference game
