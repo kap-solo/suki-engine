@@ -1,0 +1,207 @@
+/**
+ * Suki game burger menu — fixed pop-up panel (visual design TBD).
+ *
+ * Z-index scale (within game shell):
+ *   shell content ~2 · menu pop-up 9010 · burger (open) 9011 · modals 9100
+ */
+
+.suki-brand {
+  position: relative;
+  padding-right: 3.25rem;
+}
+
+.suki-game-menu {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.75rem;
+  z-index: 12;
+}
+
+.suki-game-menu.open {
+  z-index: 9011;
+}
+
+.suki-stake-shell[data-suki-orientation='landscape'] .suki-game-menu {
+  top: 0.5rem;
+  right: 0.85rem;
+}
+
+.suki-game-menu-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  background: rgba(18, 22, 30, 0.92);
+  color: #e8edf4;
+  cursor: pointer;
+}
+
+.suki-game-menu-trigger.open {
+  border-color: #38bdf8;
+  background: #0f2a3d;
+}
+
+.suki-game-menu-bars {
+  display: block;
+  width: 1rem;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  box-shadow: 0 -5px 0 currentColor, 0 5px 0 currentColor;
+}
+
+/* Fixed pop-up — portaled to shell, positioned from burger in JS */
+.suki-game-menu-popup {
+  position: fixed;
+  z-index: 9010;
+  width: min(16.5rem, calc(100vw - 1.5rem));
+  max-height: min(70vh, 24rem);
+  display: flex;
+  flex-direction: column;
+  padding: 0.45rem 0.35rem 0.55rem;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  background: #0d1118;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+  overflow: auto;
+}
+
+.suki-game-menu-popup[hidden] {
+  display: none !important;
+}
+
+.suki-game-menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.suki-game-menu-item {
+  margin: 0;
+}
+
+.suki-game-menu-link {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #e8edf4;
+  font: 600 0.88rem/1.2 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+.suki-game-menu-link:hover {
+  background: #12161e;
+}
+
+.suki-game-menu-sep {
+  height: 1px;
+  margin: 0.3rem 0.35rem;
+  background: #243044;
+}
+
+.suki-game-menu-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  background: #12161e;
+}
+
+.suki-game-menu-label {
+  font-size: 0.85rem;
+  color: #c5d0de;
+}
+
+.suki-game-menu-switch {
+  min-width: 2.75rem;
+  padding: 0.28rem 0.45rem;
+  border: 1px solid #2a3344;
+  border-radius: 999px;
+  background: #0a0c10;
+  color: #8b97a8;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.suki-game-menu-switch.on {
+  border-color: #38bdf8;
+  background: #0f2a3d;
+  color: #7dd3fc;
+}
+
+/* Modal / recent-results shared content */
+.suki-recent-empty {
+  margin: 0;
+  color: #8b97a8;
+  font-size: 0.85rem;
+}
+
+.suki-recent-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.suki-recent-list li {
+  padding: 0.45rem 0;
+  border-bottom: 1px solid #1f2733;
+  font-size: 0.82rem;
+  color: #c5d0de;
+}
+
+.suki-recent-list li:last-child {
+  border-bottom: none;
+}
+
+.suki-modal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.suki-modal-table th,
+.suki-modal-table td {
+  padding: 0.35rem 0.45rem;
+  border-bottom: 1px solid #1f2733;
+  text-align: left;
+}
+
+.suki-modal-table th {
+  color: #8b97a8;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+}
+
+/* Popout S — compact burger + panel */
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-popup {
+  width: min(11rem, calc(100vw - 1rem));
+  max-height: min(65vh, 14rem);
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-trigger {
+  width: 1.85rem;
+  height: 1.85rem;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-bars {
+  width: 0.75rem;
+  box-shadow: 0 -4px 0 currentColor, 0 4px 0 currentColor;
+}

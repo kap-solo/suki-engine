@@ -8,8 +8,12 @@ import {
   authenticate,
   buildReplayUrl,
   classifyRgsError,
+  createAudioPrefs,
   createBetUi,
   createGameBootstrap,
+  createGameMenu,
+  createModalHost,
+  createRecentResultsStore,
   getReplayParams,
   getSessionID,
   isReplayMode,
@@ -18,7 +22,20 @@ import {
   startNewRgsSession,
 } from '@kap-solo/suki-engine/client/rgs.js';
 import { BET_OPTIONS, DEFAULT_BET, GAME, GAME_MODES } from './config.js';
+import { registerGameModals } from './menu.js';
 import { buildGameSettledResult, parseGameReveal } from './round.js';
+
+const shellEl = document.querySelector('.suki-stake-shell');
+const brandEl = document.querySelector('.suki-brand');
+const modalHost = createModalHost({ root: shellEl });
+const audioPrefs = createAudioPrefs({ storageKey: `${GAME.id}.audio` });
+const recentResults = createRecentResultsStore({ max: 25 });
+const gameMenu = createGameMenu({
+  brand: brandEl,
+  shell: shellEl,
+  modalHost,
+  audioPrefs,
+});
 
 const balanceEl = document.getElementById('balance');
 const betEl = document.getElementById('bet-display');
@@ -167,7 +184,7 @@ const game = createGameBootstrap({
       replayNote: replayNoteEl,
       dropButton: betUi.elements.dropButton,
     },
-    screenPreview: { root: document.querySelector('.suki-stake-shell') },
+    screenPreview: { root: shellEl },
   },
   lifecycle: {
     handlers: {
@@ -205,6 +222,14 @@ const game = createGameBootstrap({
       });
       betUi.setLastReplayUrl(lastReplayUrl);
       syncControls();
+
+      recentResults.push({
+        data: {
+          symbol: result.symbol,
+          multiplier: result.multiplier,
+          payout,
+        },
+      });
 
       displayRoundResult({
         symbol: result.symbol,
@@ -246,6 +271,7 @@ const game = createGameBootstrap({
     onAuthRound: handleAuthRoundOutcome,
   },
   onJurisdictionChange: () => {
+    gameMenu.refresh();
     betUi.renderModes();
     syncControls();
     syncHud();
@@ -254,6 +280,14 @@ const game = createGameBootstrap({
 });
 
 const { controls, lifecycle, applyAuthConfig, syncDevTools } = game;
+
+gameMenu.bind({ game });
+registerGameModals({
+  modalHost,
+  recentResults,
+  game,
+  formatCurrency: (amount) => game.formatCurrency(amount),
+});
 
 betUi.bind({
   game,
@@ -273,6 +307,10 @@ betUi.bind({
   getPlayCost: playCostDisplay,
   onBetChange: syncHud,
   onModeChange: syncHud,
+  onDismissOverlays: () => {
+    gameMenu.close();
+    modalHost.close();
+  },
   onPlay: onPlay,
   onTurbo: () => {
     animationSpeed = 3;

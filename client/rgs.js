@@ -184,6 +184,20 @@ export {
   modeButtonLabel,
   resolvePlayButtonState,
 } from './suki/betUi.js';
+export {
+  createAudioPrefs,
+} from './suki/audioPrefs.js';
+export {
+  createRecentResultsStore,
+} from './suki/recentResults.js';
+export {
+  createModalHost,
+} from './suki/modalHost.js';
+export {
+  createGameMenu,
+  DEFAULT_GAME_MENU_ITEMS,
+  filterVisibleMenuItems,
+} from './suki/gameMenu.js';
 
 /** @returns {{ game: string, version: string, mode: string, event: string, amountApi: number }} */
 export function getReplayParams() {

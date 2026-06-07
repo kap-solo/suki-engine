@@ -26,6 +26,9 @@ import {
   resolvePortraitFamily,
 } from '../client/suki/stakeLayout.js';
 import { createBetUi, modeButtonLabel, resolvePlayButtonState } from '../client/suki/betUi.js';
+import { createAudioPrefs } from '../client/suki/audioPrefs.js';
+import { createRecentResultsStore } from '../client/suki/recentResults.js';
+import { DEFAULT_GAME_MENU_ITEMS, filterVisibleMenuItems } from '../client/suki/gameMenu.js';
 import { formatSessionElapsed, createSessionTimer } from '../client/suki/sessionTimer.js';
 import { formatCurrencyAmount, createCurrencyFormatter } from '../client/suki/currency.js';
 import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
@@ -327,6 +330,36 @@ function runBetUiTests() {
   assert(modeButtonLabel({ key: 'bonus', type: 'buy', costMultiplier: 100 }) === 'Buy bonus ×100', 'buy mode label');
 }
 
+function runGameMenuTests() {
+  console.log('\nUnit — game menu & modals');
+  assert(DEFAULT_GAME_MENU_ITEMS.length >= 6, 'default menu items');
+  assert(DEFAULT_GAME_MENU_ITEMS.some((i) => i.id === 'paytable'), 'paytable menu item');
+  assert(DEFAULT_GAME_MENU_ITEMS.some((i) => i.pref === 'music'), 'music toggle item');
+
+  const prefs = createAudioPrefs({ storageKey: 'smoke.test.audio' });
+  prefs.music.setEnabled(false);
+  assert(prefs.music.enabled === false, 'music toggle off');
+  prefs.sfx.setEnabled(true);
+  assert(prefs.getState().sfx === true, 'sfx state');
+
+  const recent = createRecentResultsStore({ max: 3 });
+  recent.push({ data: { multiplier: 2 } });
+  recent.push({ data: { multiplier: 5 } });
+  assert(recent.length === 2, 'recent results push');
+  recent.push({ data: { multiplier: 1 } });
+  recent.push({ data: { multiplier: 9 } });
+  assert(recent.length === 3, 'recent results max cap');
+
+  const filtered = filterVisibleMenuItems(
+    [
+      { type: 'modal', id: 'stats', label: 'Stats', visible: () => false },
+      { type: 'modal', id: 'paytable', label: 'Paytable' },
+    ],
+    null,
+  );
+  assert(filtered.length === 1 && filtered[0].id === 'paytable', 'filter visible menu items');
+}
+
 function runBetModeTests() {
   console.log('\nUnit — bet modes');
 
@@ -527,6 +560,7 @@ async function main() {
   runScreenPreviewTests();
   runStakeLayoutTests();
   runBetUiTests();
+  runGameMenuTests();
   runBetModeTests();
   runCurrencyCopyTests();
   runI18nTests();

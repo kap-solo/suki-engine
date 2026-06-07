@@ -168,6 +168,7 @@ export function createBetUi(options) {
   let onCopyReplay = null;
   /** @type {(() => void) | null} */
   let onReplayAgain = null;
+  let onDismissOverlays = null;
   /** @type {(() => string) | null} */
   let getPlayLabel = null;
   /** @type {(() => number) | null} */
@@ -335,8 +336,13 @@ export function createBetUi(options) {
     }
   }
 
+  function dismissOverlays() {
+    onDismissOverlays?.();
+  }
+
   playBtn.addEventListener('click', () => {
     if (getPlaying() && game?.controls?.canTurbo) {
+      dismissOverlays();
       onTurbo?.();
       if (turboDisablesButton) {
         playBtn.disabled = true;
@@ -344,11 +350,15 @@ export function createBetUi(options) {
       return;
     }
     if (!getBusy()) {
+      dismissOverlays();
       onPlay?.();
     }
   });
 
-  autoplayBtn.addEventListener('click', () => onAutoplay?.());
+  autoplayBtn.addEventListener('click', () => {
+    dismissOverlays();
+    onAutoplay?.();
+  });
   newSessionBtn.addEventListener('click', () => onNewSession?.());
   copyReplayBtn.addEventListener('click', () => onCopyReplay?.());
   replayAgainBtn.addEventListener('click', () => onReplayAgain?.());
@@ -372,6 +382,7 @@ export function createBetUi(options) {
       onNewSession = handlers.onNewSession ?? null;
       onCopyReplay = handlers.onCopyReplay ?? null;
       onReplayAgain = handlers.onReplayAgain ?? null;
+      onDismissOverlays = handlers.onDismissOverlays ?? null;
       getPlayLabel = handlers.getPlayLabel ?? null;
       getPlayCost = handlers.getPlayCost ?? null;
       turboDisablesButton = handlers.turboDisablesButton ?? false;

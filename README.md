@@ -76,6 +76,10 @@ CI on `main` runs full `npm run check` (smoke + ERR + compliance report + templa
 - `createGameBootstrap(options)` — initSuki + production shell + jurisdiction + lifecycle + RGS start
 - `initStakeLayout()` / `stakeLayout.css` — Mobile L-first shell; orientation + portrait-family context on `main.suki-stake-shell`
 - `createBetUi()` / `betUi.css` — standard betting controls (modes, chips, play, dev row); portrait + landscape skins
+- `createGameMenu()` / `gameMenu.css` — burger pop-up (How to Play, Paytable, Stats, Recent Results, audio toggles)
+- `createModalHost()` — pop-up overlay for menu content
+- `createAudioPrefs()` — persisted music / SFX toggles
+- `createRecentResultsStore()` — in-memory round history for Recent Results modal
 - `STAKE_SCREENS` / `createScreenRegistry()` / `initStakeScreenPreview()` — dev toolbar for Stake Engine iframe sizes (`?dev=true`)
 - `createSessionTimer({ element, container, controls })` — elapsed session clock when `displaySessionTimer` is true
 - `createCurrencyFormatter({ currency, language })` — Intl + social codes (XGC → GC, XSC → SC); set from auth via `game.formatCurrency()`
@@ -186,6 +190,27 @@ betUi.bind({ game, getBet: () => bet, setBet: (v) => { bet = v; }, onPlay: () =>
 ```
 
 Visual design lives in `betUi.css` (functional scaffold today — customize per game via CSS vars or overrides).
+
+## Game burger menu
+
+```html
+<link rel="stylesheet" href="/vendor/suki-engine/client/suki/gameMenu.css" />
+```
+
+```js
+const modalHost = createModalHost({ root: shellEl });
+const audioPrefs = createAudioPrefs({ storageKey: `${gameId}.audio` });
+const recentResults = createRecentResultsStore({ max: 25 });
+const gameMenu = createGameMenu({ brand: brandEl, shell: shellEl, modalHost, audioPrefs });
+
+gameMenu.bind({ game });
+modalHost.register('paytable', { title: 'Paytable', render: (body) => { /* … */ } });
+// Burger menu is non-modal (gameplay stays visible; Play still works). Modals darken the shell.
+// Dismiss burger + modals when the player hits Play:
+betUi.bind({ onDismissOverlays: () => { gameMenu.close(); modalHost.close(); }, /* … */ });
+```
+
+Default pop-up items: **How to Play**, **Paytable**, **Stats**, **Recent Results**, **Music**, **Sound effects**. Tap outside or the burger again to dismiss. Register modal content per game in `js/menu.js`. Wire `audioPrefs.sfx.onChange` to your sound engine when ready.
 
 ## Stake screen preview (dev)
 

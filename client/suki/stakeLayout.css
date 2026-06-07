@@ -133,6 +133,7 @@ body {
 .suki-game-core {
   grid-area: core;
   z-index: 2;
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
