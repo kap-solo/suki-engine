@@ -16,6 +16,7 @@ import {
   validateRgsConfig,
   isLocalRgsUrl,
 } from '../client/suki/rgsConfig.js';
+import { createGameBootstrap } from '../client/suki/gameBootstrap.js';
 
 const API = 1_000_000;
 const SAMPLE_STATE = [
@@ -202,6 +203,11 @@ function runRgsConfigTests() {
   assert(sandboxVal.ok, 'sandbox accepts remote RGS');
 }
 
+function runBootstrapTests() {
+  console.log('\nUnit — game bootstrap');
+  assert(typeof createGameBootstrap === 'function', 'createGameBootstrap exported');
+}
+
 async function runPolicyTests() {
   console.log('\nUnit — error policy & transport');
   assert(classifyRgsError('ERR_UE').retryable, 'ERR_UE is retryable');
@@ -221,6 +227,7 @@ async function main() {
   console.log('Suki Engine — compliance smoke');
   runUnitTests();
   runRgsConfigTests();
+  runBootstrapTests();
   await runPolicyTests();
 
   const url = process.env.SUKI_SMOKE_URL;

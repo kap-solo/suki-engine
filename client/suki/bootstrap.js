@@ -65,3 +65,5 @@ export function attachBalanceRefresh(ctx) {
       .catch((err) => console.warn('balance refresh failed', err));
   });
 }
+
+export { createGameBootstrap } from './gameBootstrap.js';

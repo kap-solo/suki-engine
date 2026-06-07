@@ -19,6 +19,7 @@ client/
     errors.js       — ERR_* messages + error policy
     jurisdiction.js — regional UI gating
     bootstrap.js    — authenticate on load
+    gameBootstrap.js — createGameBootstrap() single entry point
     lifecycle.js    — play → book events → end-round
     authConfig.js   — parseAuthResponse() from authenticate
     controlPolicy.js — jurisdiction → UI gating helpers
@@ -49,7 +50,7 @@ template/new-game/  — copy to start a new title
    }
    ```
 
-3. Call `initSuki({ gameId, replayVersion, sessionStorageKey })` before any RGS calls.
+3. Wire the shell with `createGameBootstrap()` (calls `initSuki` internally).
 4. Implement `createMockRgs({ resolvePlay, resolveReplay })` for your math bundle.
 5. Add an import map in `index.html`:
 
@@ -69,9 +70,26 @@ template/new-game/  — copy to start a new title
 
 ## Tier 2 APIs
 
+- `createGameBootstrap(options)` — initSuki + production shell + jurisdiction + lifecycle + RGS start
 - `reportBetAction(action, meta)` — `POST /bet/action` for in-round player picks
 - `parseAuthResponse(data)` — bet levels, currency, jurisdiction from authenticate
 - `createControlPolicy(jurisdiction)` — `canTurbo`, `canAutoplay`, `showRtp`, etc.
+
+```js
+import { createGameBootstrap } from '@kap-solo/suki-engine/client/rgs.js';
+
+const game = createGameBootstrap({
+  suki: { gameId: 'my-game', replayVersion: '1', sessionStorageKey: 'myGame.rgsSessionID' },
+  shell: { elements: { complianceDev: document.getElementById('compliance-dev') } },
+  lifecycle: { handlers: { /* book event types */ }, applyBalance, onRoundSettled, setMessage, getBetApi, setBetFromApi, buildSettledResult },
+  auth: { onConfigured: (auth) => { /* bet levels, balance */ } },
+  ui: { setMessage, syncHud, isBusy: () => false },
+  replay: { start: () => bootstrapReplay() },
+});
+
+game.syncDevTools();
+game.start();
+```
 
 ## Production mode
 
