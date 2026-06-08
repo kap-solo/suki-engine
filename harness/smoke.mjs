@@ -30,6 +30,7 @@ import { createAudioPrefs } from '../client/suki/audioPrefs.js';
 import { createRecentResultsStore } from '../client/suki/recentResults.js';
 import { DEFAULT_GAME_MENU_ITEMS, filterVisibleMenuItems } from '../client/suki/gameMenu.js';
 import { formatSessionElapsed, createSessionTimer } from '../client/suki/sessionTimer.js';
+import { formatShellClockTime } from '../client/suki/shellClock.js';
 import { formatCurrencyAmount, createCurrencyFormatter } from '../client/suki/currency.js';
 import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
 import { setPlayerCurrency, getPlayerCurrency } from '../client/suki/playerCurrency.js';
@@ -537,6 +538,13 @@ function runSessionTimerTests() {
   timer.destroy();
 }
 
+function runShellClockTests() {
+  console.log('\nUnit — shell clock');
+  assert(formatShellClockTime(new Date(2026, 5, 7, 9, 5)) === '09:05', 'shell clock morning pad');
+  assert(formatShellClockTime(new Date(2026, 5, 7, 14, 32)) === '14:32', 'shell clock 24h');
+  assert(formatShellClockTime(new Date(2026, 5, 7, 0, 0)) === '00:00', 'shell clock midnight');
+}
+
 async function runPolicyTests() {
   console.log('\nUnit — error policy & transport');
   assert(classifyRgsError('ERR_UE').retryable, 'ERR_UE is retryable');
@@ -565,6 +573,7 @@ async function main() {
   runCurrencyCopyTests();
   runI18nTests();
   runSessionTimerTests();
+  runShellClockTests();
   await runPolicyTests();
 
   const url = process.env.SUKI_SMOKE_URL;

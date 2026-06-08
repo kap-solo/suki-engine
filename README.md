@@ -82,6 +82,7 @@ CI on `main` runs full `npm run check` (smoke + ERR + compliance report + templa
 - `createRecentResultsStore()` — in-memory round history for Recent Results modal
 - `STAKE_SCREENS` / `createScreenRegistry()` / `initStakeScreenPreview()` — dev toolbar for Stake Engine iframe sizes (`?dev=true`)
 - `createSessionTimer({ element, container, controls })` — elapsed session clock when `displaySessionTimer` is true
+- `initStakeLayout()` — mounts a 24-hour wall clock (`HH:MM`) in the shell top-left automatically
 - `createCurrencyFormatter({ currency, language })` — Intl + social codes (XGC → GC, XSC → SC); set from auth via `game.formatCurrency()`
 - `getPlayerCurrency()` / `setPlayerCurrency()` — URL `?currency=` before auth, `balance.currency` after authenticate; `play()` uses automatically
 - `createI18n({ lang, socialCasino })` / `game.t('balance')` — locale strings from `lang` param; add locales in `client/suki/strings/`

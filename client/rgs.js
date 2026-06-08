@@ -180,6 +180,10 @@ export {
   resolvePortraitFamily,
 } from './suki/stakeLayout.js';
 export {
+  createShellClock,
+  formatShellClockTime,
+} from './suki/shellClock.js';
+export {
   createBetUi,
   modeButtonLabel,
   resolvePlayButtonState,

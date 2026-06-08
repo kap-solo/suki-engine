@@ -1,4 +1,5 @@
 import { STAKE_SCREENS } from './stakeScreens.js';
+import { createShellClock } from './shellClock.js';
 
 /** Design reference — Mobile L logical CSS pixels (Stake 1275×2436 @3x). */
 export const STAKE_LAYOUT_REF = STAKE_SCREENS.find((s) => s.id === 'mobile-l') ?? {
@@ -92,6 +93,7 @@ export function applyStakeScreenContext(root, context = {}) {
  */
 export function initStakeLayout(options) {
   const { root, getActiveScreen = () => null } = options;
+  const shellClock = createShellClock({ root });
 
   function refresh() {
     const screen = getActiveScreen();
@@ -103,8 +105,10 @@ export function initStakeLayout(options) {
 
   return {
     refresh,
+    shellClock,
     destroy() {
       window.removeEventListener('resize', refresh);
+      shellClock.destroy();
       delete root.dataset.sukiOrientation;
       delete root.dataset.sukiPortraitFamily;
       delete root.dataset.sukiScreen;

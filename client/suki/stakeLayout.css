@@ -21,6 +21,24 @@ body {
 
 /* ── Shell grid ─────────────────────────────────────────────── */
 
+.suki-shell-clock {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.75rem;
+  z-index: 11;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  background: rgba(10, 12, 16, 0.72);
+  color: #9aa8bc;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  pointer-events: none;
+  user-select: none;
+}
+
 .suki-stake-shell {
   position: relative;
   isolation: isolate;
