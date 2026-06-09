@@ -10,8 +10,10 @@ import {
   classifyRgsError,
   createAudioPrefs,
   createBetUi,
+  createGameAudio,
   createGameBootstrap,
   createGameMenu,
+  createGamePreloader,
   createModalHost,
   createRecentResultsStore,
   getReplayParams,
@@ -29,6 +31,8 @@ const shellEl = document.querySelector('.suki-stake-shell');
 const brandEl = document.querySelector('.suki-brand');
 const modalHost = createModalHost({ root: shellEl });
 const audioPrefs = createAudioPrefs({ storageKey: `${GAME.id}.audio` });
+const gameAudio = createGameAudio({ audioPrefs, autoUnlock: false });
+wireTemplateAudio(gameAudio);
 const recentResults = createRecentResultsStore({ max: 25 });
 const gameMenu = createGameMenu({
   brand: brandEl,
@@ -237,6 +241,12 @@ const game = createGameBootstrap({
         payout,
         profit: payout - debitDisplay,
       });
+
+      if (payout > debitDisplay) {
+        gameAudio.playSfx('win');
+      } else if (payout < debitDisplay) {
+        gameAudio.playSfx('lose');
+      }
     },
     setMessage,
     getBetApi: () => displayToApi(bet),
@@ -337,6 +347,7 @@ async function onPlay() {
 
   await withPlayLock(async () => {
     try {
+      gameAudio.playSfx('play');
       await lifecycle.executeDrop({ animate: true });
     } catch (err) {
       console.error(err);
@@ -479,14 +490,23 @@ async function onCopyReplayLink() {
   }
 }
 
-if (replayMode) {
-  setReplayModeUi();
-} else {
-  setPlayModeUi();
-}
-
 betUi.renderBetLevels();
 syncHud();
 syncDevTools();
 syncControls();
-game.start();
+
+if (replayMode) {
+  setReplayModeUi();
+  game.start();
+} else {
+  setPlayModeUi();
+  createGamePreloader({
+    shell: shellEl,
+    title: GAME.title,
+    hint: 'Tap anywhere to play',
+    onContinue: () => {
+      gameAudio.unlock();
+      game.start();
+    },
+  });
+}

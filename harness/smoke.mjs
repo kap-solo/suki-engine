@@ -336,12 +336,19 @@ function runGameMenuTests() {
   assert(DEFAULT_GAME_MENU_ITEMS.length >= 6, 'default menu items');
   assert(DEFAULT_GAME_MENU_ITEMS.some((i) => i.id === 'paytable'), 'paytable menu item');
   assert(DEFAULT_GAME_MENU_ITEMS.some((i) => i.pref === 'music'), 'music toggle item');
+  assert(DEFAULT_GAME_MENU_ITEMS.some((i) => i.type === 'volume'), 'music volume slider item');
 
   const prefs = createAudioPrefs({ storageKey: 'smoke.test.audio' });
   prefs.music.setEnabled(false);
   assert(prefs.music.enabled === false, 'music toggle off');
   prefs.sfx.setEnabled(true);
   assert(prefs.getState().sfx === true, 'sfx state');
+  prefs.musicVolume.setValue(0.45);
+  assert(prefs.musicVolume.value === 0.45, 'music volume set');
+  prefs.musicVolume.setValue(1.5);
+  assert(prefs.musicVolume.value === 1, 'music volume clamped high');
+  prefs.musicVolume.setValue(-0.2);
+  assert(prefs.musicVolume.value === 0, 'music volume clamped low');
 
   const recent = createRecentResultsStore({ max: 3 });
   recent.push({ data: { multiplier: 2 } });

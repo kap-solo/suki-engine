@@ -192,6 +192,12 @@ export {
   createAudioPrefs,
 } from './suki/audioPrefs.js';
 export {
+  createGameAudio,
+} from './suki/gameAudio.js';
+export {
+  createGamePreloader,
+} from './suki/gamePreloader.js';
+export {
   createRecentResultsStore,
 } from './suki/recentResults.js';
 export {

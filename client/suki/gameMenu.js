@@ -2,7 +2,7 @@
  * Burger menu — modals, toggles, and pop-up panel chrome.
  */
 
-/** @typedef {'modal' | 'toggle' | 'separator' | 'action'} GameMenuItemType */
+/** @typedef {'modal' | 'toggle' | 'volume' | 'separator' | 'action'} GameMenuItemType */
 
 /**
  * @typedef {object} GameMenuItem
@@ -21,6 +21,7 @@ export const DEFAULT_GAME_MENU_ITEMS = [
   { type: 'modal', id: 'recent-results', label: 'Recent Results' },
   { type: 'separator' },
   { type: 'toggle', id: 'music', label: 'Music', pref: 'music' },
+  { type: 'volume', id: 'music-volume', label: 'Music volume' },
   { type: 'toggle', id: 'sfx', label: 'Sound effects', pref: 'sfx' },
 ];
 
@@ -145,6 +146,45 @@ export function createGameMenu(options) {
     }
   }
 
+  function buildVolumeRow(item) {
+    const volume = audioPrefs.musicVolume;
+    const li = document.createElement('li');
+    li.className = 'suki-game-menu-item suki-game-menu-volume';
+
+    const label = document.createElement('span');
+    label.className = 'suki-game-menu-label';
+    label.textContent = item.label ?? 'Music volume';
+
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.className = 'suki-game-menu-slider';
+    slider.min = '0';
+    slider.max = '100';
+    slider.step = '1';
+    slider.setAttribute('aria-label', item.label ?? 'Music volume');
+
+    function syncSlider() {
+      slider.value = String(Math.round(volume.value * 100));
+      slider.disabled = !audioPrefs.music.enabled;
+    }
+
+    slider.addEventListener('input', (event) => {
+      event.stopPropagation();
+      volume.setValue(Number(slider.value) / 100);
+    });
+
+    slider.addEventListener('pointerdown', (event) => {
+      event.stopPropagation();
+    });
+
+    audioPrefs.music.onChange(syncSlider);
+    volume.onChange(syncSlider);
+    syncSlider();
+
+    li.append(label, slider);
+    return li;
+  }
+
   function buildToggleRow(item) {
     const prefKey = item.pref ?? 'music';
     const toggle = audioPrefs[prefKey];
@@ -227,6 +267,10 @@ export function createGameMenu(options) {
       }
       if (item.type === 'toggle') {
         list.appendChild(buildToggleRow(item));
+        continue;
+      }
+      if (item.type === 'volume') {
+        list.appendChild(buildVolumeRow(item));
         continue;
       }
       if (item.type === 'action') {

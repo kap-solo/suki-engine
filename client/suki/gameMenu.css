@@ -145,6 +145,28 @@
   color: #7dd3fc;
 }
 
+.suki-game-menu-volume {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.35rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  background: #12161e;
+}
+
+.suki-game-menu-slider {
+  width: 100%;
+  margin: 0;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+.suki-game-menu-slider:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* Modal / recent-results shared content */
 .suki-recent-empty {
   margin: 0;

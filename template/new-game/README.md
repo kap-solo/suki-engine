@@ -53,7 +53,7 @@ When publishing outside this monorepo, point Suki at GitHub:
 
 ## Stake layout shell
 
-The template ships with Suki’s **Mobile L-first** layout, **`createBetUi`** betting controls, and **`createGameMenu`** burger menu (see main README). Customize modal copy in `js/menu.js` and restyle via `betUi.css` / `gameMenu.css`.
+The template ships with Suki’s **Mobile L-first** layout, **`createBetUi`** betting controls, **`createGameMenu`** burger menu, **`createGameAudio`**, and a **tap-to-continue preloader** (see main README). Add MP3/OGG files under `assets/audio/` and wire SFX in `js/audio.js` / `js/game.js`. Customize modal copy in `js/menu.js` and restyle via `betUi.css` / `gameMenu.css`.
 
 Test with `?dev=true` and cycle **mobile-l**, **mobile-s**, **desktop**, and **popout-s**.
 
