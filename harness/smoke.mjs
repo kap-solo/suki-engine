@@ -23,6 +23,7 @@ import {
   isLocalRgsUrl,
 } from '../client/suki/rgsConfig.js';
 import { createGameBootstrap } from '../client/suki/gameBootstrap.js';
+import { createAssetLoader, preloadAssets } from '../client/suki/assetLoader.js';
 import { STAKE_SCREENS, createScreenRegistry } from '../client/suki/stakeScreens.js';
 import {
   STAKE_LAYOUT_REF,
@@ -558,6 +559,22 @@ function runShellClockTests() {
   assert(formatShellClockTime(new Date(2026, 5, 7, 0, 0)) === '00:00', 'shell clock midnight');
 }
 
+async function runPreloaderTests() {
+  console.log('\nUnit — asset preloader');
+  let lastProgress = -1;
+  await preloadAssets([], (progress) => {
+    lastProgress = progress;
+  });
+  assert(lastProgress === 100, 'empty preload reaches 100%');
+
+  const loader = createAssetLoader({ assets: [] });
+  let loaderProgress = -1;
+  await loader.load((progress) => {
+    loaderProgress = progress;
+  });
+  assert(loaderProgress === 100, 'createAssetLoader empty manifest');
+}
+
 async function runPolicyTests() {
   console.log('\nUnit — error policy & transport');
   assert(classifyRgsError('ERR_UE').retryable, 'ERR_UE is retryable');
@@ -607,6 +624,7 @@ async function main() {
   runI18nTests();
   runSessionTimerTests();
   runShellClockTests();
+  await runPreloaderTests();
   await runPolicyTests();
 
   const url = process.env.SUKI_SMOKE_URL;

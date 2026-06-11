@@ -107,6 +107,7 @@ export { createSessionTimer, formatSessionElapsed } from './sessionTimer.js';
 export { createShellClock, formatShellClockTime } from './shellClock.js';
 export { createGameAudio } from './gameAudio.js';
 export { createGamePreloader } from './gamePreloader.js';
+export { createAssetLoader, preloadAssets } from './assetLoader.js';
 export {
   createCurrencyFormatter,
   formatCurrencyAmount,

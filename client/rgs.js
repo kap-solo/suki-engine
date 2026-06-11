@@ -237,6 +237,10 @@ export {
   createGamePreloader,
 } from './suki/gamePreloader.js';
 export {
+  createAssetLoader,
+  preloadAssets,
+} from './suki/assetLoader.js';
+export {
   createRecentResultsStore,
 } from './suki/recentResults.js';
 export {

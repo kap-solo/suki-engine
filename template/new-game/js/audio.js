@@ -13,6 +13,18 @@ export const GAME_AUDIO_ASSETS = {
   },
 };
 
+/** Paths to front-load during the Suki preloader (missing files are skipped with a warning). */
+export function buildPreloadAssets() {
+  const assets = [];
+  if (GAME_AUDIO_ASSETS.music) {
+    assets.push({ src: GAME_AUDIO_ASSETS.music, type: 'audio' });
+  }
+  for (const src of Object.values(GAME_AUDIO_ASSETS.sfx ?? {})) {
+    if (src) assets.push({ src, type: 'audio' });
+  }
+  return assets;
+}
+
 /**
  * @param {ReturnType<import('@kap-solo/suki-engine/client/rgs.js').createGameAudio>} gameAudio
  */

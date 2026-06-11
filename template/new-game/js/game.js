@@ -23,6 +23,7 @@ import {
   requestReplay,
   startNewRgsSession,
 } from '@kap-solo/suki-engine/client/rgs.js';
+import { buildPreloadAssets } from './audio.js';
 import { BET_OPTIONS, DEFAULT_BET, GAME, GAME_MODES } from './config.js';
 import { registerGameModals } from './menu.js';
 import { buildGameSettledResult, parseGameReveal } from './round.js';
@@ -502,8 +503,10 @@ if (replayMode) {
   setPlayModeUi();
   createGamePreloader({
     shell: shellEl,
-    title: GAME.title,
+    brand: 'SUKI engine',
+    subtitle: GAME.title,
     hint: 'Tap anywhere to play',
+    assets: buildPreloadAssets(),
     onContinue: () => {
       gameAudio.unlock();
       game.start();
