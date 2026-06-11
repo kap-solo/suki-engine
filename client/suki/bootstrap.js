@@ -5,6 +5,11 @@ import { rgsOfflineMessage } from './productionUi.js';
 import { withRgsCall } from './rgsTransport.js';
 import { validateRgsConfig } from './rgsConfig.js';
 import { getEnvironment } from './environment.js';
+import {
+  isConnectionFailure,
+  notifyRgsConnectionLost,
+  notifyRgsConnectionRestored,
+} from './rgsConnection.js';
 
 export { getDevComplianceLabel };
 
@@ -33,6 +38,7 @@ export async function bootstrapPlayMode(ctx) {
     const data = await withRgsCall(() => authenticate());
     applyAuthConfig(data);
     setRgsReady(true);
+    notifyRgsConnectionRestored();
 
     const authOutcome = await lifecycle.handleAuthRound(data.round, {
       lastEvent: data.meta?.lastEvent,
@@ -49,20 +55,50 @@ export async function bootstrapPlayMode(ctx) {
     const code = String(err.message);
     setRgsReady(false);
     setMessage(isSessionFatal(code) ? messageForRgsCode(code) : rgsOfflineMessage());
+    if (!isSessionFatal(code) && isConnectionFailure(code)) {
+      notifyRgsConnectionLost(code);
+    }
   }
 }
 
 export function attachBalanceRefresh(ctx) {
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState !== 'visible' || isReplayMode() || !ctx.rgsReady || ctx.isBusy()) {
+    if (document.visibilityState !== 'visible' || isReplayMode() || !ctx.rgsReady) {
       return;
     }
+
+    if (ctx.isBusy?.()) {
+      withRgsCall(() => authenticate())
+        .then(async (data) => {
+          ctx.applyAuthConfig?.(data);
+          await ctx.lifecycle?.handleAuthRound(data.round, {
+            lastEvent: data.meta?.lastEvent,
+          });
+          notifyRgsConnectionRestored();
+        })
+        .catch((err) => {
+          console.warn('resume on visibility failed', err);
+          const code = String(err?.message ?? '');
+          if (isConnectionFailure(code)) {
+            notifyRgsConnectionLost(code);
+          }
+        });
+      return;
+    }
+
     fetchBalance()
       .then((balanceObj) => {
         ctx.applyBalance(balanceObj);
         ctx.syncHud();
+        notifyRgsConnectionRestored();
       })
-      .catch((err) => console.warn('balance refresh failed', err));
+      .catch((err) => {
+        console.warn('balance refresh failed', err);
+        const code = String(err?.message ?? '');
+        if (isConnectionFailure(code)) {
+          notifyRgsConnectionLost(code);
+        }
+      });
   });
 }
 

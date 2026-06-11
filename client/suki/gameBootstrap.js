@@ -7,6 +7,8 @@ import { createSukiLifecycle } from './lifecycle.js';
 import { showDevTools, showComplianceFooter } from './environment.js';
 import { getRgsConnectionInfo, getRgsParams } from '../rgs.js';
 import { bootstrapPlayMode, attachBalanceRefresh } from './bootstrap.js';
+import { createConnectionBanner } from './connectionBanner.js';
+import { setRgsConnectionCallbacks } from './rgsConnection.js';
 import { createSessionTimer } from './sessionTimer.js';
 import { createCurrencyFormatter } from './currency.js';
 import { createCopyPolicy, isSocialCasinoMode, applyCopyLabels } from './copy.js';
@@ -60,6 +62,8 @@ export function createGameBootstrap(options) {
     : null;
 
   let rgsReady = false;
+  /** @type {ReturnType<typeof createConnectionBanner> | null} */
+  let connectionBanner = null;
   const elements = shell.elements ?? {};
 
   const initialParams = getRgsParams();
@@ -84,6 +88,7 @@ export function createGameBootstrap(options) {
       overrides: auth.copyOverrides,
     });
     applyCopyLabels(copy, elements);
+    connectionBanner?.refreshCopy();
   }
 
   const jurisdiction = createJurisdictionController(() => {
@@ -182,15 +187,6 @@ export function createGameBootstrap(options) {
     ui.onRgsReady?.(ready);
   }
 
-  attachBalanceRefresh({
-    get rgsReady() {
-      return rgsReady;
-    },
-    isBusy: ui.isBusy ?? (() => false),
-    applyBalance: lifecycleDeps.applyBalance,
-    syncHud: ui.syncHud ?? (() => {}),
-  });
-
   function start() {
     if (isReplayMode()) {
       return replay?.start?.();
@@ -206,6 +202,30 @@ export function createGameBootstrap(options) {
       readyMessage: copy.term('setBetPrompt'),
     });
   }
+
+  if (layoutRoot && !isReplayMode()) {
+    connectionBanner = createConnectionBanner({
+      root: layoutRoot,
+      t: (key) => copy.t(key),
+      onRetry: () => start(),
+    });
+  }
+
+  setRgsConnectionCallbacks({
+    onLost: () => connectionBanner?.show(),
+    onRestored: () => connectionBanner?.hide(),
+  });
+
+  attachBalanceRefresh({
+    get rgsReady() {
+      return rgsReady;
+    },
+    isBusy: ui.isBusy ?? (() => false),
+    applyBalance: lifecycleDeps.applyBalance,
+    applyAuthConfig,
+    lifecycle,
+    syncHud: ui.syncHud ?? (() => {}),
+  });
 
   return {
     jurisdiction,
@@ -243,5 +263,6 @@ export function createGameBootstrap(options) {
       refreshPlayerDisplay();
     },
     start,
+    connectionBanner,
   };
 }

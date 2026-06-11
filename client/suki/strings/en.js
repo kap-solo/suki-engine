@@ -18,6 +18,8 @@ export const en = {
   onAmount: 'on',
   newSessionBalance: 'New session — balance',
   autoplayStopped: 'Autoplay stopped — insufficient balance after',
+  connectionLost: 'Connection lost',
+  connectionRetry: 'Retry',
 };
 
 /** Social casino overrides for English (stake.us-style terminology). */

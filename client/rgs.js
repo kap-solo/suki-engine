@@ -10,6 +10,12 @@ import { messageForRgsCode } from './suki/errors.js';
 import { buildRgsConfig, describeRgsMode } from './suki/rgsConfig.js';
 import { getEnvironment } from './suki/environment.js';
 import { getPlayerCurrency } from './suki/playerCurrency.js';
+import { withRgsCall } from './suki/rgsTransport.js';
+import {
+  isConnectionFailure,
+  notifyRgsConnectionLost,
+  notifyRgsConnectionRestored,
+} from './suki/rgsConnection.js';
 
 export { initSuki, getSukiConfig, getDevComplianceLabel, getJurisdictionProfileName } from './suki/config.js';
 export { messageForRgsCode, classifyRgsError, applyRgsError, isSessionFatal } from './suki/errors.js';
@@ -79,20 +85,46 @@ export function getRgsConnectionInfo() {
   };
 }
 
-async function rgsPost(path, body) {
+async function rgsPostOnce(path, body) {
   const { rgsUrl } = getRgsParams();
-  // Stake host-only rgs_url is normalized to https:// in buildRgsConfig
-  const response = await fetch(`${rgsUrl}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  const data = await response.json();
+  let response;
+  try {
+    // Stake host-only rgs_url is normalized to https:// in buildRgsConfig
+    response = await fetch(`${rgsUrl}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch {
+    throw new Error('ERR_NET');
+  }
+
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error('ERR_NET');
+  }
+
   if (!response.ok || data.error) {
     const code = data.error?.code || data.error?.statusCode || `HTTP_${response.status}`;
     throw new Error(code);
   }
   return data;
+}
+
+async function rgsPost(path, body) {
+  try {
+    const data = await withRgsCall(() => rgsPostOnce(path, body));
+    notifyRgsConnectionRestored();
+    return data;
+  } catch (err) {
+    const code = String(err?.message ?? 'ERR_GEN');
+    if (isConnectionFailure(code)) {
+      notifyRgsConnectionLost(code);
+    }
+    throw err;
+  }
 }
 
 export async function authenticate() {
@@ -145,6 +177,13 @@ export { parseAuthResponse } from './suki/authConfig.js';
 export { createControlPolicy } from './suki/controlPolicy.js';
 export { applyProductionShell, rgsOfflineMessage } from './suki/productionUi.js';
 export { withRgsCall } from './suki/rgsTransport.js';
+export {
+  setRgsConnectionCallbacks,
+  isConnectionFailure,
+  notifyRgsConnectionLost,
+  notifyRgsConnectionRestored,
+} from './suki/rgsConnection.js';
+export { createConnectionBanner } from './suki/connectionBanner.js';
 export {
   bootstrapPlayMode,
   attachBalanceRefresh,

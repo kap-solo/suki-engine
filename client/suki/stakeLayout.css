@@ -107,6 +107,50 @@ body {
   font-size: 0.82rem;
 }
 
+.suki-connection-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.45rem 0.75rem;
+  background: rgba(120, 28, 32, 0.94);
+  color: #ffe8e8;
+  font-size: 0.82rem;
+  font-weight: 600;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+.suki-connection-banner__text {
+  line-height: 1.3;
+}
+
+.suki-connection-banner__retry {
+  margin: 0;
+  padding: 0.3rem 0.85rem;
+  border: 1px solid rgba(255, 232, 232, 0.55);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.suki-connection-banner__retry:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.suki-connection-banner__retry:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
 .suki-replay-banner {
   grid-area: replay;
   z-index: 2;

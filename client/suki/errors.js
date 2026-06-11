@@ -27,6 +27,7 @@ const MESSAGES = {
   ERR_UE: 'Server error — try again shortly.',
   ERR_GE: 'Server error — try again shortly.',
   ERR_GEN: 'Server error — try again shortly.',
+  ERR_NET: 'Connection lost — check your network.',
   ERR_VAL: 'Invalid request.',
 };
 
@@ -40,6 +41,7 @@ const POLICIES = {
   ERR_UE: { action: 'retry', fatal: false, blockBet: true, shouldResumeRound: false, retryable: true },
   ERR_GE: { action: 'retry', fatal: false, blockBet: true, shouldResumeRound: false, retryable: true },
   ERR_GEN: { action: 'retry', fatal: false, blockBet: true, shouldResumeRound: false, retryable: true },
+  ERR_NET: { action: 'retry', fatal: false, blockBet: true, shouldResumeRound: false, retryable: true },
   ERR_VAL: { action: 'info', fatal: false, blockBet: false, shouldResumeRound: false, retryable: false },
 };
 

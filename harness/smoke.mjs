@@ -11,6 +11,12 @@ import { createMockRgs } from '../server/mock-rgs/create-mock-rgs.mjs';
 import { classifyRgsError } from '../client/suki/errors.js';
 import { withRgsCall } from '../client/suki/rgsTransport.js';
 import {
+  isConnectionFailure,
+  notifyRgsConnectionLost,
+  notifyRgsConnectionRestored,
+  setRgsConnectionCallbacks,
+} from '../client/suki/rgsConnection.js';
+import {
   buildRgsConfig,
   normalizeRgsBase,
   validateRgsConfig,
@@ -555,8 +561,28 @@ function runShellClockTests() {
 async function runPolicyTests() {
   console.log('\nUnit — error policy & transport');
   assert(classifyRgsError('ERR_UE').retryable, 'ERR_UE is retryable');
+  assert(classifyRgsError('ERR_NET').retryable, 'ERR_NET is retryable');
   assert(!classifyRgsError('ERR_IPB').retryable, 'ERR_IPB is not retryable');
   assert(classifyRgsError('ERR_BE').shouldResumeRound, 'ERR_BE resumes round');
+  assert(isConnectionFailure('ERR_NET'), 'ERR_NET is connection failure');
+  assert(isConnectionFailure('ERR_UE'), 'ERR_UE is connection failure');
+  assert(!isConnectionFailure('ERR_IPB'), 'ERR_IPB is not connection failure');
+
+  let lost = false;
+  setRgsConnectionCallbacks({
+    onLost: () => {
+      lost = true;
+    },
+    onRestored: () => {
+      lost = false;
+    },
+  });
+  notifyRgsConnectionLost('ERR_NET');
+  assert(lost, 'notifyRgsConnectionLost shows banner');
+  notifyRgsConnectionRestored();
+  assert(!lost, 'notifyRgsConnectionRestored hides banner');
+  notifyRgsConnectionLost('ERR_IPB');
+  assert(!lost, 'notifyRgsConnectionLost ignores non-connection errors');
 
   let attempts = 0;
   const value = await withRgsCall(async () => {

@@ -21,6 +21,8 @@ export const de = {
   onAmount: 'bei',
   newSessionBalance: 'Neue Sitzung — Guthaben',
   autoplayStopped: 'Autoplay gestoppt — nicht genug Guthaben nach',
+  connectionLost: 'Verbindung unterbrochen',
+  connectionRetry: 'Erneut versuchen',
 };
 
 /** German social casino overrides (extend when targeting social markets). */
