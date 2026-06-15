@@ -264,8 +264,8 @@ export function getReplayParams() {
   };
 }
 
-export function buildReplayUrl({ event, amountApi, mode = 'base' }) {
-  const { rgsUrl } = getRgsParams();
+export function buildReplayUrl({ event, amountApi, mode = 'base', lang } = {}) {
+  const { rgsUrl, language } = getRgsParams();
   const url = new URL(window.location.origin + window.location.pathname);
   url.searchParams.set('replay', 'true');
   url.searchParams.set('rgs_url', rgsUrl);
@@ -274,6 +274,7 @@ export function buildReplayUrl({ event, amountApi, mode = 'base' }) {
   url.searchParams.set('mode', mode.toLowerCase());
   url.searchParams.set('event', event);
   url.searchParams.set('amount', String(amountApi));
+  url.searchParams.set('lang', lang ?? language);
   return url.toString();
 }
 
@@ -297,3 +298,6 @@ export function roundPayoutMultiplier(round) {
   if (typeof round.payoutMultiplier === 'number') return round.payoutMultiplier;
   return (round.payout ?? 0) / Math.max(1, round.amount ?? 1);
 }
+
+export { shouldSkipBetEventReporting } from './suki/roundReporting.js';
+export { formatReplayStartSummary } from './suki/replayUi.js';

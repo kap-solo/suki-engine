@@ -200,6 +200,7 @@ export function createGameBootstrap(options) {
       onAuthRound: ui.onAuthRound,
       connectingMessage: copy.term('connectingRgs'),
       readyMessage: copy.term('setBetPrompt'),
+      invalidRgsMessage: copy.term('invalidRgsConnection'),
     });
   }
 

@@ -7,6 +7,7 @@ import { endRound, play } from '../rgs.js';
 import { messageForRgsCode, classifyRgsError } from './errors.js';
 import { createBookPlayer, resolveLastEventIndex, sortBookEvents, sliceEventsForResume } from './bookPlayer.js';
 import { shouldReportBetEvents } from './environment.js';
+import { shouldSkipBetEventReporting } from './roundReporting.js';
 
 /**
  * @param {object} deps
@@ -73,7 +74,8 @@ export function createSukiLifecycle(deps) {
     const fullBookLastIndex = events.length ? events[events.length - 1].index : -1;
     const roundStart = Date.now();
 
-    const skipEventReporting = !shouldReportBetEvents();
+    const skipEventReporting =
+      !shouldReportBetEvents() || shouldSkipBetEventReporting(round);
     const handlerCtx = {
       round,
       animate,

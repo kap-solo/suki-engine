@@ -31,7 +31,7 @@ export async function bootstrapPlayMode(ctx) {
     const validation = validateRgsConfig(getRgsParams(), environment);
     if (!validation.ok) {
       setRgsReady(false);
-      setMessage(validation.issues.join(' · '));
+      setMessage(ctx.invalidRgsMessage ?? validation.issues.join(' · '));
       return;
     }
 

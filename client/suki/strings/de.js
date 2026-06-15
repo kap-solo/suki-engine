@@ -10,7 +10,7 @@ export const de = {
   lastResult: 'Letztes Ergebnis',
   drop: 'Drop',
   playVerb: 'spielen',
-  insufficientBalance: 'Nicht genug Guthaben.',
+  insufficientBalance: 'Unzureichende Mittel.',
   setBetPrompt: 'Einsatz wählen · Drop drücken.',
   connectingRgs: 'Verbindung zum RGS…',
   sessionPl: 'Sitzung G/V',
@@ -23,6 +23,25 @@ export const de = {
   autoplayStopped: 'Autoplay gestoppt — nicht genug Guthaben nach',
   connectionLost: 'Verbindung unterbrochen',
   connectionRetry: 'Erneut versuchen',
+  invalidRgsConnection:
+    'Verbindung fehlgeschlagen — ungültige Verbindungseinstellungen. Spiel über Stake erneut öffnen.',
+  replayAgain: 'Erneut abspielen',
+  loadingReplay: 'Replay wird geladen…',
+  replayingRound: 'Runde wird abgespielt…',
+  replayPlayLabel: 'Spielkosten',
+  payoutMultiplierLabel: 'Auszahlungsmultiplikator',
+  replayFinalAmountLabel: 'Endbetrag',
+  baseBetLabel: 'Basiseinsatz',
+  costMultiplierLabel: 'Kostenmultiplikator',
+  playModeLabel: 'Spielmodus',
+  modeCostLine:
+    '{playLabel}: {playCost} — {baseLabel}: {baseAmount} × {multLabel} {costMult}',
+  replayStartSummary:
+    '{playLabel}: {playAmount} · {worthLabel}: {worthMult} · {finalLabel}: {finalAmount}',
+  gamblingLimitReached: 'Spielgrenze erreicht.',
+  roundingNote: 'Alle angezeigten Beträge werden auf 2 Dezimalstellen gerundet.',
+  maxWinLabel: 'Max. Gewinn',
+  rtpLabel: 'RTP',
 };
 
 /** German social casino overrides (extend when targeting social markets). */
@@ -30,7 +49,7 @@ export const deSocial = {
   balance: 'Münzen',
   bet: 'Spielen',
   betAmount: 'Spielbetrag',
-  insufficientBalance: 'Nicht genug Münzen.',
+  insufficientBalance: 'Unzureichendes Guthaben.',
   setBetPrompt: 'Spielbetrag wählen · Drop drücken.',
   connectingRgs: 'Verbindung…',
   sessionPl: 'Sitzung Münzen',
@@ -38,4 +57,8 @@ export const deSocial = {
   stakeReturned: 'Push, Spielbetrag zurück',
   newSessionBalance: 'Neue Sitzung — Münzen',
   autoplayStopped: 'Autoplay gestoppt — nicht genug Münzen nach',
+  replayPlayLabel: 'Spielbetrag',
+  payoutMultiplierLabel: 'Endmultiplikator',
+  baseBetLabel: 'Basis-Spiel',
+  costMultiplierLabel: 'Feature-Multiplikator',
 };

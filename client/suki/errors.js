@@ -18,7 +18,7 @@
 const MESSAGES = {
   ERR_SCR: 'Configuration error — contact support.',
   ERR_OPT: 'Configuration error — contact support.',
-  ERR_IPB: 'Not enough balance.',
+  ERR_IPB: 'Insufficient Funds.',
   ERR_IS: 'Session expired — reopen the game from Stake.',
   ERR_ATE: 'Authentication expired — reopen the game from Stake.',
   ERR_GLE: 'Gambling limit reached.',
@@ -53,7 +53,16 @@ const DEFAULT_POLICY = {
   retryable: false,
 };
 
-export function messageForRgsCode(code) {
+/**
+ * @param {string} code
+ * @param {{ copy?: { term: (key: string) => string } }} [options]
+ */
+export function messageForRgsCode(code, options = {}) {
+  const { copy } = options;
+  if (copy) {
+    if (code === 'ERR_IPB') return copy.term('insufficientBalance');
+    if (code === 'ERR_GLE') return copy.term('gamblingLimitReached');
+  }
   return MESSAGES[code] ?? `Error — ${code}`;
 }
 
@@ -61,12 +70,16 @@ export function isSessionFatal(code) {
   return classifyRgsError(code).fatal;
 }
 
-/** @returns {RgsErrorPolicy} */
-export function classifyRgsError(code) {
+/**
+ * @param {string} code
+ * @param {{ copy?: { term: (key: string) => string } }} [options]
+ * @returns {RgsErrorPolicy}
+ */
+export function classifyRgsError(code, options = {}) {
   const policy = POLICIES[code] ?? DEFAULT_POLICY;
   return {
     code,
-    message: messageForRgsCode(code),
+    message: messageForRgsCode(code, options),
     action: policy.action,
     fatal: policy.fatal,
     blockBet: policy.blockBet,
@@ -77,11 +90,11 @@ export function classifyRgsError(code) {
 
 /**
  * @param {string} code
- * @param {{ setMessage?: (text: string) => void, onFatal?: () => void, onBlockBet?: () => void }} [ctx]
+ * @param {{ setMessage?: (text: string) => void, onFatal?: () => void, onBlockBet?: () => void, copy?: { term: (key: string) => string } }} [ctx]
  * @returns {RgsErrorPolicy}
  */
 export function applyRgsError(code, ctx = {}) {
-  const policy = classifyRgsError(code);
+  const policy = classifyRgsError(code, { copy: ctx.copy });
   ctx.setMessage?.(policy.message);
   if (policy.fatal) ctx.onFatal?.();
   if (policy.blockBet) ctx.onBlockBet?.();

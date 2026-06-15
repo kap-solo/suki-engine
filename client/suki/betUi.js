@@ -176,6 +176,8 @@ export function createBetUi(options) {
   let turboDisablesButton = false;
   let replayMode = false;
   let lastReplayUrl = '';
+  /** @type {(key: string, vars?: Record<string, string | number>) => string} */
+  let getCopyTerm = (key) => key;
 
   const elements = {
     playPanel,
@@ -209,6 +211,12 @@ export function createBetUi(options) {
     return apiToDisplay(playApi);
   }
 
+  function syncLocalizedLabels() {
+    betChips.setAttribute('aria-label', getCopyTerm('betAmount'));
+    modeRow.setAttribute('aria-label', getCopyTerm('playModeLabel'));
+    replayAgainBtn.textContent = getCopyTerm('replayAgain');
+  }
+
   function syncModeCostHint() {
     const active = game?.betModes?.getActiveMode?.();
     if (!active || active.costMultiplier <= 1) {
@@ -216,7 +224,14 @@ export function createBetUi(options) {
       return;
     }
     modeCost.hidden = false;
-    modeCost.textContent = `Play cost ${fmt(playCostDisplay())} — base ${fmt(getBet())} × ${active.costMultiplier}`;
+    modeCost.textContent = getCopyTerm('modeCostLine', {
+      playLabel: getCopyTerm('replayPlayLabel'),
+      playCost: fmt(playCostDisplay()),
+      baseLabel: getCopyTerm('baseBetLabel'),
+      baseAmount: fmt(getBet()),
+      multLabel: getCopyTerm('costMultiplierLabel'),
+      costMult: active.costMultiplier,
+    });
   }
 
   function renderModes() {
@@ -385,9 +400,11 @@ export function createBetUi(options) {
       onDismissOverlays = handlers.onDismissOverlays ?? null;
       getPlayLabel = handlers.getPlayLabel ?? null;
       getPlayCost = handlers.getPlayCost ?? null;
+      getCopyTerm = handlers.getCopyTerm ?? ((key, vars) => game?.copy?.t?.(key, vars) ?? key);
       turboDisablesButton = handlers.turboDisablesButton ?? false;
       replayMode = handlers.replayMode ?? false;
 
+      syncLocalizedLabels();
       renderModes();
       renderBetLevels();
       sync();
@@ -400,6 +417,7 @@ export function createBetUi(options) {
     setView,
     setLastReplayUrl,
     syncModeCostHint,
+    syncLocalizedLabels,
     destroy() {
       root.innerHTML = '';
       root.classList.remove('suki-bet-ui-root');

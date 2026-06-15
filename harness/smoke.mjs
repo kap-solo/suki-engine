@@ -40,6 +40,9 @@ import { formatSessionElapsed, createSessionTimer } from '../client/suki/session
 import { formatShellClockTime } from '../client/suki/shellClock.js';
 import { formatCurrencyAmount, createCurrencyFormatter } from '../client/suki/currency.js';
 import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
+import { shouldSkipBetEventReporting } from '../client/suki/roundReporting.js';
+import { formatReplayStartSummary } from '../client/suki/replayUi.js';
+import { createBookPlayer } from '../client/suki/bookPlayer.js';
 import { setPlayerCurrency, getPlayerCurrency } from '../client/suki/playerCurrency.js';
 import { parseAuthResponse } from '../client/suki/authConfig.js';
 import { createI18n, resolveLang } from '../client/suki/i18n.js';
@@ -485,7 +488,27 @@ function runCurrencyCopyTests() {
   const social = createCopyPolicy({ socialCasino: true });
   assert(real.term('balance') === 'Balance', 'real money balance label');
   assert(social.term('balance') === 'Coins', 'social casino balance label');
-  assert(social.term('insufficientBalance').includes('coins'), 'social insufficient copy');
+  assert(real.term('insufficientBalance') === 'Insufficient Funds.', 'exact insufficient funds copy');
+  assert(social.term('insufficientBalance') === 'Insufficient Balance.', 'exact insufficient balance social');
+
+  const summary = formatReplayStartSummary(
+    real,
+    { playAmount: 1, payoutMultiplier: 7, finalAmount: 7 },
+    { formatCurrency: (n) => `$${n.toFixed(2)}`, formatMult: (n) => `${n}×` },
+  );
+  assert(summary.includes('Play cost'), 'replay intro play cost');
+  assert(summary.includes('Payout multiplier'), 'replay intro payout multiplier');
+
+  const socialSummary = formatReplayStartSummary(
+    social,
+    { playAmount: 1, payoutMultiplier: 7, finalAmount: 7 },
+    { formatCurrency: (n) => `$${n.toFixed(2)}`, formatMult: (n) => `${n}×` },
+  );
+  assert(socialSummary.includes('Play amount'), 'social replay play amount label');
+  assert(!socialSummary.toLowerCase().includes('cost'), 'social replay avoids cost');
+  assert(social.term('baseBetLabel') === 'Base Play', 'stake.us base play label');
+  assert(social.term('costMultiplierLabel') === 'Feature Multiplier', 'stake.us feature multiplier');
+  assert(social.term('payoutMultiplierLabel') === 'Final multiplier', 'stake.us final multiplier');
 
   const label = { textContent: '' };
   applyCopyLabels(social, { balanceLabel: label });
@@ -610,6 +633,28 @@ async function runPolicyTests() {
   assert(value === 'ok' && attempts === 2, 'withRgsCall retries then succeeds');
 }
 
+async function runComplianceReportingTests() {
+  console.log('\nUnit — compliance reporting');
+
+  assert(shouldSkipBetEventReporting({ payout: 0 }), 'skip bet/event when payout is 0');
+  assert(!shouldSkipBetEventReporting({ payout: 1 }), 'report bet/event when payout > 0');
+  assert(shouldSkipBetEventReporting({}), 'skip bet/event when payout missing');
+
+  const reported = [];
+  const player = createBookPlayer({
+    handlers: { step: async () => {} },
+    reportEvent: async (index) => {
+      reported.push(index);
+    },
+  });
+  await player.playEvents(
+    [{ index: 0, type: 'step' }],
+    { skipEventReporting: true },
+    { skipReporting: false },
+  );
+  assert(reported.length === 0, 'book player respects skipEventReporting');
+}
+
 async function main() {
   console.log('Suki Engine — compliance smoke');
   runUnitTests();
@@ -622,6 +667,7 @@ async function main() {
   runBetModeTests();
   runCurrencyCopyTests();
   runI18nTests();
+  await runComplianceReportingTests();
   runSessionTimerTests();
   runShellClockTests();
   await runPreloaderTests();

@@ -121,7 +121,7 @@ function runApplyRgsError() {
     },
   });
   assert(!fatal && blocked, 'ERR_IPB blocks bet only');
-  assert(message.includes('balance'), 'ERR_IPB player message');
+  assert(message.includes('Insufficient Funds'), 'ERR_IPB player message');
 }
 
 async function runTransportRetry() {
