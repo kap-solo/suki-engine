@@ -1,13 +1,13 @@
 /**
  * Suki round lifecycle — outcome from RGS, presentation via book event player.
- * play → walk round.state → bet/event per step → end-round
+ * play → walk round.state → bet/event per step → end-round (skipped on zero win)
  */
 
 import { endRound, play } from '../rgs.js';
 import { messageForRgsCode, classifyRgsError } from './errors.js';
 import { createBookPlayer, resolveLastEventIndex, sortBookEvents, sliceEventsForResume } from './bookPlayer.js';
 import { shouldReportBetEvents } from './environment.js';
-import { shouldSkipBetEventReporting } from './roundReporting.js';
+import { shouldSkipBetEventReporting, shouldSkipEndRound } from './roundReporting.js';
 
 /**
  * @param {object} deps
@@ -103,12 +103,18 @@ export function createSukiLifecycle(deps) {
       });
     }
 
-    const endRes = await endRound();
-    applyBalance(endRes.balance);
+    let replayEvent = null;
+    if (shouldSkipEndRound(round)) {
+      // Stake noWin — round settled on /wallet/play; do not call end-round.
+    } else {
+      const endRes = await endRound();
+      applyBalance(endRes.balance);
+      replayEvent = endRes.replayEvent;
+    }
 
     const result = {
       ...buildSettledResult(round),
-      replayEvent: endRes.replayEvent,
+      replayEvent,
       round,
     };
 

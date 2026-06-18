@@ -6,6 +6,13 @@ import {
 } from './defaults.mjs';
 import { injectMockError } from './inject-error.mjs';
 
+/** @param {{ payout?: number, payoutMultiplier?: number }} round */
+function isZeroWinRound(round) {
+  const mult = Number(round?.payoutMultiplier ?? Number.NaN);
+  if (Number.isFinite(mult)) return mult <= 0;
+  return Number(round?.payout ?? 0) === 0;
+}
+
 /**
  * @typedef {object} MockRgsConfig
  * @property {string} gameId
@@ -153,7 +160,7 @@ export function createMockRgs(config) {
 
       session.balance -= amount;
       session.roundID += 1;
-      session.activeRound = {
+      const round = {
         roundID: session.roundID,
         amount,
         ...playResult,
@@ -161,9 +168,18 @@ export function createMockRgs(config) {
         mode: body.mode || 'BASE',
       };
 
+      if (isZeroWinRound(playResult)) {
+        round.active = false;
+        session.lastCompletedRound = { ...round };
+        session.lastEvent = null;
+        session.activeRound = null;
+      } else {
+        session.activeRound = round;
+      }
+
       return success({
         balance: balanceObject(session),
-        round: session.activeRound,
+        round,
       });
     }
 

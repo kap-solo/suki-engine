@@ -299,7 +299,7 @@ export function roundPayoutMultiplier(round) {
   return (round.payout ?? 0) / Math.max(1, round.amount ?? 1);
 }
 
-export { shouldSkipBetEventReporting } from './suki/roundReporting.js';
+export { shouldSkipBetEventReporting, shouldSkipEndRound } from './suki/roundReporting.js';
 export { formatReplayStartSummary } from './suki/replayUi.js';
 export {
   ERR_RGS_CONFIG,

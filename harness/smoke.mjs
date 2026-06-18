@@ -41,7 +41,7 @@ import { formatSessionElapsed, createSessionTimer } from '../client/suki/session
 import { formatShellClockTime } from '../client/suki/shellClock.js';
 import { formatCurrencyAmount, createCurrencyFormatter } from '../client/suki/currency.js';
 import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
-import { shouldSkipBetEventReporting } from '../client/suki/roundReporting.js';
+import { shouldSkipBetEventReporting, shouldSkipEndRound } from '../client/suki/roundReporting.js';
 import { formatReplayStartSummary } from '../client/suki/replayUi.js';
 import { createBookPlayer } from '../client/suki/bookPlayer.js';
 import {
@@ -673,6 +673,44 @@ async function runComplianceReportingTests() {
   assert(shouldSkipBetEventReporting({ payout: 0 }), 'skip bet/event when payout is 0');
   assert(!shouldSkipBetEventReporting({ payout: 1 }), 'report bet/event when payout > 0');
   assert(shouldSkipBetEventReporting({}), 'skip bet/event when payout missing');
+
+  assert(shouldSkipEndRound({ payout: 0, payoutMultiplier: 0 }), 'skip end-round on zero win');
+  assert(shouldSkipEndRound({ payoutMultiplier: 0 }), 'skip end-round when multiplier is 0');
+  assert(!shouldSkipEndRound({ payout: 10, payoutMultiplier: 0.1 }), 'end-round on partial win');
+  assert(!shouldSkipEndRound({ payout: 1 }), 'end-round when payout > 0');
+
+  const zeroWinRgs = createMockRgs({
+    gameId: 'zero-win',
+    replayVersion: '1',
+    resolvePlay(_session, body) {
+      return {
+        payout: 0,
+        payoutMultiplier: 0,
+        state: SAMPLE_STATE,
+        mode: body.mode,
+      };
+    },
+    resolveReplay() {
+      return null;
+    },
+  });
+  const zeroSession = 'zero-win-session';
+  zeroWinRgs.handleRgsRequest('/wallet/authenticate', { sessionID: zeroSession, gameID: 'zero-win' });
+  const zeroPlay = zeroWinRgs.handleRgsRequest('/wallet/play', {
+    sessionID: zeroSession,
+    gameID: 'zero-win',
+    amount: API,
+    mode: 'BASE',
+  });
+  assert(!zeroPlay.error && zeroPlay.round?.payout === 0, 'zero-win play succeeds');
+  assert(zeroPlay.round?.active === false, 'zero-win round auto-closed on play');
+  const zeroPlay2 = zeroWinRgs.handleRgsRequest('/wallet/play', {
+    sessionID: zeroSession,
+    gameID: 'zero-win',
+    amount: API,
+    mode: 'BASE',
+  });
+  assert(!zeroPlay2.error, 'second play after zero win without end-round');
 
   const reported = [];
   const player = createBookPlayer({
