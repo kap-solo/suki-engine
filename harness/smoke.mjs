@@ -51,7 +51,13 @@ import { formatCurrencyAmount, createCurrencyFormatter } from '../client/suki/cu
 import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
 import { shouldSkipBetEventReporting, shouldSkipEndRound } from '../client/suki/roundReporting.js';
 import { canAffordPlayAmount, assertSufficientBalanceForPlay } from '../client/suki/balanceGuard.js';
-import { registerAutoplayConfirm, AUTOPLAY_CONFIRM_MODAL_ID } from '../client/suki/autoplayConfirm.js';
+import {
+  registerAutoplayConfirm,
+  AUTOPLAY_CONFIRM_MODAL_ID,
+  parseAutoplayRoundCount,
+  sanitizeAutoplayRoundDigits,
+  shouldBlockAutoplayRoundKey,
+} from '../client/suki/autoplayConfirm.js';
 import { formatReplayStartSummary } from '../client/suki/replayUi.js';
 import { createBookPlayer } from '../client/suki/bookPlayer.js';
 import {
@@ -59,18 +65,26 @@ import {
   isFatalRgsError,
   shouldTreatAuthFailureAsInvalidRgs,
 } from '../client/suki/rgsGate.js';
+import {
+  hasRgsUrlParamChanged,
+  shouldEnforceLaunchRgsLock,
+  validateLaunchRgsUrlStable,
+} from '../client/suki/rgsLaunchLock.js';
 import { setPlayerCurrency, getPlayerCurrency } from '../client/suki/playerCurrency.js';
 import { parseAuthResponse } from '../client/suki/authConfig.js';
 import {
   applyAuthBetConfig,
+  applyAuthRoundBetOverride,
   buildBetLevelsApi,
   clampBetApi,
   createBetConfigPolicy,
   hasAuthBetConfig,
 } from '../client/suki/betConfig.js';
 import { createI18n, resolveLang } from '../client/suki/i18n.js';
+import { en } from '../client/suki/strings/en.js';
 import {
   createBetModePolicy,
+  applyBetModeFromRound,
   normalizeModeKey,
   toRgsMode,
   parseGameModesFromIndex,
@@ -349,6 +363,23 @@ function runRgsConfigTests() {
     resolveRgsEndpoint(cfgB.rgsUrl, '/wallet/end-round') === 'https://rgs-b.stake-engine.com/wallet/end-round',
     'end-round targets changed rgs_url',
   );
+
+  assert(
+    hasRgsUrlParamChanged('rgs-a.stake-engine.com', 'rgs-b.stake-engine.com', 'https://game.example.com'),
+    'detects changed rgs_url host',
+  );
+  assert(
+    !hasRgsUrlParamChanged('rgs-a.stake-engine.com', 'rgs-a.stake-engine.com', 'https://game.example.com'),
+    'unchanged rgs_url host',
+  );
+  assert(
+    !hasRgsUrlParamChanged('', 'rgs-b.stake-engine.com', 'https://game.example.com'),
+    'no launch rgs_url means no change lock',
+  );
+  assert(shouldEnforceLaunchRgsLock('production'), 'production locks launch rgs_url');
+  assert(shouldEnforceLaunchRgsLock('sandbox'), 'sandbox locks launch rgs_url');
+  assert(!shouldEnforceLaunchRgsLock('development'), 'local dev does not lock by default');
+  assert(validateLaunchRgsUrlStable('hostedDemo').ok, 'hosted demo skips launch lock');
 }
 
 function runBootstrapTests() {
@@ -460,6 +491,15 @@ function runBetUiTests() {
 function runAutoplayConfirmTests() {
   console.log('\nUnit — autoplay confirm');
 
+  assert(sanitizeAutoplayRoundDigits('12abc!') === '12', 'autoplay input strips non-digits');
+  assert(parseAutoplayRoundCount('25x') === 25, 'autoplay parses numeric rounds');
+  assert(parseAutoplayRoundCount('abc', { fallback: null }) === null, 'autoplay rejects alphabetic input');
+  assert(parseAutoplayRoundCount('0', { fallback: null }) === null, 'autoplay rejects zero rounds');
+  assert(parseAutoplayRoundCount('1500') === 999, 'autoplay clamps to max rounds');
+  assert(shouldBlockAutoplayRoundKey({ key: 'a' }), 'autoplay blocks alphabetic key');
+  assert(!shouldBlockAutoplayRoundKey({ key: '5' }), 'autoplay allows digit key');
+  assert(!shouldBlockAutoplayRoundKey({ key: 'Backspace' }), 'autoplay allows backspace');
+
   let confirmCalls = 0;
   let confirmedRounds = 0;
   const registry = new Map();
@@ -470,11 +510,12 @@ function runAutoplayConfirmTests() {
     },
     open(id) {
       const def = registry.get(id);
-      if (typeof document === 'undefined') return { body: null, startBtn: null };
+      if (typeof document === 'undefined') return { body: null, startBtn: null, customInput: null };
       const body = document.createElement('div');
       def?.render?.(body);
       const startBtn = body.querySelector('.suki-autoplay-start');
-      return { body, startBtn };
+      const customInput = body.querySelector('.suki-autoplay-rounds-input');
+      return { body, startBtn, customInput };
     },
     close() {},
   };
@@ -499,11 +540,21 @@ function runAutoplayConfirmTests() {
 
   const opened = modalHost.open(AUTOPLAY_CONFIRM_MODAL_ID);
   assert(opened.body?.querySelector('.suki-autoplay-start'), 'autoplay confirm renders start button');
+  assert(opened.customInput?.type === 'number', 'custom autoplay rounds uses numeric input');
   assert(confirmCalls === 0, 'autoplay not started when modal opens');
 
   opened.startBtn?.click();
   assert(confirmCalls === 1, 'autoplay starts only after confirm click');
-  assert(confirmedRounds === 100, 'autoplay confirm passes selected round count');
+  assert(confirmedRounds === 100, 'autoplay confirm passes default preset round count');
+
+  const customOpen = modalHost.open(AUTOPLAY_CONFIRM_MODAL_ID);
+  if (customOpen.customInput) {
+    customOpen.customInput.value = '37abc';
+    customOpen.customInput.dispatchEvent(new Event('input', { bubbles: true }));
+    assert(customOpen.customInput.value === '37', 'custom input sanitized to digits only');
+    customOpen.startBtn?.click();
+    assert(confirmedRounds === 37, 'autoplay confirm uses sanitized custom round count');
+  }
 }
 
 function runBalanceGuardTests() {
@@ -725,6 +776,80 @@ function runBetConfigTests() {
     betLevelsApi: [],
   });
   assert(stepped === 3 * API, 'clampBetApi aligns to step without betLevels');
+
+  const activeRoundAuth = parseAuthResponse({
+    config: {
+      minBet: API,
+      maxBet: 10 * API,
+      stepBet: API,
+      defaultBetLevel: API,
+      betLevels: [API, 2 * API, 3 * API, 4 * API, 5 * API],
+    },
+    round: {
+      active: true,
+      amount: 4 * API,
+      mode: 'BASE',
+      state: [{ index: 0, type: 'plinkoDrop' }],
+    },
+  });
+  const basePolicy = createBetModePolicy({
+    gameModes: [{ name: 'base', cost: 1 }],
+    authBetModes: { BASE: { mode: 'BASE', costMultiplier: 1, feature: false } },
+  });
+  assert(
+    applyAuthRoundBetOverride(activeRoundAuth, activeRoundAuth.round, basePolicy),
+    'active round bet override applies',
+  );
+  assert(activeRoundAuth.defaultBetDisplay === 4, 'active round sets default bet from amount');
+  assert(activeRoundAuth.usesActiveRoundBet, 'active round flag set');
+
+  const bonusPolicy = createBetModePolicy({
+    gameModes: [
+      { name: 'base', cost: 1 },
+      { name: 'bonus', cost: 100 },
+    ],
+    authBetModes: {
+      BASE: { mode: 'BASE', costMultiplier: 1, feature: false },
+      BONUS: { mode: 'BONUS', costMultiplier: 100, feature: true },
+    },
+  });
+  const bonusRoundAuth = parseAuthResponse({
+    config: {
+      minBet: API,
+      maxBet: 10 * API,
+      stepBet: API,
+      defaultBetLevel: API,
+      betLevels: [API, 2 * API, 3 * API, 4 * API, 5 * API],
+    },
+    round: {
+      active: true,
+      amount: 400 * API,
+      mode: 'BONUS',
+      state: [{ index: 0, type: 'plinkoDrop' }],
+    },
+  });
+  applyBetModeFromRound(bonusRoundAuth.round, bonusPolicy);
+  applyAuthRoundBetOverride(bonusRoundAuth, bonusRoundAuth.round, bonusPolicy);
+  assert(bonusPolicy.activeKey === 'bonus', 'active round selects matching bet mode');
+  assert(bonusRoundAuth.defaultBetDisplay === 4, 'bonus debit amount maps to base bet chip');
+
+  const inactiveRoundAuth = parseAuthResponse({
+    config: {
+      defaultBetLevel: API,
+      betLevels: [API, 2 * API, 3 * API],
+    },
+    round: {
+      active: false,
+      amount: 3 * API,
+      mode: 'BASE',
+      state: [],
+    },
+  });
+  assert(
+    !applyAuthRoundBetOverride(inactiveRoundAuth, inactiveRoundAuth.round, basePolicy),
+    'inactive round does not override default bet',
+  );
+  assert(inactiveRoundAuth.defaultBetDisplay === 1, 'inactive round keeps config default');
 }
 
 function runCurrencyCopyTests() {
@@ -789,6 +914,15 @@ function runI18nTests() {
   const enSocial = createI18n({ lang: 'en', socialCasino: true });
 
   assert(enUi.t('balance') === 'Balance', 'en balance');
+  assert(enUi.t('generalDisclaimerTitle') === 'General Disclaimer', 'general disclaimer title');
+  assert(
+    enUi.t('generalDisclaimer').includes('Malfunction voids all wins and plays'),
+    'general disclaimer body',
+  );
+  assert(
+    enUi.t('generalDisclaimer').includes('Remote Game Server'),
+    'general disclaimer RGS settlement',
+  );
   assert(deUi.t('balance') === 'Guthaben', 'de balance');
   assert(enSocial.t('balance') === 'Coins', 'en social balance');
   assert(deUi.t('setBetPrompt').includes('Drop'), 'de setBetPrompt');

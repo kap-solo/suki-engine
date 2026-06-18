@@ -11,6 +11,8 @@ import { buildRgsConfig, describeRgsMode, formatRgsUrlParam, resolveRgsEndpoint 
 import { getEnvironment } from './suki/environment.js';
 import { getPlayerCurrency } from './suki/playerCurrency.js';
 import { withRgsCall } from './suki/rgsTransport.js';
+import { ERR_RGS_CONFIG } from './suki/rgsGate.js';
+import { validateLaunchRgsUrlStable } from './suki/rgsLaunchLock.js';
 import {
   isConnectionFailure,
   notifyRgsConnectionLost,
@@ -69,6 +71,10 @@ export function startNewRgsSession() {
 
 /** @returns {ReturnType<typeof buildRgsConfig>} */
 export function getRgsParams() {
+  const environment = getEnvironment();
+  if (!validateLaunchRgsUrlStable(environment).ok) {
+    throw new Error(ERR_RGS_CONFIG);
+  }
   return buildRgsConfig({
     gameId: getGameId(),
     storedSessionID: getSessionID(),
@@ -183,6 +189,7 @@ export async function reportBetAction(action, meta) {
 export { parseAuthResponse } from './suki/authConfig.js';
 export {
   applyAuthBetConfig,
+  applyAuthRoundBetOverride,
   buildBetLevelsApi,
   clampBetApi,
   createBetConfigPolicy,
@@ -214,6 +221,7 @@ export { setPlayerCurrency, getPlayerCurrency, clearPlayerCurrency } from './suk
 export { createI18n, resolveLang, SUPPORTED_LOCALES } from './suki/i18n.js';
 export {
   createBetModePolicy,
+  applyBetModeFromRound,
   normalizeModeKey,
   toRgsMode,
   parseGameModesFromIndex,
@@ -264,12 +272,18 @@ export {
   registerAutoplayConfirm,
   AUTOPLAY_CONFIRM_MODAL_ID,
   DEFAULT_AUTOPLAY_ROUNDS,
+  AUTOPLAY_MIN_ROUNDS,
+  AUTOPLAY_MAX_ROUNDS,
+  parseAutoplayRoundCount,
+  sanitizeAutoplayRoundDigits,
+  shouldBlockAutoplayRoundKey,
 } from './suki/autoplayConfirm.js';
 export {
   createGameMenu,
   DEFAULT_GAME_MENU_ITEMS,
   filterVisibleMenuItems,
 } from './suki/gameMenu.js';
+export { appendGeneralDisclaimer } from './suki/gameInfo.js';
 
 /** @returns {{ game: string, version: string, mode: string, event: string, amountApi: number }} */
 export function getReplayParams() {
@@ -329,3 +343,11 @@ export {
   shouldTreatAuthFailureAsInvalidRgs,
 } from './suki/rgsGate.js';
 export { applyMobileTouchPolicy, SUKI_VIEWPORT_CONTENT } from './suki/mobileTouch.js';
+export {
+  getLaunchRgsUrlParam,
+  getCurrentRgsUrlParam,
+  hasRgsUrlChangedSinceLaunch,
+  hasRgsUrlParamChanged,
+  shouldEnforceLaunchRgsLock,
+  validateLaunchRgsUrlStable,
+} from './suki/rgsLaunchLock.js';

@@ -73,8 +73,9 @@ const PRELOADER_CSS = `
   letter-spacing: 0.02em;
   text-wrap: balance;
 }
-.suki-stake-shell.suki-preloader-active {
-  overflow: hidden;
+.suki-stake-shell.suki-preloader-fatal > :not(.suki-game-preloader) {
+  visibility: hidden;
+  pointer-events: none;
 }
 `;
 
@@ -196,6 +197,7 @@ export function createGamePreloader(options) {
     overlay.setAttribute('aria-label', message);
     overlay.classList.remove('suki-game-preloader--ready');
     overlay.classList.add('suki-game-preloader--fatal');
+    shell.classList.add('suki-preloader-fatal');
   }
 
   function markReady() {
@@ -210,8 +212,9 @@ export function createGamePreloader(options) {
     if (dismissed || !loaded || fatal) return;
     dismissed = true;
     overlay.hidden = true;
-    shell.classList.remove('suki-preloader-active');
-    onContinue?.();
+      shell.classList.remove('suki-preloader-active');
+      shell.classList.remove('suki-preloader-fatal');
+      onContinue?.();
   }
 
   function onPointerDown(event) {
@@ -295,6 +298,7 @@ export function createGamePreloader(options) {
       overlay.removeEventListener('keydown', onKeyDown);
       overlay.remove();
       shell.classList.remove('suki-preloader-active');
+      shell.classList.remove('suki-preloader-fatal');
     },
   };
 }

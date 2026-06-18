@@ -2,6 +2,7 @@
  * Game menu modals — replace stub copy and paytable per title.
  */
 
+import { appendGeneralDisclaimer } from '@kap-solo/suki-engine/client/rgs.js';
 import { GAME } from './config.js';
 
 /**
@@ -13,6 +14,10 @@ import { GAME } from './config.js';
  */
 export function registerGameModals(ctx) {
   const { modalHost, recentResults, game, formatCurrency = (n) => String(n) } = ctx;
+
+  function t(key, vars) {
+    return game?.t?.(key, vars) ?? game?.copy?.term?.(key) ?? key;
+  }
 
   modalHost.register('how-to-play', {
     title: 'How to Play',
@@ -31,14 +36,23 @@ export function registerGameModals(ctx) {
       p.textContent =
         'Starter math: 0×, 1×, and 2× outcomes with equal weight. Publish your lookup tables and document pays here.';
       body.appendChild(p);
+
+      const info = document.createElement('div');
+      info.style.marginTop = '0.75rem';
+      info.style.fontSize = '0.8rem';
+      info.style.color = '#8b97a8';
       if (game?.controls?.showRtp) {
         const rtp = document.createElement('p');
-        rtp.style.marginTop = '0.75rem';
-        rtp.style.fontSize = '0.8rem';
-        rtp.style.color = '#8b97a8';
+        rtp.style.margin = '0.25rem 0';
         rtp.textContent = `Target RTP ${GAME.targetRtpPercent}%`;
-        body.appendChild(rtp);
+        info.appendChild(rtp);
       }
+      const rounding = document.createElement('p');
+      rounding.style.margin = '0.25rem 0';
+      rounding.textContent = t('roundingNote');
+      info.appendChild(rounding);
+      appendGeneralDisclaimer(info, t);
+      body.appendChild(info);
     },
   });
 

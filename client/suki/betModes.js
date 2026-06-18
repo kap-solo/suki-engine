@@ -204,3 +204,18 @@ export function createBetModePolicy(options = {}) {
     },
   };
 }
+
+/**
+ * Align bet mode selector with an active authenticate round.
+ *
+ * @param {object | null | undefined} round
+ * @param {ReturnType<typeof createBetModePolicy>} policy
+ */
+export function applyBetModeFromRound(round, policy) {
+  if (!round?.active || !round.mode || !policy) return false;
+
+  const target = toRgsMode(round.mode);
+  const entry = policy.modes.find((mode) => mode.rgsMode === target);
+  if (!entry || !policy.canSelectMode(entry.key)) return false;
+  return policy.setActiveMode(entry.key);
+}

@@ -67,6 +67,7 @@ export function parseAuthResponse(data, options = {}) {
     betLevelsDisplay,
     defaultBetDisplay,
     hasBetConfig: hasAuthBetConfig(config),
+    usesActiveRoundBet: false,
     betModes: config.betModes ?? {},
     jurisdiction: config.jurisdiction ?? {},
     round: data?.round ?? null,

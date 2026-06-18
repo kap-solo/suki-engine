@@ -2,6 +2,8 @@ const STYLE_ID = 'suki-autoplay-confirm-styles';
 
 export const AUTOPLAY_CONFIRM_MODAL_ID = 'suki-autoplay-confirm';
 export const DEFAULT_AUTOPLAY_ROUNDS = [10, 25, 50, 100];
+export const AUTOPLAY_MIN_ROUNDS = 1;
+export const AUTOPLAY_MAX_ROUNDS = 999;
 
 const CONFIRM_CSS = `
 .suki-autoplay-summary {
@@ -42,6 +44,36 @@ const CONFIRM_CSS = `
   background: #1a2a3d;
   color: #e8edf4;
 }
+.suki-autoplay-rounds-custom {
+  margin-top: 0.65rem;
+}
+.suki-autoplay-rounds-custom-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #7d8da3;
+}
+.suki-autoplay-rounds-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #2a3344;
+  border-radius: 8px;
+  background: #12161e;
+  color: #e8edf4;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.suki-autoplay-rounds-input:focus {
+  outline: none;
+  border-color: #4a9eff;
+}
+.suki-autoplay-rounds-input.custom-active {
+  border-color: #4a9eff;
+}
 .suki-autoplay-cost {
   margin: 0 0 1rem;
   font-size: 0.84rem;
@@ -78,6 +110,59 @@ const CONFIRM_CSS = `
 }
 `;
 
+/**
+ * Strip non-digit characters from autoplay round input.
+ * @param {unknown} value
+ */
+export function sanitizeAutoplayRoundDigits(value) {
+  return String(value ?? '').replace(/\D/g, '');
+}
+
+/**
+ * @param {unknown} raw
+ * @param {{ min?: number, max?: number, fallback?: number | null }} [options]
+ */
+export function parseAutoplayRoundCount(raw, options = {}) {
+  const {
+    min = AUTOPLAY_MIN_ROUNDS,
+    max = AUTOPLAY_MAX_ROUNDS,
+    fallback = null,
+  } = options;
+  const digits = sanitizeAutoplayRoundDigits(raw);
+  if (!digits) return fallback;
+  const parsed = Number(digits);
+  if (!Number.isFinite(parsed) || parsed < min) return fallback;
+  return Math.min(max, Math.trunc(parsed));
+}
+
+/**
+ * @param {HTMLInputElement} input
+ * @param {number} rounds
+ */
+function setCustomRoundInputValue(input, rounds) {
+  input.value = String(rounds);
+}
+
+/**
+ * @param {KeyboardEvent} event
+ */
+export function shouldBlockAutoplayRoundKey(event) {
+  const allowed = new Set([
+    'Backspace',
+    'Delete',
+    'Tab',
+    'ArrowLeft',
+    'ArrowRight',
+    'ArrowUp',
+    'ArrowDown',
+    'Home',
+    'End',
+  ]);
+  if (allowed.has(event.key)) return false;
+  if (event.ctrlKey || event.metaKey) return false;
+  return !/^\d$/.test(event.key);
+}
+
 function ensureStyles() {
   if (typeof document === 'undefined' || document.getElementById(STYLE_ID)) return;
   const el = document.createElement('style');
@@ -97,6 +182,8 @@ function ensureStyles() {
  * @param {(amount: number) => string} [options.formatCurrency]
  * @param {number[]} [options.roundOptions]
  * @param {number} [options.defaultRounds]
+ * @param {number} [options.minRounds]
+ * @param {number} [options.maxRounds]
  * @param {(rounds: number) => void} options.onConfirm
  */
 export function registerAutoplayConfirm(modalHost, options) {
@@ -107,12 +194,15 @@ export function registerAutoplayConfirm(modalHost, options) {
     formatCurrency = (amount) => String(amount),
     roundOptions = DEFAULT_AUTOPLAY_ROUNDS,
     defaultRounds = roundOptions[roundOptions.length - 1] ?? 100,
+    minRounds = AUTOPLAY_MIN_ROUNDS,
+    maxRounds = AUTOPLAY_MAX_ROUNDS,
     onConfirm,
   } = options;
 
   ensureStyles();
 
   let selectedRounds = defaultRounds;
+  let usingCustomRounds = false;
 
   function canAfford() {
     return getBalance() >= getPlayCost();
@@ -137,21 +227,24 @@ export function registerAutoplayConfirm(modalHost, options) {
     roundsRow.setAttribute('role', 'group');
     roundsRow.setAttribute('aria-label', t('autoplayRoundsLabel'));
 
-    for (const rounds of roundOptions) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = `suki-autoplay-round-btn${rounds === selectedRounds ? ' active' : ''}`;
-      btn.textContent = String(rounds);
-      btn.addEventListener('click', () => {
-        selectedRounds = rounds;
-        for (const chip of roundsRow.querySelectorAll('.suki-autoplay-round-btn')) {
-          chip.classList.toggle('active', chip.textContent === String(rounds));
-        }
-      });
-      roundsRow.appendChild(btn);
-    }
+    const customBlock = document.createElement('div');
+    customBlock.className = 'suki-autoplay-rounds-custom';
 
-    roundsBlock.append(roundsLabel, roundsRow);
+    const customLabel = document.createElement('label');
+    customLabel.className = 'suki-autoplay-rounds-custom-label';
+    customLabel.textContent = t('autoplayCustomRoundsLabel');
+
+    const customInput = document.createElement('input');
+    customInput.type = 'number';
+    customInput.className = 'suki-autoplay-rounds-input';
+    customInput.min = String(minRounds);
+    customInput.max = String(maxRounds);
+    customInput.step = '1';
+    customInput.inputMode = 'numeric';
+    customInput.autocomplete = 'off';
+    customInput.setAttribute('aria-label', t('autoplayCustomRoundsLabel'));
+    customLabel.htmlFor = 'suki-autoplay-rounds-input';
+    customInput.id = 'suki-autoplay-rounds-input';
 
     const cost = document.createElement('p');
     cost.className = 'suki-autoplay-cost';
@@ -172,15 +265,105 @@ export function registerAutoplayConfirm(modalHost, options) {
     startBtn.type = 'button';
     startBtn.className = 'suki-autoplay-start';
     startBtn.textContent = t('autoplayStart');
-    startBtn.disabled = !canAfford();
-    startBtn.addEventListener('click', () => {
-      if (!canAfford()) return;
-      modalHost.close();
-      onConfirm(selectedRounds);
+
+    function syncPresetButtons() {
+      for (const chip of roundsRow.querySelectorAll('.suki-autoplay-round-btn')) {
+        const chipRounds = Number(chip.dataset.rounds);
+        chip.classList.toggle('active', !usingCustomRounds && chipRounds === selectedRounds);
+      }
+      customInput.classList.toggle('custom-active', usingCustomRounds);
+    }
+
+    function syncStartButton() {
+      const rounds = parseAutoplayRoundCount(customInput.value, {
+        min: minRounds,
+        max: maxRounds,
+        fallback: null,
+      });
+      startBtn.disabled = !canAfford() || rounds == null;
+    }
+
+    function selectPresetRounds(rounds) {
+      selectedRounds = rounds;
+      usingCustomRounds = false;
+      setCustomRoundInputValue(customInput, rounds);
+      syncPresetButtons();
+      syncStartButton();
+    }
+
+    function applyCustomInput(rawValue = customInput.value) {
+      const digits = sanitizeAutoplayRoundDigits(rawValue);
+      if (digits !== String(rawValue)) {
+        customInput.value = digits;
+      }
+      const parsed = parseAutoplayRoundCount(digits, {
+        min: minRounds,
+        max: maxRounds,
+        fallback: null,
+      });
+      if (parsed != null) {
+        selectedRounds = parsed;
+        usingCustomRounds = !roundOptions.includes(parsed);
+        if (!usingCustomRounds) {
+          customInput.value = String(parsed);
+        }
+      } else {
+        usingCustomRounds = true;
+      }
+      syncPresetButtons();
+      syncStartButton();
+    }
+
+    for (const rounds of roundOptions) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'suki-autoplay-round-btn';
+      btn.dataset.rounds = String(rounds);
+      btn.textContent = String(rounds);
+      btn.addEventListener('click', () => selectPresetRounds(rounds));
+      roundsRow.appendChild(btn);
+    }
+
+    customInput.addEventListener('keydown', (event) => {
+      if (shouldBlockAutoplayRoundKey(event)) {
+        event.preventDefault();
+      }
     });
 
+    customInput.addEventListener('paste', (event) => {
+      event.preventDefault();
+      const pasted = event.clipboardData?.getData('text') ?? '';
+      const digits = sanitizeAutoplayRoundDigits(pasted).slice(0, String(maxRounds).length);
+      customInput.value = digits;
+      applyCustomInput(digits);
+    });
+
+    customInput.addEventListener('input', () => {
+      applyCustomInput();
+    });
+
+    customInput.addEventListener('focus', () => {
+      usingCustomRounds = true;
+      syncPresetButtons();
+    });
+
+    startBtn.addEventListener('click', () => {
+      const rounds = parseAutoplayRoundCount(customInput.value, {
+        min: minRounds,
+        max: maxRounds,
+        fallback: selectedRounds,
+      });
+      if (!canAfford() || rounds == null) return;
+      modalHost.close();
+      onConfirm(rounds);
+    });
+
+    customBlock.append(customLabel, customInput);
+    roundsBlock.append(roundsLabel, roundsRow, customBlock);
     actions.append(cancelBtn, startBtn);
     body.append(summary, roundsBlock, cost, actions);
+
+    selectPresetRounds(selectedRounds);
   }
 
   modalHost.register(AUTOPLAY_CONFIRM_MODAL_ID, {
@@ -191,6 +374,7 @@ export function registerAutoplayConfirm(modalHost, options) {
   return {
     open() {
       selectedRounds = defaultRounds;
+      usingCustomRounds = false;
       modalHost.open(AUTOPLAY_CONFIRM_MODAL_ID);
     },
     close() {

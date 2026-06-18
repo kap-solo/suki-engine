@@ -1,3 +1,5 @@
+import { apiToDisplay } from '../money.js';
+
 const MAX_GENERATED_LEVELS = 50;
 
 /**
@@ -156,22 +158,64 @@ export function createBetConfigPolicy(auth) {
 }
 
 /**
+ * When authenticate includes an active round, default bet comes from round.amount
+ * (converted to base bet when a buy/ante mode multiplier applies).
+ *
+ * @param {object} auth — parseAuthResponse() result (mutated)
+ * @param {object | null | undefined} round — authenticate round
+ * @param {{ baseBetApiFromPlayAmount?: (amountApi: number, rgsMode?: string) => number } | null} [betModePolicy]
+ */
+export function applyAuthRoundBetOverride(auth, round, betModePolicy = null) {
+  if (!auth || !round?.active) return false;
+
+  const playAmountApi = Number(round.amount);
+  if (!Number.isFinite(playAmountApi) || playAmountApi <= 0) return false;
+
+  let baseBetApi = playAmountApi;
+  if (betModePolicy?.baseBetApiFromPlayAmount) {
+    baseBetApi = betModePolicy.baseBetApiFromPlayAmount(playAmountApi, round.mode);
+  }
+
+  const policy = createBetConfigPolicy(auth);
+  if (policy.hasConfig) {
+    baseBetApi = policy.clampBaseBetApi(baseBetApi);
+  }
+
+  auth.defaultBetApi = baseBetApi;
+  auth.defaultBetDisplay = apiToDisplay(baseBetApi);
+  auth.usesActiveRoundBet = true;
+  return true;
+}
+
+/**
  * Apply resolved authenticate bet config to game bet state and chip UI.
  *
  * @param {object} auth — parseAuthResponse() result
  * @param {object} ctx
- * @param {{ setBetLevels?: (levels: number[], defaultBet?: number) => void } | null} [ctx.betUi]
+ * @param {{ setBetLevels?: (levels: number[], defaultBet?: number) => void, renderBetLevels?: () => void } | null} [ctx.betUi]
  * @param {() => number} ctx.getBet
  * @param {(amount: number) => void} ctx.setBet
  * @param {() => number[]} ctx.getBetOptions
  * @param {(levels: number[]) => void} ctx.setBetOptions
  */
 export function applyAuthBetConfig(auth, ctx) {
-  if (!auth?.hasBetConfig || !auth.betLevelsDisplay?.length) return false;
+  const hasBetLevels = auth?.hasBetConfig && auth.betLevelsDisplay?.length;
+  const usesActiveRoundBet = !!auth?.usesActiveRoundBet && auth.defaultBetDisplay != null;
 
-  const defaultBet = auth.defaultBetDisplay ?? auth.betLevelsDisplay[0];
-  ctx.setBetOptions(auth.betLevelsDisplay);
+  if (!hasBetLevels && !usesActiveRoundBet) return false;
+
+  if (hasBetLevels) {
+    ctx.setBetOptions(auth.betLevelsDisplay);
+  }
+
+  const defaultBet = auth.defaultBetDisplay ?? auth.betLevelsDisplay?.[0];
+  if (defaultBet == null) return false;
+
   ctx.setBet(defaultBet);
-  ctx.betUi?.setBetLevels?.(auth.betLevelsDisplay, defaultBet);
+  if (hasBetLevels) {
+    ctx.betUi?.setBetLevels?.(auth.betLevelsDisplay, defaultBet);
+  } else {
+    ctx.betUi?.renderBetLevels?.();
+  }
   return true;
 }

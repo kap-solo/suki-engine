@@ -10,6 +10,7 @@ import {
   isFatalRgsError,
   shouldTreatAuthFailureAsInvalidRgs,
 } from './rgsGate.js';
+import { validateLaunchRgsUrlStable } from './rgsLaunchLock.js';
 import {
   isConnectionFailure,
   notifyRgsConnectionLost,
@@ -33,6 +34,14 @@ export async function bootstrapPlayMode(ctx) {
 
   try {
     const environment = getEnvironment();
+    const launchLock = validateLaunchRgsUrlStable(environment);
+    if (!launchLock.ok) {
+      setRgsReady(false);
+      const message = ctx.invalidRgsMessage ?? 'Unable to connect.';
+      setMessage(message);
+      throw createFatalRgsError(message);
+    }
+
     const validation = validateRgsConfig(getRgsParams(), environment);
     if (!validation.ok) {
       setRgsReady(false);
@@ -148,6 +157,7 @@ export { setPlayerCurrency, getPlayerCurrency, clearPlayerCurrency } from './pla
 export { createI18n, resolveLang, SUPPORTED_LOCALES } from './i18n.js';
 export {
   createBetModePolicy,
+  applyBetModeFromRound,
   normalizeModeKey,
   toRgsMode,
   parseGameModesFromIndex,

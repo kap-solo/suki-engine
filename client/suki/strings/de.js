@@ -25,6 +25,7 @@ export const de = {
   autoplayTitle: 'Autoplay',
   autoplaySummary: 'Wähle, wie viele Runden automatisch mit dem aktuellen Einsatz gespielt werden.',
   autoplayRoundsLabel: 'Anzahl Runden',
+  autoplayCustomRoundsLabel: 'Eigene Anzahl',
   autoplayCostLine: 'Kosten pro Runde: {playCost}',
   autoplayStart: 'Autoplay starten',
   autoplayCancel: 'Abbrechen',
@@ -49,6 +50,9 @@ export const de = {
     '{playLabel}: {playAmount} · {worthLabel}: {worthMult} · {finalLabel}: {finalAmount}',
   gamblingLimitReached: 'Spielgrenze erreicht.',
   roundingNote: 'Alle angezeigten Beträge werden auf 2 Dezimalstellen gerundet.',
+  generalDisclaimerTitle: 'General Disclaimer',
+  generalDisclaimer:
+    'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.',
   maxWinLabel: 'Max. Gewinn',
   rtpLabel: 'RTP',
 };

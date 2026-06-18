@@ -6,6 +6,7 @@ import { isConnectionFailure } from './rgsConnection.js';
 import { validateRgsConfig, buildRgsConfig } from './rgsConfig.js';
 import { getEnvironment } from './environment.js';
 import { isReplayMode, getGameId, getSessionStorageKey } from './config.js';
+import { validateLaunchRgsUrlStable } from './rgsLaunchLock.js';
 
 export const ERR_RGS_CONFIG = 'ERR_RGS_CONFIG';
 
@@ -50,6 +51,7 @@ export function isFatalRgsError(err) {
 export function shouldTreatAuthFailureAsInvalidRgs(code, environment, config) {
   if (environment !== 'production' && environment !== 'sandbox') return false;
   if (!config.rgsUrlExplicit) return false;
+  if (!validateLaunchRgsUrlStable(environment).ok) return true;
   if (code === ERR_RGS_CONFIG) return true;
   if (isConnectionFailure(code)) return true;
   return code.startsWith('HTTP_');
@@ -65,6 +67,16 @@ export function checkRgsGate(ctx) {
   }
 
   const environment = ctx.environment ?? getEnvironment();
+  const launchLock = validateLaunchRgsUrlStable(environment);
+  if (!launchLock.ok) {
+    return {
+      ok: false,
+      message: ctx.invalidRgsMessage,
+      issues: ['rgs_url changed after launch'],
+      warnings: [],
+    };
+  }
+
   const config = readLaunchRgsConfig();
   const validation = validateRgsConfig(config, environment);
 

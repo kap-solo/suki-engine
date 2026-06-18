@@ -1,6 +1,6 @@
 import { initSuki, getDevComplianceLabel, getJurisdictionProfileName } from './config.js';
 import { parseAuthResponse } from './authConfig.js';
-import { createBetConfigPolicy } from './betConfig.js';
+import { createBetConfigPolicy, applyAuthRoundBetOverride } from './betConfig.js';
 import { createControlPolicy } from './controlPolicy.js';
 import { applyProductionShell } from './productionUi.js';
 import { createJurisdictionController } from './jurisdiction.js';
@@ -14,7 +14,7 @@ import { createSessionTimer } from './sessionTimer.js';
 import { createCurrencyFormatter } from './currency.js';
 import { createCopyPolicy, isSocialCasinoMode, applyCopyLabels } from './copy.js';
 import { setPlayerCurrency, getPlayerCurrency } from './playerCurrency.js';
-import { createBetModePolicy } from './betModes.js';
+import { createBetModePolicy, applyBetModeFromRound } from './betModes.js';
 import { isReplayMode } from './config.js';
 import { initStakeScreenPreview } from './screenPreview.js';
 import { initStakeLayout } from './stakeLayout.js';
@@ -154,7 +154,6 @@ export function createGameBootstrap(options) {
       defaultBetDisplay: auth.defaultBetDisplay,
       urlCurrency: getRgsParams().currency,
     });
-    betConfigPolicy = createBetConfigPolicy(parsed);
     if (parsed.balance?.amount != null && Number.isFinite(Number(parsed.balance.amount))) {
       trackedBalanceApi = Number(parsed.balance.amount);
     }
@@ -164,6 +163,9 @@ export function createGameBootstrap(options) {
     }
     refreshPlayerDisplay(parsed);
     refreshBetModes(parsed);
+    applyBetModeFromRound(data.round, betModePolicy);
+    applyAuthRoundBetOverride(parsed, data.round, betModePolicy);
+    betConfigPolicy = createBetConfigPolicy(parsed);
     if (showDevTools() && elements.autoplay) {
       controls.setVisible(elements.autoplay, controls.canAutoplay);
     }
