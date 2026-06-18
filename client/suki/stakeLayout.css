@@ -12,7 +12,10 @@
 html,
 body {
   height: 100%;
+  width: 100%;
   margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
   touch-action: manipulation;
   -webkit-touch-action: manipulation;
 }
@@ -46,13 +49,23 @@ body {
   isolation: isolate;
   width: 100%;
   height: 100%;
-  min-height: 100vh;
+  height: 100dvh;
+  max-height: 100%;
+  max-height: 100dvh;
+  min-height: 0;
   display: grid;
   overflow: hidden;
+  overscroll-behavior: none;
   touch-action: manipulation;
   -webkit-touch-action: manipulation;
   color: #e8edf4;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+.suki-screen-frame .suki-stake-shell {
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
 }
 
 .suki-screen-frame .suki-stake-shell {
@@ -204,6 +217,7 @@ body {
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
   margin: 0 auto;
   width: 100%;
   padding: 0 0.75rem;
@@ -248,6 +262,9 @@ body {
   gap: 0.5rem;
   padding: 0.5rem 0.75rem 0.85rem;
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .suki-stake-shell[data-suki-orientation='landscape'] .suki-controls-slot {
@@ -261,6 +278,9 @@ body {
   z-index: 2;
   padding: 0 0.75rem 0.65rem;
   text-align: center;
+  min-height: 0;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .suki-dev-aside {

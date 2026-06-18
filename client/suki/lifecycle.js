@@ -7,6 +7,7 @@ import { endRound, play } from '../rgs.js';
 import { messageForRgsCode, classifyRgsError } from './errors.js';
 import { createBookPlayer, resolveLastEventIndex, sortBookEvents, sliceEventsForResume } from './bookPlayer.js';
 import { shouldReportBetEvents } from './environment.js';
+import { assertSufficientBalanceForPlay } from './balanceGuard.js';
 import { shouldSkipBetEventReporting, shouldSkipEndRound } from './roundReporting.js';
 
 /**
@@ -21,6 +22,7 @@ import { shouldSkipBetEventReporting, shouldSkipEndRound } from './roundReportin
  * @param {() => number} deps.getBetApi
  * @param {(amountApi: number) => void} deps.setBetFromApi
  * @param {(round: object) => object} deps.buildSettledResult
+ * @param {() => number} [deps.getBalanceApi] — tracked wallet balance in API units
  * @param {string} [deps.playingMessage='Playing…']
  * @param {() => object | null | undefined} [deps.getBetModePolicy] — createBetModePolicy()
  */
@@ -38,6 +40,7 @@ export function createSukiLifecycle(deps) {
     buildSettledResult,
     playingMessage = 'Playing…',
     getBetModePolicy,
+    getBalanceApi,
   } = deps;
 
   const bookPlayer = createBookPlayer({ handlers });
@@ -127,6 +130,9 @@ export function createSukiLifecycle(deps) {
     const baseBetApi = getBetApi();
     const amountApi = policy ? policy.playAmountApi(baseBetApi) : baseBetApi;
     const mode = policy ? policy.rgsModeForPlay() : 'BASE';
+    if (getBalanceApi) {
+      assertSufficientBalanceForPlay(getBalanceApi(), amountApi);
+    }
     const playRes = await play({ amountApi, mode });
     applyBalance(playRes.balance);
     return completeRound(playRes.round, { animate });

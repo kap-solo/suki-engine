@@ -7,6 +7,9 @@
  * Usage: node harness/smoke.mjs
  */
 
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createMockRgs } from '../server/mock-rgs/create-mock-rgs.mjs';
 import { classifyRgsError } from '../client/suki/errors.js';
 import { withRgsCall } from '../client/suki/rgsTransport.js';
@@ -21,9 +24,14 @@ import {
   normalizeRgsBase,
   validateRgsConfig,
   isLocalRgsUrl,
+  formatRgsUrlParam,
+  resolveRgsEndpoint,
 } from '../client/suki/rgsConfig.js';
 import { createGameBootstrap } from '../client/suki/gameBootstrap.js';
 import { SUKI_VIEWPORT_CONTENT } from '../client/suki/mobileTouch.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const engineRoot = join(__dirname, '..');
 import { createAssetLoader, preloadAssets } from '../client/suki/assetLoader.js';
 import { STAKE_SCREENS, createScreenRegistry } from '../client/suki/stakeScreens.js';
 import {
@@ -42,6 +50,8 @@ import { formatShellClockTime } from '../client/suki/shellClock.js';
 import { formatCurrencyAmount, createCurrencyFormatter } from '../client/suki/currency.js';
 import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
 import { shouldSkipBetEventReporting, shouldSkipEndRound } from '../client/suki/roundReporting.js';
+import { canAffordPlayAmount, assertSufficientBalanceForPlay } from '../client/suki/balanceGuard.js';
+import { registerAutoplayConfirm, AUTOPLAY_CONFIRM_MODAL_ID } from '../client/suki/autoplayConfirm.js';
 import { formatReplayStartSummary } from '../client/suki/replayUi.js';
 import { createBookPlayer } from '../client/suki/bookPlayer.js';
 import {
@@ -289,6 +299,49 @@ function runRgsConfigTests() {
   });
   const demoVal = validateRgsConfig(demoCfg, 'hostedDemo');
   assert(demoVal.ok, 'hosted demo accepts same-origin mock without Stake params');
+
+  const cfgA = buildRgsConfig({
+    gameId: 'pure-plinko',
+    origin: 'https://game.example.com',
+    searchParams: new URLSearchParams('rgs_url=rgs-a.stake-engine.com&sessionID=abc'),
+  });
+  const cfgB = buildRgsConfig({
+    gameId: 'pure-plinko',
+    origin: 'https://game.example.com',
+    searchParams: new URLSearchParams('rgs_url=rgs-b.stake-engine.com&sessionID=abc'),
+  });
+  assert(cfgA.rgsUrl === 'https://rgs-a.stake-engine.com', 'rgs_url A resolves to remote host');
+  assert(cfgB.rgsUrl === 'https://rgs-b.stake-engine.com', 'rgs_url B resolves to remote host');
+  assert(cfgA.rgsUrl !== cfgB.rgsUrl, 'changing rgs_url changes RGS target');
+  assert(!cfgA.rgsUrl.includes('game.example.com'), 'explicit rgs_url does not use page origin');
+
+  const playA = resolveRgsEndpoint(cfgA.rgsUrl, '/wallet/play');
+  const playB = resolveRgsEndpoint(cfgB.rgsUrl, '/wallet/play');
+  assert(playA === 'https://rgs-a.stake-engine.com/wallet/play', 'wallet/play targets rgs_url A');
+  assert(playB === 'https://rgs-b.stake-engine.com/wallet/play', 'wallet/play targets rgs_url B');
+
+  const localHttp = buildRgsConfig({
+    gameId: 'pure-plinko',
+    origin: 'https://game.example.com',
+    searchParams: new URLSearchParams('rgs_url=http://127.0.0.1:5174&sessionID=local'),
+  });
+  assert(localHttp.rgsUrl === 'http://127.0.0.1:5174', 'full http rgs_url preserved for local mock');
+  assert(
+    resolveRgsEndpoint(localHttp.rgsUrl, '/wallet/authenticate') === 'http://127.0.0.1:5174/wallet/authenticate',
+    'local mock authenticate uses explicit rgs_url',
+  );
+
+  assert(formatRgsUrlParam('https://rgs.stake-engine.com') === 'rgs.stake-engine.com', 'replay param uses host-only');
+  assert(cfgA.rgsUrlHost === 'rgs-a.stake-engine.com', 'rgsUrlHost matches Stake host-only param');
+
+  assert(
+    resolveRgsEndpoint(cfgA.rgsUrl, '/bet/event') === 'https://rgs-a.stake-engine.com/bet/event',
+    'bet/event targets rgs_url from params',
+  );
+  assert(
+    resolveRgsEndpoint(cfgB.rgsUrl, '/wallet/end-round') === 'https://rgs-b.stake-engine.com/wallet/end-round',
+    'end-round targets changed rgs_url',
+  );
 }
 
 function runBootstrapTests() {
@@ -343,6 +396,15 @@ function runStakeLayoutTests() {
   assert(root.dataset.sukiOrientation === 'portrait', 'apply portrait orientation');
   assert(root.dataset.sukiPortraitFamily === 'mobile-ms', 'apply M/S family');
   assert(root.dataset.sukiScreen === 'mobile-m', 'apply screen id');
+
+  const layoutCss = readFileSync(join(engineRoot, 'client/suki/stakeLayout.css'), 'utf8');
+  assert(/html,\s*body[\s\S]*overflow:\s*hidden/.test(layoutCss), 'document overflow hidden');
+  assert(layoutCss.includes('.suki-stake-shell') && /\.suki-stake-shell[\s\S]*overflow:\s*hidden/.test(layoutCss), 'shell overflow hidden');
+  assert(/\.suki-game-core[\s\S]*overflow:\s*hidden/.test(layoutCss), 'game core overflow hidden');
+  assert(!layoutCss.includes('min-height: 100vh'), 'shell avoids 100vh min-height scroll trap');
+
+  const touchJs = readFileSync(join(engineRoot, 'client/suki/mobileTouch.js'), 'utf8');
+  assert(touchJs.includes("style.overflow = 'hidden'"), 'mobile touch policy locks document scroll');
 }
 
 function runBetUiTests() {
@@ -373,6 +435,83 @@ function runBetUiTests() {
     'idle play label',
   );
   assert(modeButtonLabel({ key: 'bonus', type: 'buy', costMultiplier: 100 }) === 'Buy bonus ×100', 'buy mode label');
+  assert(
+    resolvePlayButtonState({
+      replayMode: false,
+      busy: false,
+      playing: false,
+      autoplaying: false,
+      rgsReady: true,
+      canTurbo: true,
+      canAffordPlay: false,
+      playLabel: 'Play',
+    }).disabled,
+    'play disabled when insufficient balance',
+  );
+}
+
+function runAutoplayConfirmTests() {
+  console.log('\nUnit — autoplay confirm');
+
+  let confirmCalls = 0;
+  let confirmedRounds = 0;
+  const registry = new Map();
+
+  const modalHost = {
+    register(id, def) {
+      registry.set(id, def);
+    },
+    open(id) {
+      const def = registry.get(id);
+      if (typeof document === 'undefined') return { body: null, startBtn: null };
+      const body = document.createElement('div');
+      def?.render?.(body);
+      const startBtn = body.querySelector('.suki-autoplay-start');
+      return { body, startBtn };
+    },
+    close() {},
+  };
+
+  registerAutoplayConfirm(modalHost, {
+    t: (key) => key,
+    getPlayCost: () => 1,
+    getBalance: () => 10,
+    onConfirm: (rounds) => {
+      confirmCalls += 1;
+      confirmedRounds = rounds;
+    },
+  });
+
+  assert(registry.has(AUTOPLAY_CONFIRM_MODAL_ID), 'autoplay confirm modal registered');
+  assert(confirmCalls === 0, 'autoplay not started on register');
+
+  if (typeof document === 'undefined') {
+    console.log('  (skip DOM confirm flow — no document in harness)');
+    return;
+  }
+
+  const opened = modalHost.open(AUTOPLAY_CONFIRM_MODAL_ID);
+  assert(opened.body?.querySelector('.suki-autoplay-start'), 'autoplay confirm renders start button');
+  assert(confirmCalls === 0, 'autoplay not started when modal opens');
+
+  opened.startBtn?.click();
+  assert(confirmCalls === 1, 'autoplay starts only after confirm click');
+  assert(confirmedRounds === 100, 'autoplay confirm passes selected round count');
+}
+
+function runBalanceGuardTests() {
+  console.log('\nUnit — balance guard');
+
+  assert(canAffordPlayAmount(2 * API, API), 'afford when balance >= play cost');
+  assert(!canAffordPlayAmount(API - 1, API), 'cannot afford when balance < play cost');
+  assert(!canAffordPlayAmount(API, 0), 'cannot afford zero play amount');
+
+  try {
+    assertSufficientBalanceForPlay(API - 1, API);
+    assert(false, 'assertSufficientBalanceForPlay throws ERR_IPB');
+  } catch (err) {
+    assert(String(err.message) === 'ERR_IPB', 'assertSufficientBalanceForPlay throws ERR_IPB');
+  }
 }
 
 function runGameMenuTests() {
@@ -735,6 +874,8 @@ async function main() {
   runScreenPreviewTests();
   runStakeLayoutTests();
   runBetUiTests();
+  runBalanceGuardTests();
+  runAutoplayConfirmTests();
   runGameMenuTests();
   runBetModeTests();
   runCurrencyCopyTests();

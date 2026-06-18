@@ -89,8 +89,8 @@ function fmt(amount) {
   return game.formatCurrency(amount);
 }
 
-function copyTerm(key) {
-  return game.copy.term(key);
+function copyTerm(key, vars) {
+  return game.copy.t(key, vars);
 }
 
 function formatMult(mult) {
@@ -316,17 +316,27 @@ betUi.bind({
   getAutoplaying: () => autoplaying,
   getPlayLabel: playButtonLabel,
   getPlayCost: playCostDisplay,
-  onBetChange: syncHud,
-  onModeChange: syncHud,
+  getBalance: () => balance,
+  onBetChange: () => {
+    syncHud();
+    syncControls();
+  },
+  onModeChange: () => {
+    syncHud();
+    syncControls();
+  },
   onDismissOverlays: () => {
     gameMenu.close();
     modalHost.close();
   },
+  modalHost,
+  getCopyTerm: copyTerm,
+  formatCurrency: (amount) => game.formatCurrency(amount),
   onPlay: onPlay,
   onTurbo: () => {
     animationSpeed = 3;
   },
-  onAutoplay: onAutoplay100,
+  onAutoplay: runAutoplay,
   onNewSession: onNewSession,
   onCopyReplay: onCopyReplayLink,
   onReplayAgain: () => {
@@ -370,7 +380,7 @@ async function onPlay() {
   });
 }
 
-async function onAutoplay100() {
+async function runAutoplay(roundCount) {
   if (playing || autoplaying || !controls.canAutoplay) return;
   if (!game.rgsReady || balance < playCostDisplay()) return;
 
@@ -378,16 +388,18 @@ async function onAutoplay100() {
   syncControls();
   let count = 0;
   try {
-    for (let i = 0; i < 100; i += 1) {
+    for (let i = 0; i < roundCount; i += 1) {
       if (balance < playCostDisplay()) {
         setMessage(`${copyTerm('autoplayStopped')} ${count} plays.`);
         break;
       }
-      setMessage(`Autoplay ${i + 1}/100…`);
+      setMessage(copyTerm('autoplayProgress', { current: i + 1, total: roundCount }));
       await lifecycle.executeDrop({ animate: false });
       count += 1;
     }
-    if (count === 100) setMessage('Autoplay finished — 100 plays.');
+    if (count === roundCount) {
+      setMessage(copyTerm('autoplayComplete', { count: roundCount }));
+    }
   } catch (err) {
     console.error(err);
     setMessage(messageForRgsCode(String(err.message)));

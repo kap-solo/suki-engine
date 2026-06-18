@@ -137,11 +137,23 @@ export function createGameBootstrap(options) {
 
   refreshPlayerDisplay();
 
+  let trackedBalanceApi = 0;
+
+  function applyBalance(balanceObj) {
+    if (balanceObj?.amount != null && Number.isFinite(Number(balanceObj.amount))) {
+      trackedBalanceApi = Number(balanceObj.amount);
+    }
+    lifecycleDeps.applyBalance(balanceObj);
+  }
+
   function applyAuthConfig(data) {
     const parsed = parseAuthResponse(data, {
       defaultBetDisplay: auth.defaultBetDisplay,
       urlCurrency: getRgsParams().currency,
     });
+    if (parsed.balance?.amount != null && Number.isFinite(Number(parsed.balance.amount))) {
+      trackedBalanceApi = Number(parsed.balance.amount);
+    }
     jurisdiction.mergeFromServer(parsed.jurisdiction);
     if (showDevTools()) {
       jurisdiction.applyDevProfile(getJurisdictionProfileName());
@@ -183,7 +195,9 @@ export function createGameBootstrap(options) {
   const lifecycle = createSukiLifecycle({
     jurisdiction,
     ...lifecycleDeps,
+    applyBalance,
     getBetModePolicy: () => betModePolicy,
+    getBalanceApi: () => trackedBalanceApi,
   });
 
   function setRgsReady(ready) {
@@ -255,7 +269,7 @@ export function createGameBootstrap(options) {
       return rgsReady;
     },
     isBusy: ui.isBusy ?? (() => false),
-    applyBalance: lifecycleDeps.applyBalance,
+    applyBalance,
     applyAuthConfig,
     lifecycle,
     syncHud: ui.syncHud ?? (() => {}),

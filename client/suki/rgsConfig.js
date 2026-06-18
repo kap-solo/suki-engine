@@ -23,6 +23,34 @@ export function normalizeRgsBase(urlOrHost, fallbackOrigin = '') {
 }
 
 /**
+ * Stake passes host-only rgs_url in launch/replay URLs (no scheme).
+ * @param {string} rgsUrl — normalized base from buildRgsConfig
+ */
+export function formatRgsUrlParam(rgsUrl) {
+  const raw = String(rgsUrl || '').trim();
+  if (!raw) return '';
+  if (raw.startsWith('http://') || raw.startsWith('https://')) {
+    try {
+      return new URL(raw).host;
+    } catch {
+      return raw.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    }
+  }
+  return raw.replace(/\/$/, '');
+}
+
+/**
+ * Build absolute RGS endpoint — always use rgsUrl from launch params, never page origin.
+ * @param {string} rgsUrl
+ * @param {string} path — e.g. /wallet/authenticate
+ */
+export function resolveRgsEndpoint(rgsUrl, path) {
+  const base = String(rgsUrl || '').replace(/\/$/, '');
+  const route = path.startsWith('/') ? path : `/${path}`;
+  return `${base}${route}`;
+}
+
+/**
  * @param {string} rgsUrl — full base URL
  */
 export function isLocalRgsUrl(rgsUrl) {
@@ -47,6 +75,7 @@ export function isLocalRgsUrl(rgsUrl) {
  * @param {string} [options.storedSessionID]
  * @returns {{
  *   rgsUrl: string,
+ *   rgsUrlHost: string,
  *   rgsUrlExplicit: boolean,
  *   sessionID: string,
  *   language: string,
@@ -70,6 +99,7 @@ export function buildRgsConfig(options) {
 
   return {
     rgsUrl,
+    rgsUrlHost: formatRgsUrlParam(rgsUrl),
     rgsUrlExplicit: Boolean(rgsUrlRaw?.trim()),
     sessionID,
     language,

@@ -1,4 +1,5 @@
 import { apiToDisplay, displayToApi } from '../money.js';
+import { registerAutoplayConfirm } from './autoplayConfirm.js';
 
 /**
  * @typedef {object} PlayButtonState
@@ -15,6 +16,7 @@ import { apiToDisplay, displayToApi } from '../money.js';
  * @param {boolean} input.autoplaying
  * @param {boolean} input.rgsReady
  * @param {boolean} input.canTurbo
+ * @param {boolean} [input.canAffordPlay=true]
  * @param {string} input.playLabel
  * @param {string} [input.turboLabel='Fast']
  * @returns {PlayButtonState}
@@ -27,6 +29,7 @@ export function resolvePlayButtonState(input) {
     autoplaying,
     rgsReady,
     canTurbo,
+    canAffordPlay = true,
     playLabel,
     turboLabel = 'Fast',
   } = input;
@@ -35,6 +38,9 @@ export function resolvePlayButtonState(input) {
     return { label: playLabel, disabled: true, turbo: false };
   }
   if (autoplaying || !rgsReady) {
+    return { label: playLabel, disabled: true, turbo: false };
+  }
+  if (!canAffordPlay) {
     return { label: playLabel, disabled: true, turbo: false };
   }
   if (playing && canTurbo) {
@@ -173,6 +179,12 @@ export function createBetUi(options) {
   let getPlayLabel = null;
   /** @type {(() => number) | null} */
   let getPlayCost = null;
+  /** @type {(() => number) | null} */
+  let getBalance = null;
+  /** @type {((amount: number) => string) | null} */
+  let formatCurrency = null;
+  /** @type {ReturnType<typeof registerAutoplayConfirm> | null} */
+  let autoplayConfirm = null;
   let turboDisablesButton = false;
   let replayMode = false;
   let lastReplayUrl = '';
@@ -215,6 +227,7 @@ export function createBetUi(options) {
     betChips.setAttribute('aria-label', getCopyTerm('betAmount'));
     modeRow.setAttribute('aria-label', getCopyTerm('playModeLabel'));
     replayAgainBtn.textContent = getCopyTerm('replayAgain');
+    autoplayBtn.textContent = getCopyTerm('autoplayButton');
   }
 
   function syncModeCostHint() {
@@ -291,6 +304,11 @@ export function createBetUi(options) {
     }
   }
 
+  function canAffordPlay() {
+    if (!getBalance) return true;
+    return getBalance() >= playCostDisplay();
+  }
+
   function sync() {
     if (replayMode) {
       replayAgainBtn.disabled = getBusy() || !onReplayAgain;
@@ -301,7 +319,7 @@ export function createBetUi(options) {
     const playing = getPlaying();
     const autoplaying = getAutoplaying();
 
-    autoplayBtn.disabled = busy || !game?.rgsReady || !game?.controls?.canAutoplay;
+    autoplayBtn.disabled = busy || !game?.rgsReady || !game?.controls?.canAutoplay || !canAffordPlay();
     newSessionBtn.disabled = busy;
     copyReplayBtn.disabled = busy || !lastReplayUrl;
 
@@ -322,6 +340,7 @@ export function createBetUi(options) {
       autoplaying,
       rgsReady: !!game?.rgsReady,
       canTurbo: !!game?.controls?.canTurbo,
+      canAffordPlay: canAffordPlay(),
       playLabel: defaultPlayLabel(),
     });
 
@@ -372,7 +391,11 @@ export function createBetUi(options) {
 
   autoplayBtn.addEventListener('click', () => {
     dismissOverlays();
-    onAutoplay?.();
+    if (autoplayConfirm) {
+      autoplayConfirm.open();
+      return;
+    }
+    onAutoplay?.(100);
   });
   newSessionBtn.addEventListener('click', () => onNewSession?.());
   copyReplayBtn.addEventListener('click', () => onCopyReplay?.());
@@ -400,9 +423,23 @@ export function createBetUi(options) {
       onDismissOverlays = handlers.onDismissOverlays ?? null;
       getPlayLabel = handlers.getPlayLabel ?? null;
       getPlayCost = handlers.getPlayCost ?? null;
+      getBalance = handlers.getBalance ?? null;
       getCopyTerm = handlers.getCopyTerm ?? ((key, vars) => game?.copy?.t?.(key, vars) ?? key);
+      formatCurrency = handlers.formatCurrency ?? ((amount) => game?.formatCurrency?.(amount) ?? String(amount));
       turboDisablesButton = handlers.turboDisablesButton ?? false;
       replayMode = handlers.replayMode ?? false;
+
+      if (handlers.modalHost) {
+        autoplayConfirm = registerAutoplayConfirm(handlers.modalHost, {
+          t: getCopyTerm,
+          getPlayCost: () => playCostDisplay(),
+          getBalance: () => getBalance?.() ?? 0,
+          formatCurrency: (amount) => formatCurrency(amount),
+          onConfirm: (rounds) => onAutoplay?.(rounds),
+        });
+      } else {
+        autoplayConfirm = null;
+      }
 
       syncLocalizedLabels();
       renderModes();

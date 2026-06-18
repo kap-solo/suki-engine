@@ -47,6 +47,7 @@ const JURISDICTION = [
   { item: 'Social casino copy (balance → coins, etc.)', status: 'verified' },
   { item: 'Currency from auth + URL through play()', status: 'verified' },
   { item: 'i18n scaffold (lang param)', status: 'verified' },
+  { item: 'RGS calls use rgs_url launch param (not page origin)', status: 'verified' },
 ];
 
 const ENGINE_APIS = [

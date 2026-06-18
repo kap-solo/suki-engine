@@ -7,7 +7,7 @@ import {
   getMockFlags,
 } from './suki/config.js';
 import { messageForRgsCode } from './suki/errors.js';
-import { buildRgsConfig, describeRgsMode } from './suki/rgsConfig.js';
+import { buildRgsConfig, describeRgsMode, formatRgsUrlParam, resolveRgsEndpoint } from './suki/rgsConfig.js';
 import { getEnvironment } from './suki/environment.js';
 import { getPlayerCurrency } from './suki/playerCurrency.js';
 import { withRgsCall } from './suki/rgsTransport.js';
@@ -38,6 +38,8 @@ export {
   validateRgsConfig,
   isLocalRgsUrl,
   describeRgsMode,
+  formatRgsUrlParam,
+  resolveRgsEndpoint,
 } from './suki/rgsConfig.js';
 export { isDevMode, isSandboxMode } from './suki/config.js';
 export { isReplayMode } from './suki/config.js';
@@ -75,6 +77,12 @@ export function getRgsParams() {
   });
 }
 
+/** Resolved fetch URL for an RGS path — reads rgs_url from the launch URL on each call. */
+export function getRgsEndpoint(path) {
+  const { rgsUrl } = getRgsParams();
+  return resolveRgsEndpoint(rgsUrl, path);
+}
+
 /** Connection summary for dev/sandbox compliance footer. */
 export function getRgsConnectionInfo() {
   const config = getRgsParams();
@@ -86,11 +94,10 @@ export function getRgsConnectionInfo() {
 }
 
 async function rgsPostOnce(path, body) {
-  const { rgsUrl } = getRgsParams();
+  const endpoint = getRgsEndpoint(path);
   let response;
   try {
-    // Stake host-only rgs_url is normalized to https:// in buildRgsConfig
-    response = await fetch(`${rgsUrl}${path}`, {
+    response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -247,6 +254,11 @@ export {
   createModalHost,
 } from './suki/modalHost.js';
 export {
+  registerAutoplayConfirm,
+  AUTOPLAY_CONFIRM_MODAL_ID,
+  DEFAULT_AUTOPLAY_ROUNDS,
+} from './suki/autoplayConfirm.js';
+export {
   createGameMenu,
   DEFAULT_GAME_MENU_ITEMS,
   filterVisibleMenuItems,
@@ -265,10 +277,10 @@ export function getReplayParams() {
 }
 
 export function buildReplayUrl({ event, amountApi, mode = 'base', lang } = {}) {
-  const { rgsUrl, language } = getRgsParams();
+  const { rgsUrl, rgsUrlHost, language } = getRgsParams();
   const url = new URL(window.location.origin + window.location.pathname);
   url.searchParams.set('replay', 'true');
-  url.searchParams.set('rgs_url', rgsUrl);
+  url.searchParams.set('rgs_url', rgsUrlHost || formatRgsUrlParam(rgsUrl));
   url.searchParams.set('game', getGameId());
   url.searchParams.set('version', getReplayVersion());
   url.searchParams.set('mode', mode.toLowerCase());
@@ -279,12 +291,12 @@ export function buildReplayUrl({ event, amountApi, mode = 'base', lang } = {}) {
 }
 
 export async function requestReplay({ game, version, mode, event, amountApi }) {
-  const { rgsUrl } = getRgsParams();
   const modePath = mode.toLowerCase();
   const amountQuery = amountApi ? `?amount=${amountApi}` : '';
-  const response = await fetch(
-    `${rgsUrl}/bet/replay/${game}/${version}/${modePath}/${encodeURIComponent(event)}${amountQuery}`,
+  const endpoint = getRgsEndpoint(
+    `/bet/replay/${game}/${version}/${modePath}/${encodeURIComponent(event)}${amountQuery}`,
   );
+  const response = await fetch(endpoint);
   const data = await response.json();
   if (!response.ok || data.error) {
     const code = data.error?.code || `HTTP_${response.status}`;
@@ -300,6 +312,7 @@ export function roundPayoutMultiplier(round) {
 }
 
 export { shouldSkipBetEventReporting, shouldSkipEndRound } from './suki/roundReporting.js';
+export { canAffordPlayAmount, assertSufficientBalanceForPlay } from './suki/balanceGuard.js';
 export { formatReplayStartSummary } from './suki/replayUi.js';
 export {
   ERR_RGS_CONFIG,

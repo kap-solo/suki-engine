@@ -25,7 +25,13 @@ export function applyMobileTouchPolicy() {
 
   const touch = 'manipulation';
   document.documentElement.style.touchAction = touch;
+  document.documentElement.style.overflow = 'hidden';
+  document.documentElement.style.overscrollBehavior = 'none';
   if (document.body) {
     document.body.style.touchAction = touch;
+    document.body.style.overflow = 'hidden';
+    document.body.style.overscrollBehavior = 'none';
+    document.body.style.height = '100%';
+    document.body.style.width = '100%';
   }
 }
