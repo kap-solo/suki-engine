@@ -1,5 +1,6 @@
 import { initSuki, getDevComplianceLabel, getJurisdictionProfileName } from './config.js';
 import { parseAuthResponse } from './authConfig.js';
+import { createBetConfigPolicy } from './betConfig.js';
 import { createControlPolicy } from './controlPolicy.js';
 import { applyProductionShell } from './productionUi.js';
 import { createJurisdictionController } from './jurisdiction.js';
@@ -138,6 +139,8 @@ export function createGameBootstrap(options) {
   refreshPlayerDisplay();
 
   let trackedBalanceApi = 0;
+  /** @type {ReturnType<typeof createBetConfigPolicy> | null} */
+  let betConfigPolicy = null;
 
   function applyBalance(balanceObj) {
     if (balanceObj?.amount != null && Number.isFinite(Number(balanceObj.amount))) {
@@ -151,6 +154,7 @@ export function createGameBootstrap(options) {
       defaultBetDisplay: auth.defaultBetDisplay,
       urlCurrency: getRgsParams().currency,
     });
+    betConfigPolicy = createBetConfigPolicy(parsed);
     if (parsed.balance?.amount != null && Number.isFinite(Number(parsed.balance.amount))) {
       trackedBalanceApi = Number(parsed.balance.amount);
     }
@@ -197,6 +201,7 @@ export function createGameBootstrap(options) {
     ...lifecycleDeps,
     applyBalance,
     getBetModePolicy: () => betModePolicy,
+    getBetConfigPolicy: () => betConfigPolicy,
     getBalanceApi: () => trackedBalanceApi,
   });
 
@@ -302,6 +307,9 @@ export function createGameBootstrap(options) {
     },
     get betModes() {
       return betModePolicy;
+    },
+    get betConfig() {
+      return betConfigPolicy;
     },
     screenPreview,
     stakeLayout,

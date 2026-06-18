@@ -6,6 +6,7 @@
 import { apiToDisplay, displayToApi } from '@kap-solo/suki-engine/client/money.js';
 import {
   authenticate,
+  applyAuthBetConfig,
   buildReplayUrl,
   classifyRgsError,
   createAudioPrefs,
@@ -262,11 +263,13 @@ const game = createGameBootstrap({
       if (auth.balanceDisplay != null) {
         balance = auth.balanceDisplay;
       }
-      if (auth.betLevelsDisplay.length) {
-        betUi.setBetLevels(auth.betLevelsDisplay, auth.defaultBetDisplay ?? betOptions[0]);
-        betOptions = auth.betLevelsDisplay;
-        bet = auth.defaultBetDisplay ?? betOptions[0];
-      }
+      applyAuthBetConfig(auth, {
+        betUi,
+        getBet: () => bet,
+        setBet: (value) => { bet = value; },
+        getBetOptions: () => betOptions,
+        setBetOptions: (levels) => { betOptions = levels; },
+      });
       betUi.renderModes();
     },
   },

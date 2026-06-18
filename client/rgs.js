@@ -181,6 +181,13 @@ export async function reportBetAction(action, meta) {
 }
 
 export { parseAuthResponse } from './suki/authConfig.js';
+export {
+  applyAuthBetConfig,
+  buildBetLevelsApi,
+  clampBetApi,
+  createBetConfigPolicy,
+  hasAuthBetConfig,
+} from './suki/betConfig.js';
 export { createControlPolicy } from './suki/controlPolicy.js';
 export { applyProductionShell, rgsOfflineMessage } from './suki/productionUi.js';
 export { withRgsCall } from './suki/rgsTransport.js';

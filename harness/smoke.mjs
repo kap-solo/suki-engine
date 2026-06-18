@@ -61,6 +61,13 @@ import {
 } from '../client/suki/rgsGate.js';
 import { setPlayerCurrency, getPlayerCurrency } from '../client/suki/playerCurrency.js';
 import { parseAuthResponse } from '../client/suki/authConfig.js';
+import {
+  applyAuthBetConfig,
+  buildBetLevelsApi,
+  clampBetApi,
+  createBetConfigPolicy,
+  hasAuthBetConfig,
+} from '../client/suki/betConfig.js';
 import { createI18n, resolveLang } from '../client/suki/i18n.js';
 import {
   createBetModePolicy,
@@ -645,6 +652,81 @@ function runBetModeTests() {
   assert(!bonusPlay.error && bonusPlay.round?.mode === 'BONUS', 'mock play accepts BONUS mode');
 }
 
+function runBetConfigTests() {
+  console.log('\nUnit — authenticate bet config');
+
+  const filtered = parseAuthResponse({
+    config: {
+      minBet: 2 * API,
+      maxBet: 5 * API,
+      stepBet: API,
+      defaultBetLevel: 4 * API,
+      betLevels: [API, 2 * API, 3 * API, 4 * API, 5 * API, 10 * API],
+    },
+  });
+  assert(filtered.betLevelsDisplay.join(',') === '2,3,4,5', 'betLevels filtered by min/max/step');
+  assert(filtered.defaultBetDisplay === 4, 'defaultBetLevel kept when in allowed levels');
+  assert(filtered.minBetApi === 2 * API, 'minBetApi parsed');
+  assert(filtered.maxBetApi === 5 * API, 'maxBetApi parsed');
+  assert(filtered.stepBetApi === API, 'stepBetApi parsed');
+  assert(filtered.hasBetConfig, 'hasBetConfig when auth exposes bet params');
+
+  const generated = parseAuthResponse({
+    config: {
+      minBet: API,
+      maxBet: 5 * API,
+      stepBet: API,
+      defaultBetLevel: 3 * API,
+    },
+  });
+  assert(generated.betLevelsDisplay.join(',') === '1,2,3,4,5', 'levels generated from min/max/step');
+  assert(generated.defaultBetDisplay === 3, 'defaultBetLevel from generated ladder');
+
+  const clampedDefault = parseAuthResponse({
+    config: {
+      minBet: API,
+      maxBet: 5 * API,
+      stepBet: API,
+      defaultBetLevel: 7 * API,
+      betLevels: [API, 2 * API, 3 * API, 4 * API, 5 * API],
+    },
+  });
+  assert(clampedDefault.defaultBetDisplay === 5, 'defaultBetLevel clamped to max');
+
+  const policy = createBetConfigPolicy(filtered);
+  assert(policy.clampBaseBetApi(10 * API) === 5 * API, 'clampBaseBetApi snaps to max level');
+  assert(policy.isAllowedBaseBetApi(3 * API), 'allowed bet in ladder');
+  assert(!policy.isAllowedBaseBetApi(3.5 * API), 'disallowed off-ladder bet');
+
+  let bet = 1;
+  let betOptions = [1];
+  const applied = applyAuthBetConfig(filtered, {
+    getBet: () => bet,
+    setBet: (value) => { bet = value; },
+    getBetOptions: () => betOptions,
+    setBetOptions: (levels) => { betOptions = levels; },
+  });
+  assert(applied, 'applyAuthBetConfig returns true');
+  assert(bet === 4, 'applyAuthBetConfig sets default bet');
+  assert(betOptions.join(',') === '2,3,4,5', 'applyAuthBetConfig sets bet options');
+
+  const levelsOnly = buildBetLevelsApi({
+    betLevels: [API, 5 * API, 10 * API],
+    minBetApi: 2 * API,
+    maxBetApi: 6 * API,
+    stepBetApi: API,
+  });
+  assert(levelsOnly.join(',') === `${5 * API}`, 'explicit betLevels respect bounds');
+
+  const stepped = clampBetApi(3.4 * API, {
+    minBetApi: API,
+    maxBetApi: 10 * API,
+    stepBetApi: API,
+    betLevelsApi: [],
+  });
+  assert(stepped === 3 * API, 'clampBetApi aligns to step without betLevels');
+}
+
 function runCurrencyCopyTests() {
   console.log('\nUnit — currency & social copy');
 
@@ -878,6 +960,7 @@ async function main() {
   runAutoplayConfirmTests();
   runGameMenuTests();
   runBetModeTests();
+  runBetConfigTests();
   runCurrencyCopyTests();
   runI18nTests();
   await runComplianceReportingTests();

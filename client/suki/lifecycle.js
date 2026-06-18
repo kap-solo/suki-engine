@@ -25,6 +25,7 @@ import { shouldSkipBetEventReporting, shouldSkipEndRound } from './roundReportin
  * @param {() => number} [deps.getBalanceApi] — tracked wallet balance in API units
  * @param {string} [deps.playingMessage='Playing…']
  * @param {() => object | null | undefined} [deps.getBetModePolicy] — createBetModePolicy()
+ * @param {() => object | null | undefined} [deps.getBetConfigPolicy] — createBetConfigPolicy()
  */
 export function createSukiLifecycle(deps) {
   const {
@@ -40,17 +41,27 @@ export function createSukiLifecycle(deps) {
     buildSettledResult,
     playingMessage = 'Playing…',
     getBetModePolicy,
+    getBetConfigPolicy,
     getBalanceApi,
   } = deps;
 
   const bookPlayer = createBookPlayer({ handlers });
 
+  function resolveBaseBetApi(amountApi) {
+    const betPolicy = getBetConfigPolicy?.();
+    let baseBetApi = amountApi;
+    if (betPolicy?.hasConfig) {
+      baseBetApi = betPolicy.clampBaseBetApi(baseBetApi);
+    }
+    return baseBetApi;
+  }
+
   function syncBaseBetFromRound(round) {
     const policy = getBetModePolicy?.();
-    const baseBetApi = policy
+    const playAmountApi = policy
       ? policy.baseBetApiFromPlayAmount(round.amount, round.mode)
       : round.amount;
-    setBetFromApi(baseBetApi);
+    setBetFromApi(resolveBaseBetApi(playAmountApi));
   }
 
   async function waitMinRoundDuration(roundStartMs) {
@@ -127,7 +138,7 @@ export function createSukiLifecycle(deps) {
 
   async function executeDrop({ animate = true } = {}) {
     const policy = getBetModePolicy?.();
-    const baseBetApi = getBetApi();
+    const baseBetApi = resolveBaseBetApi(getBetApi());
     const amountApi = policy ? policy.playAmountApi(baseBetApi) : baseBetApi;
     const mode = policy ? policy.rgsModeForPlay() : 'BASE';
     if (getBalanceApi) {

@@ -1,4 +1,14 @@
 import { apiToDisplay } from '../money.js';
+import { buildBetLevelsApi, clampBetApi, hasAuthBetConfig } from './betConfig.js';
+
+/**
+ * @param {unknown} value
+ * @returns {number | null}
+ */
+function toConfigNumber(value) {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
 
 /**
  * Normalise /wallet/authenticate response for game UI.
@@ -9,8 +19,26 @@ export function parseAuthResponse(data, options = {}) {
   const config = data?.config ?? {};
   const balance = data?.balance ?? null;
 
-  const betLevelsApi = config.betLevels ?? [];
-  const defaultBetApi = config.defaultBetLevel ?? betLevelsApi[0] ?? null;
+  const minBetApi = toConfigNumber(config.minBet);
+  const maxBetApi = toConfigNumber(config.maxBet);
+  const stepBetApi = toConfigNumber(config.stepBet);
+
+  const betLevelsApi = buildBetLevelsApi({
+    betLevels: config.betLevels,
+    minBetApi,
+    maxBetApi,
+    stepBetApi,
+  });
+
+  let defaultBetApi = toConfigNumber(config.defaultBetLevel) ?? betLevelsApi[0] ?? minBetApi;
+  if (defaultBetApi != null) {
+    defaultBetApi = clampBetApi(defaultBetApi, {
+      minBetApi,
+      maxBetApi,
+      stepBetApi,
+      betLevelsApi,
+    });
+  }
 
   let defaultBetDisplay = options.defaultBetDisplay ?? null;
   if (defaultBetApi != null) {
@@ -18,7 +46,11 @@ export function parseAuthResponse(data, options = {}) {
   }
 
   const betLevelsDisplay = betLevelsApi.map(apiToDisplay);
-  if (defaultBetDisplay != null && betLevelsDisplay.length && !betLevelsDisplay.includes(defaultBetDisplay)) {
+  if (
+    defaultBetDisplay != null
+    && betLevelsDisplay.length
+    && !betLevelsDisplay.includes(defaultBetDisplay)
+  ) {
     defaultBetDisplay = betLevelsDisplay[0];
   }
 
@@ -27,13 +59,14 @@ export function parseAuthResponse(data, options = {}) {
     balanceDisplay: balance ? apiToDisplay(balance.amount) : null,
     currency: balance?.currency ?? options.urlCurrency ?? 'USD',
     gameId: config.gameID ?? null,
-    minBetApi: config.minBet ?? null,
-    maxBetApi: config.maxBet ?? null,
-    stepBetApi: config.stepBet ?? null,
+    minBetApi,
+    maxBetApi,
+    stepBetApi,
     defaultBetApi,
     betLevelsApi,
     betLevelsDisplay,
     defaultBetDisplay,
+    hasBetConfig: hasAuthBetConfig(config),
     betModes: config.betModes ?? {},
     jurisdiction: config.jurisdiction ?? {},
     round: data?.round ?? null,
