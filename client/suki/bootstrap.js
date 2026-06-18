@@ -6,6 +6,11 @@ import { withRgsCall } from './rgsTransport.js';
 import { validateRgsConfig } from './rgsConfig.js';
 import { getEnvironment } from './environment.js';
 import {
+  createFatalRgsError,
+  isFatalRgsError,
+  shouldTreatAuthFailureAsInvalidRgs,
+} from './rgsGate.js';
+import {
   isConnectionFailure,
   notifyRgsConnectionLost,
   notifyRgsConnectionRestored,
@@ -31,8 +36,9 @@ export async function bootstrapPlayMode(ctx) {
     const validation = validateRgsConfig(getRgsParams(), environment);
     if (!validation.ok) {
       setRgsReady(false);
-      setMessage(ctx.invalidRgsMessage ?? validation.issues.join(' · '));
-      return;
+      const message = ctx.invalidRgsMessage ?? validation.issues.join(' · ');
+      setMessage(message);
+      throw createFatalRgsError(message);
     }
 
     const data = await withRgsCall(() => authenticate());
@@ -52,12 +58,29 @@ export async function bootstrapPlayMode(ctx) {
     onReady();
   } catch (err) {
     console.error(err);
+    if (isFatalRgsError(err)) {
+      setRgsReady(false);
+      setMessage(err.playerMessage ?? ctx.invalidRgsMessage ?? String(err.message));
+      throw err;
+    }
     const code = String(err.message);
+    const environment = getEnvironment();
+    const config = getRgsParams();
+    const fatalRgs = shouldTreatAuthFailureAsInvalidRgs(code, environment, config);
     setRgsReady(false);
-    setMessage(isSessionFatal(code) ? messageForRgsCode(code) : rgsOfflineMessage());
-    if (!isSessionFatal(code) && isConnectionFailure(code)) {
+    const message = fatalRgs
+      ? (ctx.invalidRgsMessage ?? messageForRgsCode(code))
+      : isSessionFatal(code)
+        ? messageForRgsCode(code)
+        : rgsOfflineMessage();
+    setMessage(message);
+    if (!fatalRgs && isConnectionFailure(code)) {
       notifyRgsConnectionLost(code);
     }
+    const out = err instanceof Error ? err : new Error(code);
+    out.fatalRgs = fatalRgs;
+    out.playerMessage = message;
+    throw out;
   }
 }
 

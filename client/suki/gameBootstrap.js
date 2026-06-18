@@ -17,6 +17,7 @@ import { createBetModePolicy } from './betModes.js';
 import { isReplayMode } from './config.js';
 import { initStakeScreenPreview } from './screenPreview.js';
 import { initStakeLayout } from './stakeLayout.js';
+import { checkRgsGate, createFatalRgsError, isFatalRgsError } from './rgsGate.js';
 
 /**
  * Single entry point — wires initSuki, production shell, jurisdiction, lifecycle, and RGS bootstrap.
@@ -62,6 +63,7 @@ export function createGameBootstrap(options) {
     : null;
 
   let rgsReady = false;
+  let rgsBlocked = false;
   /** @type {ReturnType<typeof createConnectionBanner> | null} */
   let connectionBanner = null;
   const elements = shell.elements ?? {};
@@ -187,21 +189,47 @@ export function createGameBootstrap(options) {
     ui.onRgsReady?.(ready);
   }
 
-  function start() {
+  function getInvalidRgsMessage() {
+    return copy.term('invalidRgsConnection');
+  }
+
+  function checkRgsGateForLaunch() {
+    return checkRgsGate({
+      invalidRgsMessage: getInvalidRgsMessage(),
+    });
+  }
+
+  async function start() {
     if (isReplayMode()) {
       return replay?.start?.();
     }
-    return bootstrapPlayMode({
-      applyAuthConfig,
-      lifecycle,
-      setMessage: ui.setMessage,
-      setRgsReady,
-      onReady: ui.onReady,
-      onAuthRound: ui.onAuthRound,
-      connectingMessage: copy.term('connectingRgs'),
-      readyMessage: copy.term('setBetPrompt'),
-      invalidRgsMessage: copy.term('invalidRgsConnection'),
-    });
+
+    const gate = checkRgsGateForLaunch();
+    if (!gate.ok) {
+      rgsBlocked = true;
+      setRgsReady(false);
+      ui.setMessage(gate.message);
+      throw createFatalRgsError(gate.message);
+    }
+
+    try {
+      await bootstrapPlayMode({
+        applyAuthConfig,
+        lifecycle,
+        setMessage: ui.setMessage,
+        setRgsReady,
+        onReady: ui.onReady,
+        onAuthRound: ui.onAuthRound,
+        connectingMessage: copy.term('connectingRgs'),
+        readyMessage: copy.term('setBetPrompt'),
+        invalidRgsMessage: getInvalidRgsMessage(),
+      });
+    } catch (err) {
+      if (isFatalRgsError(err)) {
+        rgsBlocked = true;
+      }
+      throw err;
+    }
   }
 
   if (layoutRoot && !isReplayMode()) {
@@ -213,7 +241,10 @@ export function createGameBootstrap(options) {
   }
 
   setRgsConnectionCallbacks({
-    onLost: () => connectionBanner?.show(),
+    onLost: () => {
+      if (rgsBlocked) return;
+      connectionBanner?.show();
+    },
     onRestored: () => connectionBanner?.hide(),
   });
 
@@ -238,7 +269,11 @@ export function createGameBootstrap(options) {
     get rgsReady() {
       return rgsReady;
     },
+    get rgsBlocked() {
+      return rgsBlocked;
+    },
     setRgsReady,
+    checkRgsGate: checkRgsGateForLaunch,
     sessionTimer,
     get copy() {
       return copy;

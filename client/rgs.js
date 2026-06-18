@@ -301,3 +301,10 @@ export function roundPayoutMultiplier(round) {
 
 export { shouldSkipBetEventReporting } from './suki/roundReporting.js';
 export { formatReplayStartSummary } from './suki/replayUi.js';
+export {
+  ERR_RGS_CONFIG,
+  checkRgsGate,
+  createFatalRgsError,
+  isFatalRgsError,
+  shouldTreatAuthFailureAsInvalidRgs,
+} from './suki/rgsGate.js';

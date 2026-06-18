@@ -37,15 +37,18 @@ export function getSessionStorageKey() {
 }
 
 export function isDevMode() {
+  if (typeof window === 'undefined') return false;
   return new URLSearchParams(window.location.search).get('dev') === 'true';
 }
 
 /** Stake RGS sandbox — real remote RGS with ?sandbox=true (not local mock). */
 export function isSandboxMode() {
+  if (typeof window === 'undefined') return false;
   return new URLSearchParams(window.location.search).get('sandbox') === 'true';
 }
 
 export function isReplayMode() {
+  if (typeof window === 'undefined') return false;
   return new URLSearchParams(window.location.search).get('replay') === 'true';
 }
 

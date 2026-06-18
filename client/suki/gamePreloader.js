@@ -1,4 +1,5 @@
 import { preloadAssets, sleep } from './assetLoader.js';
+import { isFatalRgsError } from './rgsGate.js';
 
 const STYLE_ID = 'suki-game-preloader-styles';
 
@@ -58,6 +59,20 @@ const PRELOADER_CSS = `
 .suki-game-preloader--ready {
   cursor: pointer;
 }
+.suki-game-preloader--fatal {
+  cursor: default;
+}
+.suki-game-preloader--fatal .suki-game-preloader-track {
+  display: none;
+}
+.suki-game-preloader-error {
+  margin: 0.85rem 0 0;
+  color: #f87171;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  text-wrap: balance;
+}
 .suki-stake-shell.suki-preloader-active {
   overflow: hidden;
 }
@@ -74,6 +89,7 @@ function ensureStyles() {
 const NOOP_PRELOADER = {
   isDismissed: () => true,
   isLoaded: () => true,
+  isFatal: () => false,
   ready: Promise.resolve(),
   dismiss() {},
   show() {},
@@ -91,6 +107,9 @@ const NOOP_PRELOADER = {
  * @param {string} [options.loadingHint]
  * @param {import('./assetLoader.js').PreloadAsset[]} [options.assets]
  * @param {number} [options.minDisplayMs]
+ * @param {string} [options.connectingHint] — shown while bootstrap runs
+ * @param {() => { ok: boolean, message?: string }} [options.gate] — sync launch validation
+ * @param {() => void | Promise<void>} [options.bootstrap] — authenticate before continue
  * @param {() => void} [options.onContinue]
  * @param {boolean} [options.skip] — skip overlay (e.g. replay mode)
  */
@@ -101,8 +120,11 @@ export function createGamePreloader(options) {
     subtitle = '',
     hint = 'Tap anywhere to play',
     loadingHint = 'Loading…',
+    connectingHint = 'Connecting…',
     assets = [],
     minDisplayMs = 400,
+    gate,
+    bootstrap,
     onContinue,
     skip = false,
   } = options;
@@ -115,6 +137,7 @@ export function createGamePreloader(options) {
 
   let dismissed = false;
   let loaded = false;
+  let fatal = false;
 
   const overlay = document.createElement('div');
   overlay.className = 'suki-game-preloader';
@@ -147,7 +170,11 @@ export function createGamePreloader(options) {
   hintEl.className = 'suki-game-preloader-hint';
   hintEl.textContent = loadingHint;
 
-  panel.append(brandEl, subtitleEl, track, hintEl);
+  const errorEl = document.createElement('p');
+  errorEl.className = 'suki-game-preloader-error';
+  errorEl.hidden = true;
+
+  panel.append(brandEl, subtitleEl, track, hintEl, errorEl);
   overlay.appendChild(panel);
   shell.appendChild(overlay);
   shell.classList.add('suki-preloader-active');
@@ -159,6 +186,18 @@ export function createGamePreloader(options) {
     track.setAttribute('aria-valuenow', String(clamped));
   }
 
+  function markFatal(message) {
+    fatal = true;
+    loaded = false;
+    setProgress(0);
+    hintEl.hidden = true;
+    errorEl.hidden = false;
+    errorEl.textContent = message;
+    overlay.setAttribute('aria-label', message);
+    overlay.classList.remove('suki-game-preloader--ready');
+    overlay.classList.add('suki-game-preloader--fatal');
+  }
+
   function markReady() {
     loaded = true;
     setProgress(100);
@@ -168,7 +207,7 @@ export function createGamePreloader(options) {
   }
 
   function dismiss() {
-    if (dismissed || !loaded) return;
+    if (dismissed || !loaded || fatal) return;
     dismissed = true;
     overlay.hidden = true;
     shell.classList.remove('suki-preloader-active');
@@ -176,13 +215,13 @@ export function createGamePreloader(options) {
   }
 
   function onPointerDown(event) {
-    if (!loaded) return;
+    if (!loaded || fatal) return;
     event.preventDefault();
     dismiss();
   }
 
   function onKeyDown(event) {
-    if (!loaded) return;
+    if (!loaded || fatal) return;
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       dismiss();
@@ -195,7 +234,36 @@ export function createGamePreloader(options) {
   const ready = (async () => {
     const started = Date.now();
     setProgress(0);
-    await preloadAssets(assets, setProgress);
+
+    if (gate) {
+      const result = gate();
+      if (!result?.ok) {
+        markFatal(result.message ?? 'Unable to connect.');
+        return;
+      }
+    }
+
+    try {
+      const preloadPromise = preloadAssets(assets, setProgress);
+      if (bootstrap) {
+        hintEl.textContent = connectingHint;
+        overlay.setAttribute('aria-label', connectingHint);
+        await Promise.all([preloadPromise, bootstrap()]);
+      } else {
+        await preloadPromise;
+      }
+    } catch (err) {
+      console.error('[Suki] preloader bootstrap failed', err);
+      const message =
+        (isFatalRgsError(err) && err.playerMessage) ||
+        err?.playerMessage ||
+        (typeof err?.message === 'string' && !err.message.startsWith('ERR_')
+          ? err.message
+          : 'Unable to connect — game connection settings are invalid. Reopen the game from Stake.');
+      markFatal(message);
+      return;
+    }
+
     const elapsed = Date.now() - started;
     if (elapsed < minDisplayMs) {
       await sleep(minDisplayMs - elapsed);
@@ -205,12 +273,16 @@ export function createGamePreloader(options) {
 
   ready.catch((err) => {
     console.error('[Suki] preloader failed', err);
-    markReady();
+    markFatal(
+      err?.playerMessage ??
+        'Unable to connect — game connection settings are invalid. Reopen the game from Stake.',
+    );
   });
 
   return {
     isDismissed: () => dismissed,
     isLoaded: () => loaded,
+    isFatal: () => fatal,
     ready,
     dismiss,
     show() {

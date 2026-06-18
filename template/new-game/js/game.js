@@ -506,10 +506,12 @@ if (replayMode) {
     brand: 'SUKI engine',
     subtitle: GAME.title,
     hint: 'Tap anywhere to play',
+    connectingHint: copyTerm('connectingRgs'),
     assets: buildPreloadAssets(),
+    gate: () => game.checkRgsGate(),
+    bootstrap: () => game.start(),
     onContinue: () => {
       gameAudio.unlock();
-      game.start();
     },
   });
 }

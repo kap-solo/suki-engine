@@ -43,6 +43,11 @@ import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
 import { shouldSkipBetEventReporting } from '../client/suki/roundReporting.js';
 import { formatReplayStartSummary } from '../client/suki/replayUi.js';
 import { createBookPlayer } from '../client/suki/bookPlayer.js';
+import {
+  createFatalRgsError,
+  isFatalRgsError,
+  shouldTreatAuthFailureAsInvalidRgs,
+} from '../client/suki/rgsGate.js';
 import { setPlayerCurrency, getPlayerCurrency } from '../client/suki/playerCurrency.js';
 import { parseAuthResponse } from '../client/suki/authConfig.js';
 import { createI18n, resolveLang } from '../client/suki/i18n.js';
@@ -246,6 +251,32 @@ function runRgsConfigTests() {
     'production',
   );
   assert(!badProd.ok, 'production rejects missing rgs_url');
+
+  const badHost = validateRgsConfig(
+    buildRgsConfig({
+      gameId: 'pure-plinko',
+      origin: 'http://127.0.0.1:5174',
+      searchParams: new URLSearchParams('rgs_url=://bad&sessionID=abc'),
+    }),
+    'production',
+  );
+  assert(!badHost.ok, 'production rejects malformed rgs_url');
+
+  assert(
+    shouldTreatAuthFailureAsInvalidRgs('ERR_NET', 'production', { rgsUrlExplicit: true }),
+    'ERR_NET with explicit rgs_url is fatal in production',
+  );
+  assert(
+    !shouldTreatAuthFailureAsInvalidRgs('ERR_NET', 'development', { rgsUrlExplicit: true }),
+    'ERR_NET in development is not treated as invalid launch config',
+  );
+  assert(
+    shouldTreatAuthFailureAsInvalidRgs('HTTP_404', 'sandbox', { rgsUrlExplicit: true }),
+    'HTTP errors with explicit rgs_url are fatal in sandbox',
+  );
+
+  const fatal = createFatalRgsError('Invalid connection settings.');
+  assert(isFatalRgsError(fatal), 'createFatalRgsError is fatal');
 
   const sandboxVal = validateRgsConfig(prodCfg, 'sandbox');
   assert(sandboxVal.ok, 'sandbox accepts remote RGS');

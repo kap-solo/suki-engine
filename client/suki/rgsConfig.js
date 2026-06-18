@@ -94,6 +94,15 @@ export function validateRgsConfig(config, environment) {
   if (environment === 'production' || environment === 'sandbox') {
     if (!config.rgsUrlExplicit) {
       issues.push('rgs_url is required (Stake passes host-only, e.g. rgs_url=rgs.stake-engine.com)');
+    } else {
+      try {
+        const parsed = new URL(config.rgsUrl);
+        if (!parsed.hostname) {
+          issues.push('rgs_url is not a valid host');
+        }
+      } catch {
+        issues.push('rgs_url is not a valid URL');
+      }
     }
     if (isLocalRgsUrl(config.rgsUrl)) {
       issues.push('local/mock RGS is not allowed — use Stake sandbox rgs_url');
