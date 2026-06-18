@@ -17,6 +17,7 @@ import { createBetModePolicy } from './betModes.js';
 import { isReplayMode } from './config.js';
 import { initStakeScreenPreview } from './screenPreview.js';
 import { initStakeLayout } from './stakeLayout.js';
+import { applyMobileTouchPolicy } from './mobileTouch.js';
 import { checkRgsGate, createFatalRgsError, isFatalRgsError } from './rgsGate.js';
 
 /**
@@ -41,6 +42,7 @@ import { checkRgsGate, createFatalRgsError, isFatalRgsError } from './rgsGate.js
 export function createGameBootstrap(options) {
   const { suki, shell = {}, lifecycle: lifecycleDeps, auth = {}, ui, onJurisdictionChange, replay } = options;
 
+  applyMobileTouchPolicy();
   initSuki(suki);
   const shellResult = applyProductionShell(shell);
 

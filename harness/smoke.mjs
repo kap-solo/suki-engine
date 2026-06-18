@@ -23,6 +23,7 @@ import {
   isLocalRgsUrl,
 } from '../client/suki/rgsConfig.js';
 import { createGameBootstrap } from '../client/suki/gameBootstrap.js';
+import { SUKI_VIEWPORT_CONTENT } from '../client/suki/mobileTouch.js';
 import { createAssetLoader, preloadAssets } from '../client/suki/assetLoader.js';
 import { STAKE_SCREENS, createScreenRegistry } from '../client/suki/stakeScreens.js';
 import {
@@ -293,6 +294,8 @@ function runRgsConfigTests() {
 function runBootstrapTests() {
   console.log('\nUnit — game bootstrap');
   assert(typeof createGameBootstrap === 'function', 'createGameBootstrap exported');
+  assert(SUKI_VIEWPORT_CONTENT.includes('user-scalable=no'), 'viewport disables user scaling');
+  assert(SUKI_VIEWPORT_CONTENT.includes('maximum-scale=1'), 'viewport caps maximum scale');
 }
 
 function runScreenPreviewTests() {

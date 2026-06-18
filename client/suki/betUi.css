@@ -5,6 +5,7 @@
 
 .suki-bet-ui-root {
   width: 100%;
+  touch-action: manipulation;
 }
 
 .suki-bet-ui {

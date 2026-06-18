@@ -308,3 +308,4 @@ export {
   isFatalRgsError,
   shouldTreatAuthFailureAsInvalidRgs,
 } from './suki/rgsGate.js';
+export { applyMobileTouchPolicy, SUKI_VIEWPORT_CONTENT } from './suki/mobileTouch.js';
