@@ -142,9 +142,13 @@ export { createGamePreloader } from './gamePreloader.js';
 export { createAssetLoader, preloadAssets } from './assetLoader.js';
 export {
   createCurrencyFormatter,
+  formatBalanceAmount,
   formatCurrencyAmount,
+  formatWinAmount,
+  formatWinDecimalString,
   langToLocale,
   SOCIAL_CURRENCY_LABELS,
+  STAKE_MONEY_DECIMALS,
 } from './currency.js';
 export {
   createCopyPolicy,

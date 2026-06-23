@@ -47,7 +47,7 @@ import { createRecentResultsStore } from '../client/suki/recentResults.js';
 import { DEFAULT_GAME_MENU_ITEMS, filterVisibleMenuItems } from '../client/suki/gameMenu.js';
 import { formatSessionElapsed, createSessionTimer } from '../client/suki/sessionTimer.js';
 import { formatShellClockTime } from '../client/suki/shellClock.js';
-import { formatCurrencyAmount, createCurrencyFormatter } from '../client/suki/currency.js';
+import { formatCurrencyAmount, formatWinAmount, createCurrencyFormatter } from '../client/suki/currency.js';
 import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
 import { shouldSkipBetEventReporting, shouldSkipEndRound } from '../client/suki/roundReporting.js';
 import { canAffordPlayAmount, assertSufficientBalanceForPlay } from '../client/suki/balanceGuard.js';
@@ -472,7 +472,7 @@ function runBetUiTests() {
     }).label === 'Play',
     'idle play label',
   );
-  assert(modeButtonLabel({ key: 'bonus', type: 'buy', costMultiplier: 100 }) === 'Buy bonus ×100', 'buy mode label');
+  assert(modeButtonLabel({ key: 'bonus', type: 'buy', costMultiplier: 100 }) === 'Buy bonus ×100', 'buy mode label real money');
   assert(
     resolvePlayButtonState({
       replayMode: false,
@@ -861,20 +861,41 @@ function runCurrencyCopyTests() {
   const xgc = formatCurrencyAmount(100, 'XGC');
   assert(xgc === 'GC 100.00', 'XGC social currency label');
 
+  const winUsd = formatWinAmount(1.234567, 'USD', { locale: 'en' });
+  assert(winUsd.includes('1.234567'), 'USD win preserves full precision');
+  assert(winUsd.includes('4567'), 'USD win shows sub-cent digits');
+
+  const balanceRounded = formatCurrencyAmount(1.234567, 'USD', { locale: 'en' });
+  assert(balanceRounded.includes('1.23'), 'USD balance rounded to 2 decimals');
+
+  const winXgc = formatWinAmount(0.123456, 'XGC');
+  assert(winXgc === 'GC 0.123456', 'XGC win preserves full precision');
+
   const eur = createCurrencyFormatter({ currency: 'EUR', language: 'en' });
-  assert(eur.format(1).includes('1.00'), 'EUR formatter');
+  assert(eur.format(1).includes('1.00'), 'EUR formatter balance');
+  assert(eur.formatWin(1.234567).includes('1.234567'), 'EUR formatter win precision');
 
   const real = createCopyPolicy({ socialCasino: false });
   const social = createCopyPolicy({ socialCasino: true });
   assert(real.term('balance') === 'Balance', 'real money balance label');
   assert(social.term('balance') === 'Coins', 'social casino balance label');
+  assert(
+    modeButtonLabel({ key: 'bonus', type: 'buy', costMultiplier: 100 }, real.t.bind(real)) === 'Buy bonus ×100',
+    'buy mode label via copy policy',
+  );
+  const socialBuy = modeButtonLabel({ key: 'bonus', type: 'buy', costMultiplier: 100 }, social.t.bind(social));
+  assert(socialBuy === 'Feature ×100', 'social buy mode label');
+  assert(!/\b(buy|bet|pay)\b/i.test(socialBuy), 'social mode label avoids buy/bet/pay');
+  assert(social.t('buyPlayButton') === 'Play feature', 'social buy play button');
+  assert(!/\b(buy|bet|pay)\b/i.test(social.t('buyPlayButton')), 'social buy play button avoids buy/bet/pay');
+  assert(social.t('modeInfoBase') === 'Base Play', 'social game info base mode');
   assert(real.term('insufficientBalance') === 'Insufficient Funds.', 'exact insufficient funds copy');
   assert(social.term('insufficientBalance') === 'Insufficient Balance.', 'exact insufficient balance social');
 
   const summary = formatReplayStartSummary(
     real,
     { playAmount: 1, payoutMultiplier: 7, finalAmount: 7 },
-    { formatCurrency: (n) => `$${n.toFixed(2)}`, formatMult: (n) => `${n}×` },
+    { formatBalance: (n) => `$${n.toFixed(2)}`, formatWin: (n) => `$${n}`, formatMult: (n) => `${n}×` },
   );
   assert(summary.includes('Play cost'), 'replay intro play cost');
   assert(summary.includes('Payout multiplier'), 'replay intro payout multiplier');
@@ -882,7 +903,7 @@ function runCurrencyCopyTests() {
   const socialSummary = formatReplayStartSummary(
     social,
     { playAmount: 1, payoutMultiplier: 7, finalAmount: 7 },
-    { formatCurrency: (n) => `$${n.toFixed(2)}`, formatMult: (n) => `${n}×` },
+    { formatBalance: (n) => `$${n.toFixed(2)}`, formatWin: (n) => `$${n}`, formatMult: (n) => `${n}×` },
   );
   assert(socialSummary.includes('Play amount'), 'social replay play amount label');
   assert(!socialSummary.toLowerCase().includes('cost'), 'social replay avoids cost');
@@ -893,6 +914,12 @@ function runCurrencyCopyTests() {
   const label = { textContent: '' };
   applyCopyLabels(social, { balanceLabel: label });
   assert(label.textContent === 'Coins', 'applyCopyLabels updates HUD');
+
+  const betLabel = { textContent: '' };
+  applyCopyLabels(real, { betLabel });
+  assert(betLabel.textContent === 'Bet amount', 'bet HUD label uses betAmount term');
+  applyCopyLabels(social, { betLabel });
+  assert(betLabel.textContent === 'Play amount', 'social bet HUD label uses betAmount term');
 
   setPlayerCurrency('EUR');
   assert(getPlayerCurrency('USD') === 'EUR', 'player currency after set');

@@ -53,12 +53,29 @@ export function resolvePlayButtonState(input) {
 }
 
 /**
+ * Player-facing bet mode button label (respects social copy when `t` is provided).
  * @param {{ key: string, type?: string, costMultiplier?: number }} mode
+ * @param {(key: string, vars?: Record<string, string | number>) => string} [t]
  */
-export function modeButtonLabel(mode) {
-  if (mode.key === 'base') return 'Base';
-  if (mode.type === 'buy') return `Buy bonus ×${mode.costMultiplier}`;
-  if (mode.type === 'activate') return `Ante ×${mode.costMultiplier}`;
+export function modeButtonLabel(mode, t) {
+  const label = t ?? ((key, vars) => {
+    const fallbacks = {
+      modeLabelBase: 'Base',
+      modeLabelBuy: `Buy bonus ×${vars?.mult ?? mode.costMultiplier ?? 1}`,
+      modeLabelActivate: `Ante ×${vars?.mult ?? mode.costMultiplier ?? 1}`,
+    };
+    return fallbacks[key] ?? key;
+  });
+
+  if (mode.key === 'base' || mode.type === 'default') {
+    return label('modeLabelBase');
+  }
+  if (mode.type === 'buy') {
+    return label('modeLabelBuy', { mult: mode.costMultiplier ?? 1 });
+  }
+  if (mode.type === 'activate') {
+    return label('modeLabelActivate', { mult: mode.costMultiplier ?? 1 });
+  }
   return mode.key;
 }
 
@@ -211,7 +228,7 @@ export function createBetUi(options) {
 
   function defaultPlayLabel() {
     if (getPlayLabel) return getPlayLabel();
-    if (game?.betModes?.isBuyMode?.()) return 'Buy & play';
+    if (game?.betModes?.isBuyMode?.()) return getCopyTerm('buyPlayButton');
     return game?.copy?.term('drop') ?? 'Play';
   }
 
@@ -268,9 +285,9 @@ export function createBetUi(options) {
       btn.type = 'button';
       btn.dataset.mode = mode.key;
       btn.className = `suki-bet-mode-btn${mode.key === game.betModes.activeKey ? ' active' : ''}${mode.type === 'buy' ? ' buy' : ''}`;
-      btn.textContent = modeButtonLabel(mode);
+      btn.textContent = modeButtonLabel(mode, getCopyTerm);
       if (mode.type === 'buy' && !game.controls.canBuyFeature) {
-        btn.title = 'Buy feature disabled for this jurisdiction';
+        btn.title = getCopyTerm('buyFeatureDisabledHint');
       }
       btn.addEventListener('click', () => selectMode(mode.key));
       modeRow.appendChild(btn);

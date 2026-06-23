@@ -86,8 +86,12 @@ function setMessage(text) {
   messageEl.textContent = text;
 }
 
-function fmt(amount) {
+function fmtBalance(amount) {
   return game.formatCurrency(amount);
+}
+
+function fmtWin(amount) {
+  return game.formatWin(amount);
 }
 
 function copyTerm(key, vars) {
@@ -123,23 +127,28 @@ function playCostDisplay() {
 }
 
 function playButtonLabel() {
-  if (game.betModes.isBuyMode()) return 'Buy & play';
+  if (game.betModes.isBuyMode()) return copyTerm('buyPlayButton');
   return copyTerm('drop');
 }
 
 function syncHud() {
-  balanceEl.textContent = replayMode ? '—' : fmt(balance);
-  betEl.textContent = fmt(bet);
+  balanceEl.textContent = replayMode ? '—' : fmtBalance(balance);
+  betEl.textContent = fmtBalance(bet);
   const rtpPart = game.controls.showRtp ? ` · target RTP ${GAME.targetRtpPercent}%` : '';
-  const modePart = game.betModes.modes.length > 1 ? ' · base + buy bonus' : '';
+  const modePart =
+    game.betModes.modes.length > 1
+      ? game.copy.socialCasino
+        ? ' · Base Play + Feature'
+        : ' · base + buy bonus'
+      : '';
   statsEl.textContent = `Starter math · 3 outcomes · Stake-shaped lifecycle${modePart}${rtpPart}`;
   betUi.syncModeCostHint();
 }
 
 function displayRoundResult({ symbol, multiplier, payout, profit }) {
-  resultEl.textContent = `${symbol} ${formatMult(multiplier)} → ${fmt(payout)}`;
+  resultEl.textContent = `${symbol} ${formatMult(multiplier)} → ${fmtWin(payout)}`;
   if (profit > 0) {
-    setMessage(`${copyTerm('won')} ${fmt(profit)}.`);
+    setMessage(`${copyTerm('won')} ${fmtWin(profit)}.`);
   } else if (payout === bet) {
     setMessage(`${symbol} — ${copyTerm('stakeReturned')}.`);
   } else {
@@ -301,6 +310,7 @@ registerGameModals({
   recentResults,
   game,
   formatCurrency: (amount) => game.formatCurrency(amount),
+  formatWin: (amount) => game.formatWin(amount),
 });
 
 betUi.bind({

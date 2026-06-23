@@ -41,12 +41,19 @@ export const en = {
   baseBetLabel: 'Base bet',
   costMultiplierLabel: 'Cost multiplier',
   playModeLabel: 'Play mode',
+  modeLabelBase: 'Base',
+  modeLabelBuy: 'Buy bonus ×{mult}',
+  modeLabelActivate: 'Ante ×{mult}',
+  modeInfoBase: 'Base',
+  buyPlayButton: 'Buy & play',
+  buyFeatureDisabledHint: 'Buy feature disabled for this jurisdiction',
   modeCostLine:
     '{playLabel}: {playCost} — {baseLabel}: {baseAmount} × {multLabel} {costMult}',
   replayStartSummary:
     '{playLabel}: {playAmount} · {worthLabel}: {worthMult} · {finalLabel}: {finalAmount}',
   gamblingLimitReached: 'Gambling limit reached.',
-  roundingNote: 'All displayed amounts are rounded to 2 decimal places.',
+  roundingNote:
+    'Balance is displayed rounded to 2 decimal places. Win amounts show the full value received from the Remote Game Server.',
   generalDisclaimerTitle: 'General Disclaimer',
   generalDisclaimer:
     'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.',
@@ -83,6 +90,12 @@ export const enSocial = {
   payoutMultiplierLabel: 'Final multiplier',
   baseBetLabel: 'Base Play',
   costMultiplierLabel: 'Feature Multiplier',
+  modeLabelBase: 'Base Play',
+  modeLabelBuy: 'Feature ×{mult}',
+  modeLabelActivate: 'Extra ×{mult}',
+  modeInfoBase: 'Base Play',
+  buyPlayButton: 'Play feature',
+  buyFeatureDisabledHint: 'Feature disabled for this jurisdiction',
   gamblingLimitReached: 'Play limit reached.',
   howToPlayIntro:
     'Choose a play amount and press {drop}. One ball, one bucket — the win amount is decided before the animation runs.',

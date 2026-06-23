@@ -11,9 +11,16 @@ import { GAME } from './config.js';
  * @param {ReturnType<import('@kap-solo/suki-engine/client/rgs.js').createRecentResultsStore>} ctx.recentResults
  * @param {object} ctx.game — bootstrap return (after bind)
  * @param {() => string} [ctx.formatCurrency]
+ * @param {() => string} [ctx.formatWin]
  */
 export function registerGameModals(ctx) {
-  const { modalHost, recentResults, game, formatCurrency = (n) => String(n) } = ctx;
+  const {
+    modalHost,
+    recentResults,
+    game,
+    formatCurrency = (n) => String(n),
+    formatWin = formatCurrency,
+  } = ctx;
 
   function t(key, vars) {
     return game?.t?.(key, vars) ?? game?.copy?.term?.(key) ?? key;
@@ -73,7 +80,7 @@ export function registerGameModals(ctx) {
         (entry) => {
           const d = entry.data ?? entry;
           const mult = d.multiplier ?? '—';
-          const payout = d.payout != null ? formatCurrency(d.payout) : '—';
+          const payout = d.payout != null ? formatWin(d.payout) : '—';
           return `${d.symbol ?? '?'} · ${mult}× → ${payout}`;
         },
         'No rounds yet — play to populate history.',

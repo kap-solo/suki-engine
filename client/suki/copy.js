@@ -70,7 +70,7 @@ export function createCopyPolicy(options = {}) {
 export function applyCopyLabels(copy, elements) {
   const map = {
     balanceLabel: 'balance',
-    betLabel: 'bet',
+    betLabel: 'betAmount',
     lastResultLabel: 'lastResult',
     sessionPlaysLabel: 'sessionPlays',
     sessionPlLabel: 'sessionPl',

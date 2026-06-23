@@ -319,7 +319,10 @@ export function createGameBootstrap(options) {
       return currency;
     },
     formatCurrency(amount) {
-      return currency.format(amount);
+      return currency.formatBalance(amount);
+    },
+    formatWin(amount) {
+      return currency.formatWin(amount);
     },
     syncCopy() {
       refreshPlayerDisplay();

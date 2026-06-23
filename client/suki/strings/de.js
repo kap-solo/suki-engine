@@ -44,12 +44,19 @@ export const de = {
   baseBetLabel: 'Basiseinsatz',
   costMultiplierLabel: 'Kostenmultiplikator',
   playModeLabel: 'Spielmodus',
+  modeLabelBase: 'Basis',
+  modeLabelBuy: 'Bonus kaufen ×{mult}',
+  modeLabelActivate: 'Ante ×{mult}',
+  modeInfoBase: 'Basis',
+  buyPlayButton: 'Kaufen & spielen',
+  buyFeatureDisabledHint: 'Kauf-Feature für diese Jurisdiktion deaktiviert',
   modeCostLine:
     '{playLabel}: {playCost} — {baseLabel}: {baseAmount} × {multLabel} {costMult}',
   replayStartSummary:
     '{playLabel}: {playAmount} · {worthLabel}: {worthMult} · {finalLabel}: {finalAmount}',
   gamblingLimitReached: 'Spielgrenze erreicht.',
-  roundingNote: 'Alle angezeigten Beträge werden auf 2 Dezimalstellen gerundet.',
+  roundingNote:
+    'Das Guthaben wird auf 2 Dezimalstellen gerundet angezeigt. Gewinnbeträge zeigen den vollen vom Remote Game Server erhaltenen Wert.',
   generalDisclaimerTitle: 'General Disclaimer',
   generalDisclaimer:
     'Malfunction voids all wins and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Winnings are settled according to the amount received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.',
@@ -74,4 +81,10 @@ export const deSocial = {
   payoutMultiplierLabel: 'Endmultiplikator',
   baseBetLabel: 'Basis-Spiel',
   costMultiplierLabel: 'Feature-Multiplikator',
+  modeLabelBase: 'Basis-Spiel',
+  modeLabelBuy: 'Feature ×{mult}',
+  modeLabelActivate: 'Extra ×{mult}',
+  modeInfoBase: 'Basis-Spiel',
+  buyPlayButton: 'Feature spielen',
+  buyFeatureDisabledHint: 'Feature für diese Jurisdiktion deaktiviert',
 };
