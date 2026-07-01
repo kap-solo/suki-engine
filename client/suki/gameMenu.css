@@ -1,5 +1,5 @@
 /**
- * Suki game burger menu — fixed pop-up panel (visual design TBD).
+ * Suki game burger menu — pop-up anchored to the trigger, clamped inside shell.
  *
  * Z-index scale (within game shell):
  *   shell content ~2 · menu pop-up 9010 · burger (open) 9011 · modals 9100
@@ -54,12 +54,10 @@
   box-shadow: 0 -5px 0 currentColor, 0 5px 0 currentColor;
 }
 
-/* Pop-up — child of shell (position: absolute), placed from burger in JS */
+/* Pop-up — child of .suki-game-menu; width/height clamped in JS to shell bounds */
 .suki-game-menu-popup {
   position: absolute;
   z-index: 9010;
-  width: min(16.5rem, calc(100% - 1rem));
-  max-height: calc(100% - 1rem);
   display: flex;
   flex-direction: column;
   padding: 0.45rem 0.35rem 0.55rem;
@@ -214,8 +212,7 @@
 
 /* Popout S — compact burger + panel */
 .suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-popup {
-  width: min(11rem, calc(100% - 0.75rem));
-  max-height: calc(100% - 0.75rem);
+  /* width/max-height set in JS from shell bounds */
 }
 
 .suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-trigger {

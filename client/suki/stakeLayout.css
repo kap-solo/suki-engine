@@ -103,7 +103,8 @@ body {
 }
 
 .suki-stake-shell[data-suki-orientation='landscape'] .suki-brand {
-  justify-self: start;
+  justify-self: stretch;
+  width: 100%;
   text-align: left;
 }
 

@@ -92,35 +92,50 @@ export function createGameMenu(options) {
 
   popup.appendChild(list);
   wrap.appendChild(trigger);
+  wrap.appendChild(popup);
   brand.appendChild(wrap);
-  shell.appendChild(popup);
 
   let open = false;
 
   function positionPopup() {
-    const shellRect = shell.getBoundingClientRect();
-    const triggerRect = trigger.getBoundingClientRect();
     const gap = 6;
     const pad = 8;
+    const shellRect = shell.getBoundingClientRect();
+    const wrapRect = wrap.getBoundingClientRect();
+    const maxWidth = Math.min(264, Math.max(120, shellRect.width - pad * 2));
+    const maxHeight = Math.floor(Math.max(120, shellRect.height - pad * 2));
 
     popup.style.left = 'auto';
-    popup.style.right = `${Math.round(Math.max(pad, shellRect.right - triggerRect.right))}px`;
+    popup.style.right = '0';
+    popup.style.top = `calc(100% + ${gap}px)`;
+    popup.style.bottom = 'auto';
+    popup.style.width = `${Math.round(maxWidth)}px`;
+    popup.style.maxWidth = `${Math.round(maxWidth)}px`;
+    popup.style.maxHeight = `${maxHeight}px`;
 
-    const maxWidth = Math.max(120, shellRect.width - pad * 2);
-    popup.style.width = `${Math.min(Math.round(maxWidth), 264)}px`;
-    popup.style.maxWidth = `${Math.floor(maxWidth)}px`;
-    popup.style.maxHeight = `${Math.floor(Math.max(120, shellRect.height - pad * 2))}px`;
+    let popupRect = popup.getBoundingClientRect();
 
-    const popupHeight = popup.offsetHeight;
-    let top = triggerRect.bottom - shellRect.top + gap;
-    const maxTop = shellRect.height - pad - popupHeight;
-
-    if (top > maxTop) {
-      top = triggerRect.top - shellRect.top - gap - popupHeight;
+    if (popupRect.left < shellRect.left + pad) {
+      const left = Math.max(0, Math.round(shellRect.left + pad - wrapRect.left));
+      popup.style.right = 'auto';
+      popup.style.left = `${left}px`;
+      popupRect = popup.getBoundingClientRect();
+    } else if (popupRect.right > shellRect.right - pad) {
+      const right = Math.max(0, Math.round(wrapRect.right - (shellRect.right - pad)));
+      popup.style.left = 'auto';
+      popup.style.right = `${right}px`;
+      popupRect = popup.getBoundingClientRect();
     }
-    top = Math.max(pad, Math.min(top, Math.max(pad, maxTop)));
 
-    popup.style.top = `${Math.round(top)}px`;
+    if (popupRect.bottom > shellRect.bottom - pad) {
+      popup.style.top = 'auto';
+      popup.style.bottom = `calc(100% + ${gap}px)`;
+      popupRect = popup.getBoundingClientRect();
+    }
+    if (popupRect.top < shellRect.top + pad) {
+      popup.style.top = `${Math.max(0, Math.round(shellRect.top + pad - wrapRect.top))}px`;
+      popup.style.bottom = 'auto';
+    }
   }
 
   function positionPopupAfterLayout() {
@@ -153,7 +168,10 @@ export function createGameMenu(options) {
   function handleTriggerClick(event) {
     event.stopPropagation();
     setOpen(!open);
-    if (open) refresh();
+    if (open) {
+      refresh();
+      positionPopupAfterLayout();
+    }
   }
 
   function onDocumentPointerDown(event) {
@@ -306,6 +324,8 @@ export function createGameMenu(options) {
         list.appendChild(buildModalRow(item));
       }
     }
+
+    if (open) positionPopupAfterLayout();
   }
 
   trigger.addEventListener('click', handleTriggerClick);
