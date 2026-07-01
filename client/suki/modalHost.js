@@ -26,7 +26,7 @@ const HOST_CSS = `
 }
 .suki-modal-dialog {
   width: min(100%, 24rem);
-  max-height: min(80%, 32rem);
+  max-height: min(85%, 32rem);
   display: flex;
   flex-direction: column;
   border: 1px solid #334155;
@@ -87,14 +87,14 @@ function ensureStyles() {
  */
 
 /**
- * Modal overlay — darkens the full game shell and blocks interaction; dialog centered on the play area.
+ * Modal overlay — darkens the full game shell; dialog centered inside the shell bounds.
  *
  * @param {object} options
  * @param {HTMLElement} options.root — `main.suki-stake-shell`
- * @param {HTMLElement | string} [options.centerIn] — anchor for dialog centering (default `.suki-game-core`)
+ * @param {HTMLElement | string} [options.centerIn] — unused; kept for API compat (modals use full shell)
  */
 export function createModalHost(options) {
-  const { root, centerIn } = options;
+  const { root } = options;
 
   if (typeof document === 'undefined' || !root) {
     return {
@@ -107,14 +107,6 @@ export function createModalHost(options) {
   }
 
   ensureStyles();
-
-  const centerTarget =
-    centerIn == null
-      ? (root.querySelector('.suki-game-core') ?? root)
-      : typeof centerIn === 'string'
-        ? root.querySelector(centerIn)
-        : centerIn;
-  const stageAnchor = centerTarget ?? root;
 
   /** @type {Map<string, ModalDefinition>} */
   const registry = new Map();
@@ -162,12 +154,10 @@ export function createModalHost(options) {
   root.appendChild(overlay);
 
   function positionStage() {
-    const shellRect = root.getBoundingClientRect();
-    const anchorRect = stageAnchor.getBoundingClientRect();
-    stage.style.left = `${Math.round(anchorRect.left - shellRect.left)}px`;
-    stage.style.top = `${Math.round(anchorRect.top - shellRect.top)}px`;
-    stage.style.width = `${Math.round(anchorRect.width)}px`;
-    stage.style.height = `${Math.round(anchorRect.height)}px`;
+    stage.style.left = '0';
+    stage.style.top = '0';
+    stage.style.width = '100%';
+    stage.style.height = '100%';
   }
 
   function startLayoutWatch() {
@@ -176,7 +166,6 @@ export function createModalHost(options) {
     resizeObserver?.disconnect();
     resizeObserver = new ResizeObserver(() => positionStage());
     resizeObserver.observe(root);
-    resizeObserver.observe(stageAnchor);
   }
 
   function stopLayoutWatch() {

@@ -98,11 +98,36 @@ export function createGameMenu(options) {
   let open = false;
 
   function positionPopup() {
-    const rect = trigger.getBoundingClientRect();
+    const shellRect = shell.getBoundingClientRect();
+    const triggerRect = trigger.getBoundingClientRect();
     const gap = 6;
-    popup.style.top = `${Math.round(rect.bottom + gap)}px`;
-    popup.style.right = `${Math.round(Math.max(8, window.innerWidth - rect.right))}px`;
+    const pad = 8;
+
     popup.style.left = 'auto';
+    popup.style.right = `${Math.round(Math.max(pad, shellRect.right - triggerRect.right))}px`;
+
+    const maxWidth = Math.max(120, shellRect.width - pad * 2);
+    popup.style.width = `${Math.min(Math.round(maxWidth), 264)}px`;
+    popup.style.maxWidth = `${Math.floor(maxWidth)}px`;
+    popup.style.maxHeight = `${Math.floor(Math.max(120, shellRect.height - pad * 2))}px`;
+
+    const popupHeight = popup.offsetHeight;
+    let top = triggerRect.bottom - shellRect.top + gap;
+    const maxTop = shellRect.height - pad - popupHeight;
+
+    if (top > maxTop) {
+      top = triggerRect.top - shellRect.top - gap - popupHeight;
+    }
+    top = Math.max(pad, Math.min(top, Math.max(pad, maxTop)));
+
+    popup.style.top = `${Math.round(top)}px`;
+  }
+
+  function positionPopupAfterLayout() {
+    positionPopup();
+    if (typeof requestAnimationFrame !== 'undefined') {
+      requestAnimationFrame(() => positionPopup());
+    }
   }
 
   function setOpen(next) {
@@ -113,12 +138,12 @@ export function createGameMenu(options) {
     wrap.classList.toggle('open', open);
     shell.classList.toggle('suki-game-menu-open', open);
     if (open) {
-      positionPopup();
+      positionPopupAfterLayout();
     }
   }
 
   function onResize() {
-    if (open) positionPopup();
+    if (open) positionPopupAfterLayout();
   }
 
   function closeMenu() {

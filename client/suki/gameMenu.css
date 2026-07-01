@@ -54,12 +54,12 @@
   box-shadow: 0 -5px 0 currentColor, 0 5px 0 currentColor;
 }
 
-/* Fixed pop-up — portaled to shell, positioned from burger in JS */
+/* Pop-up — child of shell (position: absolute), placed from burger in JS */
 .suki-game-menu-popup {
-  position: fixed;
+  position: absolute;
   z-index: 9010;
-  width: min(16.5rem, calc(100vw - 1.5rem));
-  max-height: min(70vh, 24rem);
+  width: min(16.5rem, calc(100% - 1rem));
+  max-height: calc(100% - 1rem);
   display: flex;
   flex-direction: column;
   padding: 0.45rem 0.35rem 0.55rem;
@@ -214,8 +214,8 @@
 
 /* Popout S — compact burger + panel */
 .suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-popup {
-  width: min(11rem, calc(100vw - 1rem));
-  max-height: min(65vh, 14rem);
+  width: min(11rem, calc(100% - 0.75rem));
+  max-height: calc(100% - 0.75rem);
 }
 
 .suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-trigger {
