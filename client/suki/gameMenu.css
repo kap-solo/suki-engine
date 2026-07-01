@@ -2,12 +2,18 @@
  * Suki game burger menu — pop-up anchored to the trigger, clamped inside shell.
  *
  * Z-index scale (within game shell):
- *   shell content ~2 · menu pop-up 9010 · burger (open) 9011 · modals 9100
+ *   shell grid areas ~2 · clock 11 · brand/menu 15 (9050 when open)
+ *   · connection banner 20 · modals 9100 · preloader 9200
  */
 
 .suki-brand {
   position: relative;
   padding-right: 3.25rem;
+  z-index: 15;
+}
+
+.suki-stake-shell.suki-game-menu-open .suki-brand {
+  z-index: 9050;
 }
 
 .suki-game-menu {
