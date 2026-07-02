@@ -29,11 +29,20 @@ export function langToLocale(lang) {
  */
 export function formatWinDecimalString(value, maxDecimals = STAKE_MONEY_DECIMALS) {
   if (!Number.isFinite(value)) return '—';
-  let text = value.toFixed(maxDecimals);
-  if (text.includes('.')) {
-    text = text.replace(/\.?0+$/, '');
+  const minDecimals = Math.min(2, maxDecimals);
+  const fixed = value.toFixed(maxDecimals);
+  const dot = fixed.indexOf('.');
+  if (dot === -1) return `${fixed}.${'0'.repeat(minDecimals)}`;
+
+  const intPart = fixed.slice(0, dot);
+  let frac = fixed.slice(dot + 1);
+  while (frac.length > minDecimals && frac.endsWith('0')) {
+    frac = frac.slice(0, -1);
   }
-  return text;
+  while (frac.length < minDecimals) {
+    frac += '0';
+  }
+  return `${intPart}.${frac}`;
 }
 
 /**
@@ -88,7 +97,7 @@ export function formatWinAmount(amount, currency = 'USD', options = {}) {
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
-      minimumFractionDigits: 0,
+      minimumFractionDigits: 2,
       maximumFractionDigits: STAKE_MONEY_DECIMALS,
     }).format(value);
   } catch {
