@@ -19,7 +19,11 @@ export function normalizeRgsBase(urlOrHost, fallbackOrigin = '') {
   if (raw.startsWith('http://') || raw.startsWith('https://')) {
     return raw.replace(/\/$/, '');
   }
-  return `https://${raw.replace(/\/$/, '')}`;
+  const hostOnly = raw.replace(/\/$/, '');
+  if (isLocalRgsUrl(`http://${hostOnly}`)) {
+    return `http://${hostOnly}`;
+  }
+  return `https://${hostOnly}`;
 }
 
 /**

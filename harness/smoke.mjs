@@ -262,6 +262,7 @@ async function runIntegrationTests(baseUrl) {
 function runRgsConfigTests() {
   console.log('\nUnit — RGS config');
   assert(normalizeRgsBase('rgs.stake-engine.com') === 'https://rgs.stake-engine.com', 'host-only rgs_url');
+  assert(normalizeRgsBase('127.0.0.1:5174') === 'http://127.0.0.1:5174', 'host-only local rgs_url uses http');
   assert(normalizeRgsBase('https://rgs.example.com/') === 'https://rgs.example.com', 'trim trailing slash');
   assert(isLocalRgsUrl('http://127.0.0.1:5174'), 'detect local RGS');
   assert(!isLocalRgsUrl('https://rgs.stake-engine.com'), 'remote RGS not local');

@@ -321,8 +321,18 @@ export async function requestReplay({ game, version, mode, event, amountApi }) {
   const endpoint = getRgsEndpoint(
     `/bet/replay/${game}/${version}/${modePath}/${encodeURIComponent(event)}${amountQuery}`,
   );
-  const response = await fetch(endpoint);
-  const data = await response.json();
+  let response;
+  try {
+    response = await fetch(endpoint);
+  } catch {
+    throw new Error('ERR_NET');
+  }
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error('ERR_NET');
+  }
   if (!response.ok || data.error) {
     const code = data.error?.code || `HTTP_${response.status}`;
     throw new Error(code);
