@@ -72,6 +72,7 @@ export function applyCopyLabels(copy, elements) {
     balanceLabel: 'balance',
     betLabel: 'betAmount',
     lastResultLabel: 'lastResult',
+    sessionBestHudLabel: 'sessionBestWin',
     sessionPlaysLabel: 'sessionPlays',
     sessionPlLabel: 'sessionPl',
     replayNote: 'replayNote',

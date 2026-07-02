@@ -5,6 +5,7 @@ export const en = {
   bet: 'Bet',
   betAmount: 'Bet amount',
   lastResult: 'Last result',
+  sessionBestWin: 'Session best',
   drop: 'Drop',
   playVerb: 'play',
   insufficientBalance: 'Insufficient Funds.',

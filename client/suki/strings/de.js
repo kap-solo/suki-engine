@@ -8,6 +8,7 @@ export const de = {
   bet: 'Einsatz',
   betAmount: 'Einsatzhöhe',
   lastResult: 'Letztes Ergebnis',
+  sessionBestWin: 'Beste in Sitzung',
   drop: 'Drop',
   playVerb: 'spielen',
   insufficientBalance: 'Unzureichende Mittel.',
