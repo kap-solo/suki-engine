@@ -116,7 +116,7 @@ const NOOP_PRELOADER = {
 export function createGamePreloader(options) {
   const {
     shell,
-    brand = 'Blink Once',
+    brand = 'S U K I',
     subtitle = '',
     hint = 'Tap anywhere to play',
     loadingHint = 'Loading…',
