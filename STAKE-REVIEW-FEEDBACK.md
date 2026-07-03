@@ -24,6 +24,7 @@ _(none)_
 | Win display full precision; balance 2 dp | `currency.js`, `formatWinAmount`, `game.formatWin()` |
 | Social mode terminology (bet/pay/cost) | copy strings + sweep |
 | Replay: lang param, start summary, button polish | `replayUi.js`, replay flow |
+| Replay: persistent not-a-live-bet disclaimer | `replayUi.js`, `stakeLayout.css` banner |
 | Game info: max mult + RTP per mode + rounding note | `gameInfo.js`, paytable modals |
 | Stake.us labels: Base Play, Feature/Final Multiplier | social copy strings |
 | **Social mode game mode naming (no buy/bet/pay in labels)** | `modeButtonLabel()` + `buyPlayButton` / `modeInfoBase` social copy; math `index.json` keys stay internal (`base`, `bonus`) |

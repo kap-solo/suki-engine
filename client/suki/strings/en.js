@@ -14,6 +14,9 @@ export const en = {
   sessionPl: 'Session P/L',
   sessionPlays: 'Session plays',
   replayNote: 'Recorded round — not a live bet',
+  replayModeTitle: 'Replay mode',
+  replayDisclaimer:
+    'Recorded round for review only. No live bet is placed and your balance will not change.',
   stakeReturned: 'push, stake returned',
   won: 'won',
   onAmount: 'on',
@@ -84,6 +87,9 @@ export const enSocial = {
   connectingRgs: 'Connecting…',
   sessionPl: 'Session coins',
   replayNote: 'Recorded round — not a live play',
+  replayModeTitle: 'Replay mode',
+  replayDisclaimer:
+    'Recorded round for review only. No live play is made and your coins will not change.',
   stakeReturned: 'push, play amount returned',
   newSessionBalance: 'New session — coins',
   autoplayStopped: 'Autoplay stopped — insufficient balance after',

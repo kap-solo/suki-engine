@@ -75,7 +75,7 @@ export function applyCopyLabels(copy, elements) {
     sessionBestHudLabel: 'sessionBestWin',
     sessionPlaysLabel: 'sessionPlays',
     sessionPlLabel: 'sessionPl',
-    replayNote: 'replayNote',
+    replayNote: 'replayDisclaimer',
   };
 
   for (const [elKey, termKey] of Object.entries(map)) {

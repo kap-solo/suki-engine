@@ -58,7 +58,7 @@ import {
   sanitizeAutoplayRoundDigits,
   shouldBlockAutoplayRoundKey,
 } from '../client/suki/autoplayConfirm.js';
-import { formatReplayStartSummary } from '../client/suki/replayUi.js';
+import { formatReplayStartSummary, applyReplayModeChrome } from '../client/suki/replayUi.js';
 import { createBookPlayer } from '../client/suki/bookPlayer.js';
 import {
   createFatalRgsError,
@@ -900,6 +900,25 @@ function runCurrencyCopyTests() {
   );
   assert(summary.includes('Play cost'), 'replay intro play cost');
   assert(summary.includes('Payout multiplier'), 'replay intro payout multiplier');
+  assert(summary.includes('No live bet is placed'), 'replay intro includes not-a-live-bet disclaimer');
+
+  const chrome = { dataset: {} };
+  const replayLabel = { textContent: '' };
+  const replayNote = { textContent: '' };
+  const banner = {
+    hidden: true,
+    querySelector(sel) {
+      if (sel === '.replay-label') return replayLabel;
+      if (sel === '.replay-note') return replayNote;
+      return null;
+    },
+    setAttribute() {},
+  };
+  applyReplayModeChrome({ shell: chrome, banner, noteEl: replayNote, copy: real });
+  assert(chrome.dataset.sukiReplay === 'true', 'replay chrome marks shell');
+  assert(replayLabel.textContent === 'Replay mode', 'replay chrome sets title');
+  assert(replayNote.textContent.includes('No live bet'), 'replay chrome sets disclaimer');
+  assert(banner.hidden === false, 'replay chrome shows banner');
 
   const socialSummary = formatReplayStartSummary(
     social,

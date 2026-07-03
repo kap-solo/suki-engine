@@ -197,6 +197,7 @@ const game = createGameBootstrap({
       betLabel: betLabelEl,
       lastResultLabel: lastResultLabelEl,
       replayNote: replayNoteEl,
+      replayBanner,
       dropButton: betUi.elements.dropButton,
     },
     screenPreview: { root: shellEl },
@@ -424,12 +425,13 @@ async function runAutoplay(roundCount) {
 
 function setPlayModeUi() {
   replayBanner.hidden = true;
+  if (shellEl) delete shellEl.dataset.sukiReplay;
   betUi.setView('play');
   balanceHud.hidden = false;
 }
 
 function setReplayModeUi() {
-  replayBanner.hidden = false;
+  game.applyReplayMode();
   betUi.setView('replay');
   balanceHud.hidden = true;
   betUi.setLastReplayUrl('');

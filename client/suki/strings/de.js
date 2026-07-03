@@ -17,6 +17,9 @@ export const de = {
   sessionPl: 'Sitzung G/V',
   sessionPlays: 'Spiele in Sitzung',
   replayNote: 'Aufgezeichnete Runde — kein Live-Einsatz',
+  replayModeTitle: 'Wiedergabe',
+  replayDisclaimer:
+    'Nur zur Überprüfung aufgezeichnet. Kein Live-Einsatz — Guthaben ändert sich nicht.',
   stakeReturned: 'Push, Einsatz zurück',
   won: 'gewonnen',
   onAmount: 'bei',
@@ -75,6 +78,9 @@ export const deSocial = {
   connectingRgs: 'Verbindung…',
   sessionPl: 'Sitzung Münzen',
   replayNote: 'Aufgezeichnete Runde — kein Live-Spiel',
+  replayModeTitle: 'Wiedergabe',
+  replayDisclaimer:
+    'Nur zur Überprüfung aufgezeichnet. Kein Live-Spiel — Münzen ändern sich nicht.',
   stakeReturned: 'Push, Spielbetrag zurück',
   newSessionBalance: 'Neue Sitzung — Münzen',
   autoplayStopped: 'Autoplay gestoppt — nicht genug Münzen nach',

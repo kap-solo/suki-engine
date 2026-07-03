@@ -20,6 +20,7 @@ import { initStakeScreenPreview } from './screenPreview.js';
 import { initStakeLayout } from './stakeLayout.js';
 import { applyMobileTouchPolicy } from './mobileTouch.js';
 import { checkRgsGate, createFatalRgsError, isFatalRgsError } from './rgsGate.js';
+import { applyReplayModeChrome } from './replayUi.js';
 
 /**
  * Single entry point — wires initSuki, production shell, jurisdiction, lifecycle, and RGS bootstrap.
@@ -94,6 +95,18 @@ export function createGameBootstrap(options) {
     });
     applyCopyLabels(copy, elements);
     connectionBanner?.refreshCopy();
+    if (isReplayMode()) {
+      applyReplayMode();
+    }
+  }
+
+  function applyReplayMode() {
+    applyReplayModeChrome({
+      shell: layoutRoot,
+      banner: elements.replayBanner ?? null,
+      noteEl: elements.replayNote ?? null,
+      copy,
+    });
   }
 
   const jurisdiction = createJurisdictionController(() => {
@@ -327,6 +340,7 @@ export function createGameBootstrap(options) {
     syncCopy() {
       refreshPlayerDisplay();
     },
+    applyReplayMode,
     start,
     connectionBanner,
   };
