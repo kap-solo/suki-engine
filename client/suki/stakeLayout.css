@@ -72,13 +72,12 @@ body {
   min-height: 0;
 }
 
-/* Portrait: logo → replay → L-proportion core → bottom controls */
+/* Portrait: logo → L-proportion core → bottom controls */
 .suki-stake-shell {
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto auto minmax(0, 1fr) auto auto auto;
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto;
   grid-template-areas:
     'brand'
-    'replay'
     'core'
     'controls'
     'footer'
@@ -170,47 +169,42 @@ body {
 }
 
 .suki-replay-banner {
-  grid-area: replay;
-  z-index: 9055;
-  margin: 0 0.75rem;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 0.2rem;
-  padding: 0.55rem 0.85rem;
-  border-radius: 10px;
+  gap: 0.35rem 0.5rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 8px;
   border: 1px solid #854d0e;
   background: linear-gradient(180deg, rgba(69, 26, 3, 0.96) 0%, rgba(26, 18, 8, 0.98) 100%);
   box-shadow:
     0 0 0 1px rgba(251, 191, 36, 0.12),
-    0 8px 24px rgba(0, 0, 0, 0.35);
+    0 4px 14px rgba(0, 0, 0, 0.28);
   text-align: center;
 }
 
+.suki-footer .suki-replay-banner {
+  margin: 0 0 0.45rem;
+}
+
 .suki-replay-banner .replay-label {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #fbbf24;
+  white-space: nowrap;
 }
 
 .suki-replay-banner .replay-note {
-  max-width: 36rem;
-  font-size: 0.78rem;
+  flex: 1 1 12rem;
+  min-width: 0;
+  font-size: 0.68rem;
   line-height: 1.35;
   font-weight: 600;
   color: #fde68a;
-}
-
-.suki-stake-shell[data-suki-orientation='landscape'] .suki-replay-banner {
-  position: fixed;
-  top: 0.55rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(36rem, calc(100% - 1.5rem));
-  margin: 0;
 }
 
 .suki-stake-shell[data-suki-replay='true'] .suki-game-core {

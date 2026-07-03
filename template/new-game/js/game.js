@@ -530,7 +530,6 @@ if (replayMode) {
   setPlayModeUi();
   createGamePreloader({
     shell: shellEl,
-    brand: 'SUKI engine',
     subtitle: GAME.title,
     hint: 'Tap anywhere to play',
     connectingHint: copyTerm('connectingRgs'),

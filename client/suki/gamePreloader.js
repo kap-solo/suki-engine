@@ -27,8 +27,7 @@ const PRELOADER_CSS = `
   margin: 0 0 0.35rem;
   font: 700 clamp(1.35rem, 6vw, 2rem) / 1.1 system-ui, sans-serif;
   color: #f0f0f0;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 .suki-game-preloader-subtitle {
   margin: 0 0 1.35rem;
@@ -117,7 +116,7 @@ const NOOP_PRELOADER = {
 export function createGamePreloader(options) {
   const {
     shell,
-    brand = 'SUKI engine',
+    brand = 'Blink Once',
     subtitle = '',
     hint = 'Tap anywhere to play',
     loadingHint = 'Loading…',
