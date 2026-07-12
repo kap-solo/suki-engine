@@ -70,20 +70,18 @@ export const de = {
 
 /** German social casino overrides (extend when targeting social markets). */
 export const deSocial = {
-  balance: 'Münzen',
   bet: 'Spielen',
+  win: 'Verdienen',
   betAmount: 'Spielbetrag',
   insufficientBalance: 'Unzureichendes Guthaben.',
   setBetPrompt: 'Spielbetrag wählen · Drop drücken.',
   connectingRgs: 'Verbindung…',
-  sessionPl: 'Sitzung Münzen',
   replayNote: 'Aufgezeichnete Runde — kein Live-Spiel',
   replayModeTitle: 'Wiedergabe',
   replayDisclaimer:
-    'Nur zur Überprüfung aufgezeichnet. Kein Live-Spiel — Münzen ändern sich nicht.',
+    'Nur zur Überprüfung aufgezeichnet. Kein Live-Spiel — Guthaben ändert sich nicht.',
   stakeReturned: 'Push, Spielbetrag zurück',
-  newSessionBalance: 'Neue Sitzung — Münzen',
-  autoplayStopped: 'Autoplay gestoppt — nicht genug Münzen nach',
+  autoplayStopped: 'Autoplay gestoppt — unzureichendes Guthaben nach',
   replayPlayLabel: 'Spielbetrag',
   payoutMultiplierLabel: 'Endmultiplikator',
   baseBetLabel: 'Basis-Spiel',

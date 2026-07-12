@@ -52,7 +52,7 @@ Self-assessment for Stake-shaped game development. Automated checks run locally 
 - [x] Turbo / super-turbo / autoplay / slamstop / spacebar gating
 - [x] Buy feature gating (disabledBuyFeature)
 - [x] Session timer (displaySessionTimer)
-- [x] Social casino copy (balance → coins, etc.)
+- [x] Social casino copy (Bet→Play, Win→Earn; balance label unchanged)
 - [x] Currency from auth + URL through play()
 - [x] i18n scaffold (lang param)
 

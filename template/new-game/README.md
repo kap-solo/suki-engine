@@ -18,7 +18,7 @@ Open http://127.0.0.1:5174/?dev=true
 | `?dev=true` | Mock RGS, compliance footer, test buttons, Stake screen toolbar |
 | `?dev=true&screen=popout-s` | Start in Popout S (400 × 225) |
 | `?dev=true&jurisdiction=strict` | Session timer + disabled turbo/autoplay |
-| `?dev=true&social=true` | Social casino copy (coins / play) |
+| `?dev=true&social=true` | Social casino copy (Play / Earn) |
 | `?dev=true&lang=de` | German UI strings |
 | `?replay=true&event=…` | Replay a completed round |
 

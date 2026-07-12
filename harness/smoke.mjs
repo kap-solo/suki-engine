@@ -879,7 +879,8 @@ function runCurrencyCopyTests() {
   const real = createCopyPolicy({ socialCasino: false });
   const social = createCopyPolicy({ socialCasino: true });
   assert(real.term('balance') === 'Balance', 'real money balance label');
-  assert(social.term('balance') === 'Coins', 'social casino balance label');
+  assert(social.term('balance') === 'Balance', 'social casino keeps balance label');
+  assert(social.term('win') === 'Earn', 'social casino win label');
   assert(
     modeButtonLabel({ key: 'bonus', type: 'buy', costMultiplier: 100 }, real.t.bind(real)) === 'Buy bonus ×100',
     'buy mode label via copy policy',
@@ -933,7 +934,7 @@ function runCurrencyCopyTests() {
 
   const label = { textContent: '' };
   applyCopyLabels(social, { balanceLabel: label });
-  assert(label.textContent === 'Coins', 'applyCopyLabels updates HUD');
+  assert(label.textContent === 'Balance', 'applyCopyLabels keeps balance in social');
 
   const betLabel = { textContent: '' };
   applyCopyLabels(real, { betLabel });
@@ -971,7 +972,8 @@ function runI18nTests() {
     'general disclaimer RGS settlement',
   );
   assert(deUi.t('balance') === 'Guthaben', 'de balance');
-  assert(enSocial.t('balance') === 'Coins', 'en social balance');
+  assert(enSocial.t('balance') === 'Balance', 'en social balance');
+  assert(enSocial.t('win') === 'Earn', 'en social win');
   assert(deUi.t('setBetPrompt').includes('Drop'), 'de setBetPrompt');
 
   const custom = createI18n({ lang: 'en', overrides: { drop: 'Launch' } });

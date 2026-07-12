@@ -44,7 +44,7 @@ const JURISDICTION = [
   { item: 'Turbo / super-turbo / autoplay / slamstop / spacebar gating', status: 'verified' },
   { item: 'Buy feature gating (disabledBuyFeature)', status: 'verified' },
   { item: 'Session timer (displaySessionTimer)', status: 'verified' },
-  { item: 'Social casino copy (balance → coins, etc.)', status: 'verified' },
+  { item: 'Social casino copy (Bet→Play, Win→Earn; balance label unchanged)', status: 'verified' },
   { item: 'Currency from auth + URL through play()', status: 'verified' },
   { item: 'i18n scaffold (lang param)', status: 'verified' },
   { item: 'RGS calls use rgs_url launch param (not page origin)', status: 'verified' },

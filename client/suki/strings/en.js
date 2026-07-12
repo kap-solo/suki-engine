@@ -3,6 +3,7 @@
 export const en = {
   balance: 'Balance',
   bet: 'Bet',
+  win: 'Win',
   betAmount: 'Bet amount',
   lastResult: 'Last result',
   sessionBestWin: 'Session best',
@@ -79,19 +80,17 @@ export const en = {
 
 /** Social casino overrides for English (stake.us-style terminology). */
 export const enSocial = {
-  balance: 'Coins',
   bet: 'Play',
+  win: 'Earn',
   betAmount: 'Play amount',
   insufficientBalance: 'Insufficient Balance.',
   setBetPrompt: 'Set play amount · press Drop.',
   connectingRgs: 'Connecting…',
-  sessionPl: 'Session coins',
   replayNote: 'Recorded round — not a live play',
   replayModeTitle: 'Replay mode',
   replayDisclaimer:
-    'Recorded round for review only. No live play is made and your coins will not change.',
+    'Recorded round for review only. No live play is made and your balance will not change.',
   stakeReturned: 'push, play amount returned',
-  newSessionBalance: 'New session — coins',
   autoplayStopped: 'Autoplay stopped — insufficient balance after',
   replayPlayLabel: 'Play amount',
   payoutMultiplierLabel: 'Final multiplier',

@@ -110,7 +110,7 @@ CI on `main` runs full `npm run check` (smoke + ERR + compliance report + templa
 3. Stake passes `?lang=fr` — `createGameBootstrap` picks it up automatically.
 
 Preview German locally: `?dev=true&lang=de`
-- `createCopyPolicy({ socialCasino })` — Balance/Coins, Bet/Play, etc.; preview with `?dev=true&social=true`
+- `createCopyPolicy({ socialCasino })` — Bet/Play, Win/Earn, etc.; preview with `?dev=true&social=true`
 - `reportBetAction(action, meta)` — `POST /bet/action` for in-round player picks
 - `parseAuthResponse(data)` — bet levels, currency, jurisdiction from authenticate
 - `createControlPolicy(jurisdiction)` — `canTurbo`, `canAutoplay`, `showRtp`, etc.
