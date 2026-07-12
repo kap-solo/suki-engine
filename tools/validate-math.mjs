@@ -1,14 +1,20 @@
 /**
  * Validate a Stake-shaped math bundle before booting a game.
  *
- * Usage: node tools/validate-math.mjs <dataDir>
+ * Usage: node tools/validate-math.mjs [--stake] <dataDir>
  * Example: node tools/validate-math.mjs ../Pure-Plinko/data
+ *          node tools/validate-math.mjs --stake ../Basic-Slot-Pool/data/publish
+ *
+ * --stake  Enforce Stake ACP upload rules (headerless lookup CSV, .jsonl.zst events).
  */
 
-import { readFileSync, existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import zlib from 'node:zlib';
 
-const dataDir = resolve(process.argv[2] || 'data');
+const args = process.argv.slice(2);
+const stakePublish = args.includes('--stake');
+const dataDir = resolve(args.find((arg) => !arg.startsWith('--')) || 'data');
 const errors = [];
 const warnings = [];
 
@@ -29,9 +35,11 @@ function readJson(path) {
   }
 }
 
-function loadBooks(path) {
+function loadBooks(path, { compressed = false } = {}) {
+  const text = compressed
+    ? zlib.zstdDecompressSync(readFileSync(path)).toString('utf8')
+    : readFileSync(path, 'utf8');
   const books = [];
-  const text = readFileSync(path, 'utf8');
   for (const [lineNo, line] of text.trim().split('\n').entries()) {
     if (!line.trim()) continue;
     try {
@@ -43,35 +51,56 @@ function loadBooks(path) {
   return books;
 }
 
+function isLookupDataRow(line) {
+  return /^\d+,/.test(line.trim());
+}
+
 function loadLookup(path) {
   const text = readFileSync(path, 'utf8').trim();
-  const lines = text.split('\n');
-  if (lines.length < 2) {
-    fail(`${path}: lookup table needs header + rows`);
+  const lines = text.split('\n').filter((line) => line.trim());
+  if (!lines.length) {
+    fail(`${path}: lookup table is empty`);
     return [];
   }
 
-  const header = lines[0].split(',').map((h) => h.trim());
-  const idIdx = header.findIndex((h) => h === 'id');
-  const weightIdx = header.findIndex((h) =>
-    ['weight', 'probability_uint64', 'probability'].includes(h),
-  );
-  const payoutIdx = header.findIndex((h) =>
-    ['payout', 'payout_multiplier'].includes(h),
-  );
+  const hasHeader = !isLookupDataRow(lines[0]);
+  if (hasHeader) {
+    const message = `${path}: CSV header row — Stake ACP rejects headers (run math:publish)`;
+    if (stakePublish) fail(message);
+    else warn(message);
 
-  if (idIdx < 0 || weightIdx < 0 || payoutIdx < 0) {
-    fail(`${path}: header must include id, weight/probability_uint64, payout/payout_multiplier`);
-    return [];
+    const header = lines[0].split(',').map((h) => h.trim());
+    const idIdx = header.findIndex((h) => h === 'id');
+    const weightIdx = header.findIndex((h) =>
+      ['weight', 'probability_uint64', 'probability'].includes(h),
+    );
+    const payoutIdx = header.findIndex((h) =>
+      ['payout', 'payout_multiplier'].includes(h),
+    );
+
+    if (idIdx < 0 || weightIdx < 0 || payoutIdx < 0) {
+      fail(`${path}: header must include id, weight/probability_uint64, payout/payout_multiplier`);
+      return [];
+    }
+
+    return lines.slice(1).map((line, i) => {
+      const cols = line.split(',');
+      return {
+        line: i + 2,
+        id: Number(cols[idIdx]),
+        weight: Number(cols[weightIdx]),
+        payout: Number(cols[payoutIdx]),
+      };
+    });
   }
 
-  return lines.slice(1).map((line, i) => {
+  return lines.map((line, i) => {
     const cols = line.split(',');
     return {
-      line: i + 2,
-      id: Number(cols[idIdx]),
-      weight: Number(cols[weightIdx]),
-      payout: Number(cols[payoutIdx]),
+      line: i + 1,
+      id: Number(cols[0]),
+      weight: Number(cols[1]),
+      payout: Number(cols[2]),
     };
   });
 }
@@ -103,23 +132,46 @@ function validateBookEvents(book, path, line) {
   }
 }
 
+function resolveEventsPath(dataDir, eventsFile) {
+  const uncompressedName = eventsFile.replace(/\.zst$/, '');
+  const uncompressedPath = join(dataDir, uncompressedName);
+  if (existsSync(uncompressedPath)) {
+    return { path: uncompressedPath, compressed: false };
+  }
+
+  const compressedName = eventsFile.endsWith('.zst') ? eventsFile : `${eventsFile}.zst`;
+  const compressedPath = join(dataDir, compressedName);
+  if (existsSync(compressedPath)) {
+    return { path: compressedPath, compressed: true };
+  }
+
+  return { path: join(dataDir, eventsFile), compressed: eventsFile.endsWith('.zst') };
+}
+
 function validateMode(dataDir, mode) {
   const modeName = mode.name || '(unnamed)';
   if (!mode.name) fail(`index.json mode missing name`);
 
   const weightsFile = mode.weights?.replace(/\.zst$/, '') ?? mode.weights;
-  const eventsFile = mode.events?.replace(/\.zst$/, '') ?? mode.events;
+  const eventsFile = mode.events;
   if (!weightsFile) fail(`mode ${modeName}: missing weights file in index.json`);
   if (!eventsFile) fail(`mode ${modeName}: missing events file in index.json`);
 
+  if (stakePublish && !eventsFile.endsWith('.jsonl.zst')) {
+    fail(`mode ${modeName}: Stake ACP requires events "*.jsonl.zst" (got "${eventsFile}")`);
+  } else if (!stakePublish && !eventsFile.endsWith('.jsonl.zst')) {
+    warn(`mode ${modeName}: index events should be "*.jsonl.zst" for Stake ACP (got "${eventsFile}")`);
+  }
+
   const weightsPath = join(dataDir, weightsFile);
-  const eventsPath = join(dataDir, eventsFile);
+  const eventsResolved = resolveEventsPath(dataDir, eventsFile);
+  const eventsPath = eventsResolved.path;
   if (!existsSync(weightsPath)) fail(`mode ${modeName}: missing ${weightsPath}`);
   if (!existsSync(eventsPath)) fail(`mode ${modeName}: missing ${eventsPath}`);
   if (!existsSync(weightsPath) || !existsSync(eventsPath)) return;
 
   const lookup = loadLookup(weightsPath);
-  const books = loadBooks(eventsPath);
+  const books = loadBooks(eventsPath, { compressed: eventsResolved.compressed });
   const bookIds = new Set();
 
   for (const { line, book } of books) {
@@ -166,7 +218,7 @@ function validateMode(dataDir, mode) {
 }
 
 function main() {
-  console.log(`Validating math bundle: ${dataDir}`);
+  console.log(`Validating math bundle: ${dataDir}${stakePublish ? ' (Stake ACP rules)' : ''}`);
 
   if (!existsSync(dataDir)) {
     console.error(`Directory not found: ${dataDir}`);
@@ -175,7 +227,7 @@ function main() {
 
   const indexPath = join(dataDir, 'index.json');
   if (!existsSync(indexPath)) {
-    fail('missing index.json');
+    fail('missing index.json — upload folder must include index.json at its root');
   } else {
     const index = readJson(indexPath);
     if (index?.modes?.length) {

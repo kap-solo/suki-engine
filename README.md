@@ -69,6 +69,20 @@ npm run validate-math ./data
 cd ../Suki-Engine && npm run check -- --math ../my-new-game/data
 ```
 
+### Publish math to Stake Engine ACP
+
+Stake requires `index.json`, headerless lookup CSVs, and zstd-compressed `*.jsonl.zst` books at the **upload folder root** (not `math/` source scripts).
+
+```bash
+# From Suki-Engine (pass your game's data dir)
+npm run math:publish -- ../Basic-Slot-Pool/data
+
+# Validate the upload folder matches Stake rules
+npm run validate-math -- --stake ../Basic-Slot-Pool/data/publish
+```
+
+`tools/publish-math.mjs` strips lookup CSV headers (Stake rejects line 1 if it is not numeric) and writes `data/publish/` ready for ACP upload.
+
 CI on `main` runs full `npm run check` (smoke + ERR + compliance report + template math) and `npm run test:integration` (live host routes via `template/new-game`).
 
 ## Tier 2 APIs

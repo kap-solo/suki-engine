@@ -18,6 +18,7 @@
     "test:errors": "node harness/err-scenarios.mjs",
     "test:integration": "node harness/integration-smoke.mjs",
     "validate-math": "node tools/validate-math.mjs",
+    "math:publish": "node tools/publish-math.mjs",
     "check": "node harness/compliance-checklist.mjs",
     "test:sandbox": "node harness/sandbox-smoke.mjs"
   },

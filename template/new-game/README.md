@@ -80,10 +80,22 @@ Stub ships with 3 equal-weight outcomes (0×, 1×, 2×). Validate locally:
 npm run validate-math
 ```
 
+From the game repo (uses Suki via `node_modules`):
+
+```bash
+npm run validate-math
+node node_modules/@kap-solo/suki-engine/tools/publish-math.mjs ./data
+node node_modules/@kap-solo/suki-engine/tools/validate-math.mjs --stake ./data/publish
+```
+
+**Stake ACP upload:** run `publish-math` on `data/`, then upload the contents of `data/publish/`. Lookup CSVs must have **no header row**; books must be `*.jsonl.zst`.
+
 From Suki Engine repo:
 
 ```bash
 npm run validate-math -- template/new-game/data
+npm run math:publish -- template/new-game/data
+npm run validate-math -- --stake template/new-game/data/publish
 ```
 
 ## What you keep vs replace
