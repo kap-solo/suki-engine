@@ -33,6 +33,7 @@ npm run test:errors         # ERR scenario matrix
 npm run check -- --math ../Basic-Slot/data   # swap path for your game data dir
 npm run math:publish -- ../Basic-Slot-Pool/data   # Stake ACP upload folder
 npm run validate-math -- --stake ../Basic-Slot-Pool/data/publish
+npm run frontend:publish -- ../Basic-Slot-Pool   # Stake ACP frontend folder
 
 # Live sandbox (requires Stake credentials)
 SUKI_RGS_URL=rgs.stake-engine.com SUKI_SESSION_ID=<id> SUKI_GAME_ID=<game-id> npm run test:sandbox
@@ -224,6 +225,7 @@ Use one block per submitting title.
 - [ ] Math bundle validated: `npm run check -- --math path/to/data`
 - [ ] Stake publish folder built: `npm run math:publish -- path/to/data`
 - [ ] Stake ACP rules pass: `npm run validate-math -- --stake path/to/data/publish`
+- [ ] Frontend bundle built: `npm run frontend:publish -- path/to/game`
 - [ ] Sandbox smoke pass
 - [ ] Social preview pass (`?dev=true&social=true&currency=XGC`)
 - [ ] All sections above checked for this title

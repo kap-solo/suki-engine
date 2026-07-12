@@ -19,6 +19,7 @@
     "test:integration": "node harness/integration-smoke.mjs",
     "validate-math": "node tools/validate-math.mjs",
     "math:publish": "node tools/publish-math.mjs",
+    "frontend:publish": "node tools/publish-frontend.mjs",
     "check": "node harness/compliance-checklist.mjs",
     "test:sandbox": "node harness/sandbox-smoke.mjs"
   },
