@@ -216,9 +216,69 @@
   letter-spacing: 0.05em;
 }
 
-/* Popout S — compact burger + panel */
+/* Popout S — links left, audio settings right */
 .suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-popup {
-  /* width/max-height set in JS from shell bounds */
+  padding: 0.35rem 0.3rem 0.38rem;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-list {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: repeat(4, auto);
+  grid-auto-flow: column;
+  column-gap: 0.45rem;
+  row-gap: 0.16rem;
+  align-items: start;
+  align-content: start;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-list::after {
+  content: '';
+  position: absolute;
+  top: 0.12rem;
+  bottom: 0.12rem;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: #243044;
+  pointer-events: none;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-sep {
+  display: none;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-link {
+  padding: 0.38rem 0.4rem;
+  font-size: 0.68rem;
+  line-height: 1.15;
+  text-align: left;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-toggle,
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-volume {
+  padding: 0.3rem 0.35rem;
+  gap: 0.35rem;
+  background: transparent;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-item--setting .suki-game-menu-label,
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-item.suki-game-menu-toggle .suki-game-menu-label,
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-item.suki-game-menu-volume .suki-game-menu-label {
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-switch {
+  min-width: 1.9rem;
+  padding: 0.18rem 0.28rem;
+  font-size: 0.54rem;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-slider {
+  width: 100%;
 }
 
 .suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-trigger {

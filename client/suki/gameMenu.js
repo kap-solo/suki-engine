@@ -192,7 +192,7 @@ export function createGameMenu(options) {
   function buildVolumeRow(item) {
     const volume = audioPrefs.musicVolume;
     const li = document.createElement('li');
-    li.className = 'suki-game-menu-item suki-game-menu-volume';
+    li.className = 'suki-game-menu-item suki-game-menu-volume suki-game-menu-item--setting';
 
     const label = document.createElement('span');
     label.className = 'suki-game-menu-label';
@@ -232,7 +232,7 @@ export function createGameMenu(options) {
     const prefKey = item.pref ?? 'music';
     const toggle = audioPrefs[prefKey];
     const li = document.createElement('li');
-    li.className = 'suki-game-menu-item suki-game-menu-toggle';
+    li.className = 'suki-game-menu-item suki-game-menu-toggle suki-game-menu-item--setting';
 
     const label = document.createElement('span');
     label.className = 'suki-game-menu-label';
@@ -266,7 +266,7 @@ export function createGameMenu(options) {
 
   function buildModalRow(item) {
     const li = document.createElement('li');
-    li.className = 'suki-game-menu-item';
+    li.className = 'suki-game-menu-item suki-game-menu-item--link';
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'suki-game-menu-link';
@@ -282,7 +282,7 @@ export function createGameMenu(options) {
 
   function buildActionRow(item) {
     const li = document.createElement('li');
-    li.className = 'suki-game-menu-item';
+    li.className = 'suki-game-menu-item suki-game-menu-item--link';
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'suki-game-menu-link';

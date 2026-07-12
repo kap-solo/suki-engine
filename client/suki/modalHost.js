@@ -69,6 +69,24 @@ const HOST_CSS = `
   font-size: 0.88rem;
   line-height: 1.45;
 }
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-modal-stage {
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+}
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-modal-dialog {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+}
 `;
 
 function ensureStyles() {

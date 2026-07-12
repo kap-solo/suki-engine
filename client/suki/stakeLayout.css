@@ -328,9 +328,23 @@ body {
   max-height: 5rem;
 }
 
-/* Popout S — landscape shell, flanks usually too tight; hide by default */
+/* Popout S — compact character flank */
 .suki-stake-shell[data-suki-screen='popout-s'] .suki-flank-left {
-  display: none;
+  display: flex;
+  align-items: stretch;
+  padding: 0.25rem 0.15rem 0.25rem 0.3rem;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-flank-slot {
+  min-height: 0;
+  height: 100%;
+  max-width: none;
+  border-radius: 6px;
+  font-size: 0.46rem;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  text-align: center;
+  padding: 0.2rem;
 }
 
 .suki-stake-shell[data-suki-screen='popout-s'] .suki-controls-slot {
