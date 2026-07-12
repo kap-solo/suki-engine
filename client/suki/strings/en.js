@@ -52,6 +52,13 @@ export const en = {
   modeInfoBase: 'Base',
   buyPlayButton: 'Buy & play',
   buyFeatureDisabledHint: 'Buy feature disabled for this jurisdiction',
+  buyConfirmTitle: 'Buy bonus',
+  buyConfirmSummary:
+    'You are purchasing the bonus feature at {costMult}× your base bet. The full amount is charged when you confirm.',
+  buyConfirmFeatureDetail:
+    '8 free spins are awarded. Wins during the feature are added to your balance when the round ends.',
+  buyConfirmTotalLabel: 'Total cost',
+  buyConfirmCancel: 'Cancel',
   modeCostLine:
     '{playLabel}: {playCost} — {baseLabel}: {baseAmount} × {multLabel} {costMult}',
   replayStartSummary:
@@ -102,6 +109,13 @@ export const enSocial = {
   modeInfoBase: 'Base Play',
   buyPlayButton: 'Play feature',
   buyFeatureDisabledHint: 'Feature disabled for this jurisdiction',
+  buyConfirmTitle: 'Play feature',
+  buyConfirmSummary:
+    'You are activating the feature at {costMult}× your base play amount. The full amount is charged when you confirm.',
+  buyConfirmFeatureDetail:
+    '8 free spins are awarded. Wins during the feature are added to your balance when the round ends.',
+  buyConfirmTotalLabel: 'Total play amount',
+  buyConfirmCancel: 'Cancel',
   gamblingLimitReached: 'Play limit reached.',
   howToPlayIntro:
     'Choose a play amount and press {drop}. One ball, one bucket — the win amount is decided before the animation runs.',

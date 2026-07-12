@@ -283,6 +283,10 @@ export {
   shouldBlockAutoplayRoundKey,
 } from './suki/autoplayConfirm.js';
 export {
+  registerBuyBonusConfirm,
+  BUY_BONUS_CONFIRM_MODAL_ID,
+} from './suki/buyBonusConfirm.js';
+export {
   createGameMenu,
   DEFAULT_GAME_MENU_ITEMS,
   filterVisibleMenuItems,

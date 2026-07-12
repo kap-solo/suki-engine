@@ -54,6 +54,13 @@ export const de = {
   modeInfoBase: 'Basis',
   buyPlayButton: 'Kaufen & spielen',
   buyFeatureDisabledHint: 'Kauf-Feature für diese Jurisdiktion deaktiviert',
+  buyConfirmTitle: 'Bonus kaufen',
+  buyConfirmSummary:
+    'Du kaufst das Bonus-Feature zum {costMult}×-fachen deines Basiseinsatzes. Der volle Betrag wird bei Bestätigung abgebucht.',
+  buyConfirmFeatureDetail:
+    '8 Freispiele werden vergeben. Gewinne während des Features werden am Rundenende deinem Guthaben gutgeschrieben.',
+  buyConfirmTotalLabel: 'Gesamtkosten',
+  buyConfirmCancel: 'Abbrechen',
   modeCostLine:
     '{playLabel}: {playCost} — {baseLabel}: {baseAmount} × {multLabel} {costMult}',
   replayStartSummary:
@@ -92,4 +99,11 @@ export const deSocial = {
   modeInfoBase: 'Basis-Spiel',
   buyPlayButton: 'Feature spielen',
   buyFeatureDisabledHint: 'Feature für diese Jurisdiktion deaktiviert',
+  buyConfirmTitle: 'Feature spielen',
+  buyConfirmSummary:
+    'Du aktivierst das Feature zum {costMult}×-fachen deines Basis-Spielbetrags. Der volle Betrag wird bei Bestätigung abgebucht.',
+  buyConfirmFeatureDetail:
+    '8 Freispiele werden vergeben. Gewinne während des Features werden am Rundenende deinem Guthaben gutgeschrieben.',
+  buyConfirmTotalLabel: 'Gesamt-Spielbetrag',
+  buyConfirmCancel: 'Abbrechen',
 };
