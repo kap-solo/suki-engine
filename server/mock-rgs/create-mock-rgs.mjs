@@ -22,6 +22,7 @@ function isZeroWinRound(round) {
  * @property {(session: object, body: object) => object | { error: { code: string, message: string } }} [resolveAction]
  * @property {object} [betConfig] — min/max/step bet levels for authenticate
  * @property {object} [jurisdictionDefaults] — merged over DEFAULT_JURISDICTION on authenticate
+ * @property {(body: object) => number} [resolveDebitAmount] — Stake: base bet in body × mode cost
  */
 
 /**
@@ -34,6 +35,7 @@ export function createMockRgs(config) {
     resolvePlay,
     resolveReplay,
     resolveAction = null,
+    resolveDebitAmount = null,
     jurisdictionDefaults = {},
     betConfig = {
       minBet: 1 * API_MULT,
@@ -97,6 +99,18 @@ export function createMockRgs(config) {
     return event;
   }
 
+  function costMultiplierForMode(mode) {
+    const norm = String(mode || 'BASE').toUpperCase();
+    const betModes = betConfig.betModes ?? {};
+    for (const [key, cfg] of Object.entries(betModes)) {
+      const cfgMode = String(cfg?.mode ?? key).toUpperCase();
+      if (cfgMode === norm || String(key).toUpperCase() === norm) {
+        return cfg.costMultiplier ?? 1;
+      }
+    }
+    return 1;
+  }
+
   function handleRgsRequest(pathname, body) {
     const sessionID = body?.sessionID || 'local-demo';
 
@@ -146,10 +160,15 @@ export function createMockRgs(config) {
       if (!Number.isFinite(amount) || amount <= 0) {
         return error('ERR_VAL', 'Invalid bet amount');
       }
+      const costMult = costMultiplierForMode(body.mode);
+      const debitAmount =
+        typeof resolveDebitAmount === 'function'
+          ? Math.round(resolveDebitAmount(body))
+          : Math.round(amount * costMult);
       if (session.activeRound?.active) {
         return error('ERR_BE', 'Round already active');
       }
-      if (session.balance < amount) {
+      if (session.balance < debitAmount) {
         return error('ERR_IPB', 'Insufficient balance');
       }
 
@@ -158,11 +177,11 @@ export function createMockRgs(config) {
         return playResult;
       }
 
-      session.balance -= amount;
+      session.balance -= debitAmount;
       session.roundID += 1;
       const round = {
         roundID: session.roundID,
-        amount,
+        amount: debitAmount,
         ...playResult,
         active: true,
         mode: body.mode || 'BASE',

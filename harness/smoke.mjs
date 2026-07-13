@@ -698,10 +698,11 @@ function runBetModeTests() {
   const bonusPlay = rgs.handleRgsRequest('/wallet/play', {
     sessionID: 'mode-smoke',
     gameID: 'mode-smoke',
-    amount: 100 * API,
+    amount: API,
     mode: 'BONUS',
   });
   assert(!bonusPlay.error && bonusPlay.round?.mode === 'BONUS', 'mock play accepts BONUS mode');
+  assert(bonusPlay.round?.amount === 100 * API, 'mock stores total debit on round.amount');
 }
 
 function runBetConfigTests() {

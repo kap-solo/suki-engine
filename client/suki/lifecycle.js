@@ -139,12 +139,13 @@ export function createSukiLifecycle(deps) {
   async function executeDrop({ animate = true } = {}) {
     const policy = getBetModePolicy?.();
     const baseBetApi = resolveBaseBetApi(getBetApi());
-    const amountApi = policy ? policy.playAmountApi(baseBetApi) : baseBetApi;
+    const debitApi = policy ? policy.playAmountApi(baseBetApi) : baseBetApi;
     const mode = policy ? policy.rgsModeForPlay() : 'BASE';
     if (getBalanceApi) {
-      assertSufficientBalanceForPlay(getBalanceApi(), amountApi);
+      assertSufficientBalanceForPlay(getBalanceApi(), debitApi);
     }
-    const playRes = await play({ amountApi, mode });
+    // Stake RGS: play amount is base bet; mode cost multiplier is applied server-side.
+    const playRes = await play({ amountApi: baseBetApi, mode });
     applyBalance(playRes.balance);
     return completeRound(playRes.round, { animate });
   }
