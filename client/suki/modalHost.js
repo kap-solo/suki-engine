@@ -98,10 +98,15 @@ function ensureStyles() {
 }
 
 /**
+ * @typedef {object} ModalContext
+ * @property {object | null} game — bootstrap return (after bind)
+ */
+
+/**
  * @typedef {object} ModalDefinition
- * @property {string} title
+ * @property {string | ((ctx: ModalContext) => string)} title
  * @property {string} [content] — static HTML (sanitized by caller)
- * @property {(body: HTMLElement) => void} [render]
+ * @property {(body: HTMLElement, ctx: ModalContext) => void} [render]
  */
 
 /**
@@ -129,6 +134,8 @@ export function createModalHost(options) {
   /** @type {Map<string, ModalDefinition>} */
   const registry = new Map();
   let openId = null;
+  /** @type {object | null} */
+  let game = null;
   /** @type {ResizeObserver | null} */
   let resizeObserver = null;
 
@@ -200,16 +207,27 @@ export function createModalHost(options) {
     stopLayoutWatch();
   }
 
+  function modalContext() {
+    return { game };
+  }
+
+  function resolveModalTitle(def) {
+    const ctx = modalContext();
+    if (typeof def.title === 'function') return def.title(ctx);
+    return def.title ?? '';
+  }
+
   function open(id) {
     const def = registry.get(String(id));
     if (!def) return;
     openId = String(id);
-    titleEl.textContent = def.title;
+    const ctx = modalContext();
+    titleEl.textContent = resolveModalTitle(def);
     dialog.setAttribute('aria-labelledby', 'suki-modal-title');
     titleEl.id = 'suki-modal-title';
     body.innerHTML = '';
     if (def.render) {
-      def.render(body);
+      def.render(body, ctx);
     } else if (def.content) {
       body.innerHTML = def.content;
     }
@@ -244,6 +262,10 @@ export function createModalHost(options) {
   window.addEventListener('resize', onResize);
 
   return {
+    /** @param {object} [handlers] */
+    bind(handlers = {}) {
+      game = handlers.game ?? null;
+    },
     /** @param {string} id @param {ModalDefinition} def */
     register(id, def) {
       registry.set(String(id), def);

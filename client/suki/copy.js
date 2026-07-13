@@ -28,6 +28,24 @@ export function isSocialCasinoMode(jurisdictionState) {
 }
 
 /**
+ * @param {object | null | undefined} game — bootstrap return (after bind)
+ */
+export function isSocialCasino(game) {
+  return !!game?.copy?.socialCasino;
+}
+
+/**
+ * Pick real-money or social-safe copy for game modals and rules text.
+ *
+ * @param {object | null | undefined} game
+ * @param {string} real
+ * @param {string} social
+ */
+export function pickSocialCopy(game, real, social) {
+  return isSocialCasino(game) ? social : real;
+}
+
+/**
  * @param {object} options
  * @param {string} [options.lang]
  * @param {boolean} [options.socialCasino]

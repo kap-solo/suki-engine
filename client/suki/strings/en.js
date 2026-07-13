@@ -78,6 +78,8 @@ export const en = {
   howToPlayBullet3: 'Spacebar drops when allowed by jurisdiction.',
   paytableBucketCol: 'Bucket',
   paytableMultiplierCol: 'Multiplier',
+  paytableMenuLabel: 'Paytable',
+  paytableTitle: 'Paytable',
   statsNotShown: 'Session stats are not shown for this jurisdiction.',
   statsPlays: 'Plays',
   statsBestWin: 'Best win',
@@ -117,6 +119,10 @@ export const enSocial = {
   buyConfirmTotalLabel: 'Total play amount',
   buyConfirmCancel: 'Cancel',
   gamblingLimitReached: 'Play limit reached.',
+  roundingNote:
+    'Balance is displayed rounded to 2 decimal places. Earn amounts show the full value received from the Remote Game Server.',
+  paytableMenuLabel: 'Win table',
+  paytableTitle: 'Win table',
   howToPlayIntro:
     'Choose a play amount and press {drop}. One ball, one bucket — the win amount is decided before the animation runs.',
 };

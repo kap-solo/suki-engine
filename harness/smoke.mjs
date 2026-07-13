@@ -44,11 +44,11 @@ import {
 import { createBetUi, modeButtonLabel, resolvePlayButtonState } from '../client/suki/betUi.js';
 import { createAudioPrefs } from '../client/suki/audioPrefs.js';
 import { createRecentResultsStore } from '../client/suki/recentResults.js';
-import { DEFAULT_GAME_MENU_ITEMS, filterVisibleMenuItems } from '../client/suki/gameMenu.js';
+import { DEFAULT_GAME_MENU_ITEMS, filterVisibleMenuItems, resolveGameMenuItems } from '../client/suki/gameMenu.js';
 import { formatSessionElapsed, createSessionTimer } from '../client/suki/sessionTimer.js';
 import { formatShellClockTime } from '../client/suki/shellClock.js';
 import { formatCurrencyAmount, formatWinAmount, createCurrencyFormatter } from '../client/suki/currency.js';
-import { createCopyPolicy, applyCopyLabels } from '../client/suki/copy.js';
+import { createCopyPolicy, applyCopyLabels, pickSocialCopy, isSocialCasino } from '../client/suki/copy.js';
 import { shouldSkipBetEventReporting, shouldSkipEndRound } from '../client/suki/roundReporting.js';
 import { canAffordPlayAmount, assertSufficientBalanceForPlay } from '../client/suki/balanceGuard.js';
 import {
@@ -608,6 +608,27 @@ function runGameMenuTests() {
     null,
   );
   assert(filtered.length === 1 && filtered[0].id === 'paytable', 'filter visible menu items');
+
+  const real = createCopyPolicy({ socialCasino: false });
+  const social = createCopyPolicy({ socialCasino: true });
+  const realMenu = resolveGameMenuItems(DEFAULT_GAME_MENU_ITEMS, real);
+  const socialMenu = resolveGameMenuItems(DEFAULT_GAME_MENU_ITEMS, social);
+  const realPaytable = realMenu.find((i) => i.id === 'paytable');
+  const socialPaytable = socialMenu.find((i) => i.id === 'paytable');
+  assert(realPaytable?.label === 'Paytable', 'real money paytable menu label');
+  assert(socialPaytable?.label === 'Win table', 'social paytable menu label');
+  assert(!/\b(buy|bet|pay)\b/i.test(socialPaytable?.label ?? ''), 'social paytable menu avoids buy/bet/pay');
+
+  assert(
+    pickSocialCopy({ copy: { socialCasino: false } }, 'Choose a bet', 'Choose your play amount') === 'Choose a bet',
+    'pickSocialCopy real money',
+  );
+  assert(
+    pickSocialCopy({ copy: { socialCasino: true } }, 'Choose a bet', 'Choose your play amount') === 'Choose your play amount',
+    'pickSocialCopy social',
+  );
+  assert(isSocialCasino({ copy: { socialCasino: true } }), 'isSocialCasino true');
+  assert(!isSocialCasino({ copy: { socialCasino: false } }), 'isSocialCasino false');
 }
 
 function runBetModeTests() {
@@ -975,6 +996,13 @@ function runI18nTests() {
   assert(deUi.t('balance') === 'Guthaben', 'de balance');
   assert(enSocial.t('balance') === 'Balance', 'en social balance');
   assert(enSocial.t('win') === 'Earn', 'en social win');
+  assert(enSocial.t('paytableMenuLabel') === 'Win table', 'en social paytable menu label');
+  assert(enSocial.t('paytableTitle') === 'Win table', 'en social paytable title');
+  assert(!/\b(buy|bet|pay)\b/i.test(enSocial.t('paytableMenuLabel')), 'en social paytable label avoids buy/bet/pay');
+  assert(
+    enSocial.t('roundingNote').includes('Earn amounts'),
+    'en social rounding note uses earn terminology',
+  );
   assert(deUi.t('setBetPrompt').includes('Drop'), 'de setBetPrompt');
 
   const custom = createI18n({ lang: 'en', overrides: { drop: 'Launch' } });

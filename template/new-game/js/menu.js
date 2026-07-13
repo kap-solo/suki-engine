@@ -3,6 +3,7 @@
  */
 
 import { appendGeneralDisclaimer } from '@kap-solo/suki-engine/client/rgs.js';
+import { pickSocialCopy } from '@kap-solo/suki-engine/client/rgs.js';
 import { GAME } from './config.js';
 
 /**
@@ -30,18 +31,24 @@ export function registerGameModals(ctx) {
     title: 'How to Play',
     render(body) {
       const p = document.createElement('p');
-      p.textContent =
-        'Choose a bet, press Play, and watch the outcome. Results come from the RGS — the animation is presentation only. Replace this copy in js/menu.js.';
+      p.textContent = pickSocialCopy(
+        game,
+        `Choose a ${t('bet').toLowerCase()}, press Play, and watch the outcome. Results come from the RGS — the animation is presentation only. Replace this copy in js/menu.js.`,
+        `Choose your ${t('betAmount').toLowerCase()}, press Play, and watch the outcome. Results come from the RGS — the animation is presentation only. Replace this copy in js/menu.js.`,
+      );
       body.appendChild(p);
     },
   });
 
   modalHost.register('paytable', {
-    title: 'Paytable',
+    title: ({ game: g }) => g?.copy?.t('paytableTitle') ?? 'Paytable',
     render(body) {
       const p = document.createElement('p');
-      p.textContent =
-        'Starter math: 0×, 1×, and 2× outcomes with equal weight. Publish your lookup tables and document pays here.';
+      p.textContent = pickSocialCopy(
+        game,
+        'Starter math: 0×, 1×, and 2× outcomes with equal weight. Publish your lookup tables and document pays here.',
+        'Starter math: 0×, 1×, and 2× outcomes with equal weight. Publish your lookup tables and document multipliers here.',
+      );
       body.appendChild(p);
 
       const info = document.createElement('div');

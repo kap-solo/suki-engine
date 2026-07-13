@@ -221,13 +221,43 @@ const recentResults = createRecentResultsStore({ max: 25 });
 const gameMenu = createGameMenu({ brand: brandEl, shell: shellEl, modalHost, audioPrefs });
 
 gameMenu.bind({ game });
-modalHost.register('paytable', { title: 'Paytable', render: (body) => { /* … */ } });
+modalHost.bind({ game });
+modalHost.register('paytable', {
+  title: ({ game: g }) => g?.copy?.t('paytableTitle') ?? 'Paytable',
+  render: (body) => { /* … */ },
+});
 // Burger menu is non-modal (gameplay stays visible; Play still works). Modals darken the shell.
 // Dismiss burger + modals when the player hits Play:
 betUi.bind({ onDismissOverlays: () => { gameMenu.close(); modalHost.close(); }, /* … */ });
 ```
 
 Default pop-up items: **How to Play**, **Paytable**, **Stats**, **Recent Results**, **Music** (toggle + volume slider), **Sound effects**. Tap outside or the burger again to dismiss. Register modal content per game in `js/menu.js`.
+
+The **Paytable** burger label and default modal title resolve from copy policy: `paytableMenuLabel` / `paytableTitle` (real money: **Paytable**; social: **Win table**). Call `gameMenu.refresh()` after jurisdiction changes so labels update.
+
+### Social modal copy
+
+Stake.us-style social casinos require different terminology (**Bet → Play**, **Win → Earn**) and must avoid standalone **buy**, **bet**, and **pay** in player-facing strings. Preview with `?dev=true&social=true`.
+
+**Engine helpers** (`client/suki/copy.js`, exported from `client/rgs.js`):
+
+- `isSocialCasino(game)` — reads `game.copy.socialCasino`
+- `pickSocialCopy(game, realText, socialText)` — dual string sets for modal bodies
+- `game.t('paytableTitle')`, `game.t('paytableMenuLabel')`, `game.t('roundingNote')` — locale + social overrides in `client/suki/strings/en.js` / `enSocial`
+
+**Pattern for game-specific rules** (How to Play, paytable footnotes) in `js/menu.js`:
+
+```js
+import { pickSocialCopy } from '@kap-solo/suki-engine/client/rgs.js';
+
+const intro = pickSocialCopy(
+  game,
+  `Choose a ${t('bet').toLowerCase()} and press Spin.`,
+  `Choose your ${t('betAmount').toLowerCase()} and press Spin.`,
+);
+```
+
+Keep **game-specific** sentences in the title's `menu.js`; keep **shared labels** in engine string packs. English-only social copy is acceptable for initial Stake.us submission.
 
 ```js
 const audioPrefs = createAudioPrefs({ storageKey: `${gameId}.audio` });

@@ -154,6 +154,8 @@ export {
   createCopyPolicy,
   applyCopyLabels,
   isSocialCasinoMode,
+  isSocialCasino,
+  pickSocialCopy,
   REAL_MONEY_COPY,
   SOCIAL_CASINO_COPY,
 } from './copy.js';

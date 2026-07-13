@@ -220,6 +220,8 @@ export {
   createCopyPolicy,
   applyCopyLabels,
   isSocialCasinoMode,
+  isSocialCasino,
+  pickSocialCopy,
 } from './suki/bootstrap.js';
 export { setPlayerCurrency, getPlayerCurrency, clearPlayerCurrency } from './suki/playerCurrency.js';
 export { createI18n, resolveLang, SUPPORTED_LOCALES } from './suki/i18n.js';
@@ -290,6 +292,7 @@ export {
   createGameMenu,
   DEFAULT_GAME_MENU_ITEMS,
   filterVisibleMenuItems,
+  resolveGameMenuItems,
 } from './suki/gameMenu.js';
 export { appendGeneralDisclaimer } from './suki/gameInfo.js';
 

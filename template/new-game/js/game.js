@@ -306,6 +306,7 @@ const game = createGameBootstrap({
 const { controls, lifecycle, applyAuthConfig, syncDevTools } = game;
 
 gameMenu.bind({ game });
+modalHost.bind({ game });
 registerGameModals({
   modalHost,
   recentResults,

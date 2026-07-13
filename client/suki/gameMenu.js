@@ -37,6 +37,28 @@ export function filterVisibleMenuItems(items, game) {
   });
 }
 
+/** Copy-driven menu labels — extend when more modal items need social variants. */
+const COPY_MENU_LABEL_KEYS = {
+  paytable: 'paytableMenuLabel',
+};
+
+/**
+ * Resolve burger menu labels from the active copy policy (e.g. Paytable → Win table).
+ *
+ * @param {GameMenuItem[]} items
+ * @param {object | null | undefined} copy — `game.copy` from bootstrap
+ */
+export function resolveGameMenuItems(items, copy) {
+  const t = copy?.t?.bind(copy) ?? copy?.term?.bind(copy);
+  if (!t) return items.map((item) => ({ ...item }));
+
+  return items.map((item) => {
+    const key = item.id ? COPY_MENU_LABEL_KEYS[item.id] : undefined;
+    if (!key) return { ...item };
+    return { ...item, label: t(key) };
+  });
+}
+
 /**
  * @param {object} options
  * @param {HTMLElement} options.brand — `.suki-brand`
@@ -298,7 +320,8 @@ export function createGameMenu(options) {
 
   function refresh() {
     list.innerHTML = '';
-    const visible = filterVisibleMenuItems(items, game);
+    const resolved = resolveGameMenuItems(items, game?.copy);
+    const visible = filterVisibleMenuItems(resolved, game);
 
     for (const item of visible) {
       if (item.type === 'separator') {
