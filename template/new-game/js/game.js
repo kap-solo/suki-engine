@@ -24,7 +24,7 @@ import {
   requestReplay,
   startNewRgsSession,
 } from '@kap-solo/suki-engine/client/rgs.js';
-import { buildPreloadAssets } from './audio.js';
+import { buildPreloadAssets, wireTemplateAudio, primeTemplateAudio } from './audio.js';
 import { BET_OPTIONS, DEFAULT_BET, GAME, GAME_MODES } from './config.js';
 import { registerGameModals } from './menu.js';
 import { buildGameSettledResult, parseGameReveal } from './round.js';
@@ -539,6 +539,7 @@ if (replayMode) {
     bootstrap: () => game.start(),
     onContinue: () => {
       gameAudio.unlock();
+      primeTemplateAudio(audioPrefs);
     },
   });
 }

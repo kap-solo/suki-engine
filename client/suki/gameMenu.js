@@ -9,7 +9,7 @@
  * @property {GameMenuItemType} type
  * @property {string} [id]
  * @property {string} [label]
- * @property {'music' | 'sfx'} [pref] — toggle → audioPrefs key
+ * @property {'music' | 'sfx'} [channel] — volume row channel (default music)
  * @property {() => void} [action]
  * @property {() => boolean} [visible] — hide when false
  */
@@ -20,9 +20,8 @@ export const DEFAULT_GAME_MENU_ITEMS = [
   { type: 'modal', id: 'stats', label: 'Stats' },
   { type: 'modal', id: 'recent-results', label: 'Recent Results' },
   { type: 'separator' },
-  { type: 'toggle', id: 'music', label: 'Music', pref: 'music' },
-  { type: 'volume', id: 'music-volume', label: 'Music volume' },
-  { type: 'toggle', id: 'sfx', label: 'Sound effects', pref: 'sfx' },
+  { type: 'volume', id: 'music-volume', label: 'Music', channel: 'music' },
+  { type: 'volume', id: 'sfx-volume', label: 'Sound effects', channel: 'sfx' },
 ];
 
 /**
@@ -211,14 +210,53 @@ export function createGameMenu(options) {
     }
   }
 
+  function speakerIconSvg() {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('width', '18');
+    svg.setAttribute('height', '18');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.innerHTML =
+      '<path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
+    return svg;
+  }
+
+  function mutedIconSvg() {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('width', '18');
+    svg.setAttribute('height', '18');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.innerHTML =
+      '<path fill="currentColor" d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4 9.91 6.09 12 8.18V4z"/>';
+    return svg;
+  }
+
   function buildVolumeRow(item) {
-    const volume = audioPrefs.musicVolume;
+    const channel = item.channel === 'sfx' ? 'sfx' : 'music';
+    const volume = channel === 'sfx' ? audioPrefs.sfxVolume : audioPrefs.musicVolume;
+    const labelText = item.label ?? (channel === 'sfx' ? 'Sound effects' : 'Music');
+
     const li = document.createElement('li');
     li.className = 'suki-game-menu-item suki-game-menu-volume suki-game-menu-item--setting';
 
     const label = document.createElement('span');
     label.className = 'suki-game-menu-label';
-    label.textContent = item.label ?? 'Music volume';
+    label.textContent = labelText;
+
+    const row = document.createElement('div');
+    row.className = 'suki-game-menu-volume-row';
+
+    const muteBtn = document.createElement('button');
+    muteBtn.type = 'button';
+    muteBtn.className = 'suki-game-menu-mute';
+    muteBtn.setAttribute('aria-label', `Mute ${labelText}`);
+
+    const iconOn = speakerIconSvg();
+    iconOn.classList.add('suki-game-menu-mute-icon', 'suki-game-menu-mute-icon--on');
+    const iconOff = mutedIconSvg();
+    iconOff.classList.add('suki-game-menu-mute-icon', 'suki-game-menu-mute-icon--off');
+    muteBtn.append(iconOn, iconOff);
 
     const slider = document.createElement('input');
     slider.type = 'range';
@@ -226,27 +264,37 @@ export function createGameMenu(options) {
     slider.min = '0';
     slider.max = '100';
     slider.step = '1';
-    slider.setAttribute('aria-label', item.label ?? 'Music volume');
+    slider.setAttribute('aria-label', `${labelText} volume`);
 
-    function syncSlider() {
+    function syncRow() {
+      const muted = volume.isMuted;
       slider.value = String(Math.round(volume.value * 100));
-      slider.disabled = !audioPrefs.music.enabled;
+      muteBtn.setAttribute('aria-label', muted ? `Unmute ${labelText}` : `Mute ${labelText}`);
+      muteBtn.setAttribute('aria-pressed', muted ? 'true' : 'false');
+      muteBtn.classList.toggle('muted', muted);
     }
+
+    muteBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      volume.toggleMute();
+      syncRow();
+    });
 
     slider.addEventListener('input', (event) => {
       event.stopPropagation();
       volume.setValue(Number(slider.value) / 100);
+      syncRow();
     });
 
     slider.addEventListener('pointerdown', (event) => {
       event.stopPropagation();
     });
 
-    audioPrefs.music.onChange(syncSlider);
-    volume.onChange(syncSlider);
-    syncSlider();
+    volume.onChange(syncRow);
+    syncRow();
 
-    li.append(label, slider);
+    row.append(muteBtn, slider);
+    li.append(label, row);
     return li;
   }
 

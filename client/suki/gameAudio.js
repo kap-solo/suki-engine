@@ -37,7 +37,7 @@ export function createGameAudio(options) {
   let unlockHandler = null;
 
   function effectiveMusicVolume() {
-    return audioPrefs.music.enabled ? audioPrefs.musicVolume.value : 0;
+    return audioPrefs.musicVolume.value;
   }
 
   function ensureMusicElement() {
@@ -56,7 +56,7 @@ export function createGameAudio(options) {
 
     el.volume = Math.min(1, Math.max(0, effectiveMusicVolume()));
 
-    if (!unlocked || !audioPrefs.music.enabled) {
+    if (!unlocked || audioPrefs.musicVolume.value <= 0) {
       el.pause();
       return;
     }
@@ -83,12 +83,13 @@ export function createGameAudio(options) {
   }
 
   function playSfx(name) {
-    if (!audioPrefs.sfx.enabled) return;
+    const sfxLevel = audioPrefs.sfxVolume.value;
+    if (sfxLevel <= 0) return;
     const url = assets.sfx?.[name];
     if (!url) return;
 
     const el = new Audio(url);
-    el.volume = 1;
+    el.volume = sfxLevel;
     if (!unlocked) {
       unlock();
     }
@@ -109,7 +110,7 @@ export function createGameAudio(options) {
 
   audioPrefs.music.onChange(syncMusic);
   audioPrefs.musicVolume.onChange(syncMusic);
-  audioPrefs.sfx.onChange(() => {});
+  audioPrefs.sfxVolume.onChange(() => {});
 
   if (autoUnlock) {
     bindUnlock();

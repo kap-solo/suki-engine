@@ -133,7 +133,7 @@ See also [`DEV-URLS.md`](DEV-URLS.md) and [`STAKE-REVIEW-FEEDBACK.md`](STAKE-REV
 
 | Done | Item | Owner | Engine | Notes |
 |:----:|------|-------|--------|-------|
-| [ ] | Option to disable sounds in UI | Engine + Game | ✅ | Burger menu: Music + SFX toggles |
+| [ ] | Option to disable sounds in UI | Engine + Game | ✅ | Burger menu: Music + SFX volume sliders (mute icon → 0) |
 | [ ] | Game wires `createGameAudio` + assets | Game | 🔧 | **Slots:** spin, win, cascade, feature SFX |
 
 ---

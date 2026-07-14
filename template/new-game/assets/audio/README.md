@@ -11,4 +11,4 @@ Add your own files here:
 
 Update paths in `js/audio.js` if you use different names or formats (OGG is fine).
 
-Music and SFX toggles plus music volume live in the burger menu. Prefs persist in `localStorage`.
+**Burger menu:** labeled **Music** and **Sound effects** rows — each has a mute icon (tap to mute/unmute) and a volume slider. Prefs persist in `localStorage` via `createAudioPrefs` (`musicVolume` / `sfxVolume`, 0–1).

@@ -90,10 +90,10 @@ CI on `main` runs full `npm run check` (smoke + ERR + compliance report + templa
 - `createGameBootstrap(options)` — initSuki + production shell + jurisdiction + lifecycle + RGS start
 - `initStakeLayout()` / `stakeLayout.css` — Mobile L-first shell; orientation + portrait-family context on `main.suki-stake-shell`
 - `createBetUi()` / `betUi.css` — standard betting controls (modes, chips, play, dev row); portrait + landscape skins
-- `createGameMenu()` / `gameMenu.css` — burger pop-up (How to Play, Paytable, Stats, Recent Results, audio toggles)
+- `createGameMenu()` / `gameMenu.css` — burger pop-up (How to Play, Paytable, Stats, Recent Results, Music + SFX volume sliders)
 - `createModalHost()` — pop-up overlay for menu content
-- `createAudioPrefs()` — persisted music / SFX toggles and music volume
-- `createGameAudio({ audioPrefs })` — background music loop + `playSfx(name)` wired to prefs
+- `createAudioPrefs()` — persisted `musicVolume` / `sfxVolume` (0–1; mute icon sets volume to 0)
+- `createGameAudio({ audioPrefs })` — background music loop + `playSfx(name)` scaled to SFX volume
 - `createGamePreloader({ shell, onContinue })` — tap-to-continue overlay (audio unlock + `game.start()`)
 - `createRecentResultsStore()` — in-memory round history for Recent Results modal
 - `STAKE_SCREENS` / `createScreenRegistry()` / `initStakeScreenPreview()` — dev toolbar for Stake Engine iframe sizes (`?dev=true`)
@@ -231,7 +231,7 @@ modalHost.register('paytable', {
 betUi.bind({ onDismissOverlays: () => { gameMenu.close(); modalHost.close(); }, /* … */ });
 ```
 
-Default pop-up items: **How to Play**, **Paytable**, **Stats**, **Recent Results**, **Music** (toggle + volume slider), **Sound effects**. Tap outside or the burger again to dismiss. Register modal content per game in `js/menu.js`.
+Default pop-up items: **How to Play**, **Paytable**, **Stats**, **Recent Results**, **Music** (mute icon + volume slider), **Sound effects** (mute icon + volume slider). Tap outside or the burger again to dismiss. Register modal content per game in `js/menu.js`.
 
 The **Paytable** burger label and default modal title resolve from copy policy: `paytableMenuLabel` / `paytableTitle` (real money: **Paytable**; social: **Win table**). Call `gameMenu.refresh()` after jurisdiction changes so labels update.
 

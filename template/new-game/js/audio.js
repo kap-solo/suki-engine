@@ -2,6 +2,10 @@
  * Game audio assets — replace URLs with your own music and SFX files.
  *
  * Drop files in `assets/audio/` (MP3 or OGG). The server serves them at `/assets/audio/…`.
+ *
+ * Burger menu audio: Music + Sound effects rows (label, mute icon, volume slider).
+ * Volumes persist via `createAudioPrefs` — use `audioPrefs.musicVolume` / `audioPrefs.sfxVolume`
+ * (0–1). `gameAudio.playSfx()` respects SFX volume automatically.
  */
 
 export const GAME_AUDIO_ASSETS = {
@@ -30,4 +34,22 @@ export function buildPreloadAssets() {
  */
 export function wireTemplateAudio(gameAudio) {
   gameAudio.setAssets(GAME_AUDIO_ASSETS);
+}
+
+/**
+ * Warm the first SFX decode after the preloader tap — cuts mobile start latency.
+ * @param {ReturnType<import('@kap-solo/suki-engine/client/rgs.js').createAudioPrefs>} audioPrefs
+ */
+export function primeTemplateAudio(audioPrefs) {
+  if (audioPrefs.sfxVolume.value <= 0) return;
+  const url = GAME_AUDIO_ASSETS.sfx?.play;
+  if (!url) return;
+  const el = new Audio(url);
+  el.volume = 0;
+  el.play()
+    .then(() => {
+      el.pause();
+      el.currentTime = 0;
+    })
+    .catch(() => {});
 }

@@ -159,8 +159,57 @@
   background: #12161e;
 }
 
+.suki-game-menu-volume-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.suki-game-menu-mute {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid #2a3548;
+  border-radius: 8px;
+  background: #0f141c;
+  color: #9aa8bc;
+  cursor: pointer;
+}
+
+.suki-game-menu-mute:hover {
+  color: #c5d0de;
+  border-color: #3d4f6f;
+}
+
+.suki-game-menu-mute.muted {
+  color: #64748b;
+}
+
+.suki-game-menu-mute-icon {
+  display: block;
+}
+
+.suki-game-menu-mute-icon--off {
+  display: none;
+}
+
+.suki-game-menu-mute.muted .suki-game-menu-mute-icon--on {
+  display: none;
+}
+
+.suki-game-menu-mute.muted .suki-game-menu-mute-icon--off {
+  display: block;
+}
+
 .suki-game-menu-slider {
+  flex: 1 1 auto;
   width: 100%;
+  min-width: 0;
   margin: 0;
   accent-color: #38bdf8;
   cursor: pointer;
@@ -261,6 +310,12 @@
   padding: 0.3rem 0.35rem;
   gap: 0.35rem;
   background: transparent;
+}
+
+.suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-mute {
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 6px;
 }
 
 .suki-stake-shell[data-suki-screen='popout-s'] .suki-game-menu-item--setting .suki-game-menu-label,

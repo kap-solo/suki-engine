@@ -577,16 +577,20 @@ function runGameMenuTests() {
   console.log('\nUnit — game menu & modals');
   assert(DEFAULT_GAME_MENU_ITEMS.length >= 6, 'default menu items');
   assert(DEFAULT_GAME_MENU_ITEMS.some((i) => i.id === 'paytable'), 'paytable menu item');
-  assert(DEFAULT_GAME_MENU_ITEMS.some((i) => i.pref === 'music'), 'music toggle item');
-  assert(DEFAULT_GAME_MENU_ITEMS.some((i) => i.type === 'volume'), 'music volume slider item');
+  assert(DEFAULT_GAME_MENU_ITEMS.some((i) => i.channel === 'music'), 'music volume item');
+  assert(DEFAULT_GAME_MENU_ITEMS.some((i) => i.channel === 'sfx'), 'sfx volume item');
 
   const prefs = createAudioPrefs({ storageKey: 'smoke.test.audio' });
-  prefs.music.setEnabled(false);
-  assert(prefs.music.enabled === false, 'music toggle off');
-  prefs.sfx.setEnabled(true);
-  assert(prefs.getState().sfx === true, 'sfx state');
   prefs.musicVolume.setValue(0.45);
   assert(prefs.musicVolume.value === 0.45, 'music volume set');
+  prefs.musicVolume.setValue(0);
+  assert(prefs.music.enabled === false, 'music muted at zero volume');
+  prefs.musicVolume.toggleMute();
+  assert(prefs.musicVolume.value > 0, 'music mute icon restores volume');
+  prefs.sfxVolume.setValue(0.33);
+  assert(prefs.getState().sfxVolume === 0.33, 'sfx volume state');
+  prefs.sfx.setEnabled(false);
+  assert(prefs.sfxVolume.value === 0, 'sfx setEnabled false mutes');
   prefs.musicVolume.setValue(1.5);
   assert(prefs.musicVolume.value === 1, 'music volume clamped high');
   prefs.musicVolume.setValue(-0.2);
