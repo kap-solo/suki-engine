@@ -43,6 +43,7 @@ import {
 } from '../client/suki/stakeLayout.js';
 import { createBetUi, modeButtonLabel, resolvePlayButtonState } from '../client/suki/betUi.js';
 import { createAudioPrefs } from '../client/suki/audioPrefs.js';
+import { SPINE_SYMBOL_FIT_RATIO, SPINE_TEXTURE_CANVAS_SIZE } from '../client/suki/spineAssets.js';
 import { createRecentResultsStore } from '../client/suki/recentResults.js';
 import { DEFAULT_GAME_MENU_ITEMS, filterVisibleMenuItems, resolveGameMenuItems } from '../client/suki/gameMenu.js';
 import { formatSessionElapsed, createSessionTimer } from '../client/suki/sessionTimer.js';
@@ -571,6 +572,14 @@ function runBalanceGuardTests() {
   } catch (err) {
     assert(String(err.message) === 'ERR_IPB', 'assertSufficientBalanceForPlay throws ERR_IPB');
   }
+}
+
+function runSpineAssetTests() {
+  console.log('\nUnit — Spine asset conventions');
+  assert(SPINE_TEXTURE_CANVAS_SIZE === 256, 'SPINE_TEXTURE_CANVAS_SIZE is 256');
+  assert(SPINE_SYMBOL_FIT_RATIO > 0 && SPINE_SYMBOL_FIT_RATIO < 1, 'SPINE_SYMBOL_FIT_RATIO in (0, 1)');
+  const spineReadme = readFileSync(join(engineRoot, 'template/new-game/assets/spine/README.md'), 'utf8');
+  assert(spineReadme.includes('256×256'), 'template spine README documents 256 canvas');
 }
 
 function runGameMenuTests() {
@@ -1175,6 +1184,7 @@ async function main() {
   runBalanceGuardTests();
   runAutoplayConfirmTests();
   runGameMenuTests();
+  runSpineAssetTests();
   runBetModeTests();
   runBetConfigTests();
   runCurrencyCopyTests();

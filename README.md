@@ -268,6 +268,19 @@ gameAudio.playSfx('play');
 
 Template: see `js/audio.js` and `assets/audio/README.md`.
 
+### Spine symbol textures (Pixi slots)
+
+Suki slot games author reel symbols at **256×256** (`SPINE_TEXTURE_CANVAS_SIZE`). Crop to visible art — do not export a large empty canvas and scale it down in-game (that causes mushy downscaling).
+
+```js
+import {
+  SPINE_TEXTURE_CANVAS_SIZE,
+  SPINE_SYMBOL_FIT_RATIO,
+} from '@kap-solo/suki-engine/client/rgs.js';
+```
+
+After Spine export, set each symbol's `designSize` from the packed region in the `.atlas` file (`bounds:` width/height). Full workflow: **`template/new-game/assets/spine/README.md`** (Reflecting Pool implements this in `js/pixi/symbols.js` + `symbolView.js`).
+
 ## Stake screen preview (dev)
 
 In `?dev=true`, wire the official Stake Engine iframe sizes via `createGameBootstrap`:

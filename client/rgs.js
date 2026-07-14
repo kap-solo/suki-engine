@@ -269,6 +269,10 @@ export {
   preloadAssets,
 } from './suki/assetLoader.js';
 export {
+  SPINE_TEXTURE_CANVAS_SIZE,
+  SPINE_SYMBOL_FIT_RATIO,
+} from './suki/spineAssets.js';
+export {
   createRecentResultsStore,
 } from './suki/recentResults.js';
 export {
