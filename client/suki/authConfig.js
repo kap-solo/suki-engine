@@ -11,6 +11,30 @@ function toConfigNumber(value) {
 }
 
 /**
+ * Optional player-facing currency label from authenticate (when Intl cannot format the code).
+ * Only used as fallback — known social codes use SOCIAL_CURRENCY_LABELS instead.
+ *
+ * @param {object | null | undefined} data — authenticate response
+ * @returns {string | null}
+ */
+export function readCurrencyDisplayFromAuth(data) {
+  const balance = data?.balance;
+  const config = data?.config;
+  const candidates = [
+    balance?.currencyDisplay,
+    balance?.displayCurrency,
+    config?.currencyDisplay,
+    config?.displayCurrency,
+  ];
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.trim()) {
+      return candidate.trim();
+    }
+  }
+  return null;
+}
+
+/**
  * Normalise /wallet/authenticate response for game UI.
  * @param {object} data — authenticate response
  * @param {{ defaultBetDisplay?: number, urlCurrency?: string }} [options]
@@ -58,6 +82,7 @@ export function parseAuthResponse(data, options = {}) {
     balance,
     balanceDisplay: balance ? apiToDisplay(balance.amount) : null,
     currency: balance?.currency ?? options.urlCurrency ?? 'USD',
+    currencyDisplay: readCurrencyDisplayFromAuth(data),
     gameId: config.gameID ?? null,
     minBetApi,
     maxBetApi,

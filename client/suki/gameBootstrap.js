@@ -77,16 +77,23 @@ export function createGameBootstrap(options) {
   let currency = createCurrencyFormatter({
     currency: initialParams.currency,
     language: initialParams.language,
+    currencyDisplay: null,
   });
   let copy = createCopyPolicy();
+  /** @type {string | null} */
+  let lastAuthCurrencyDisplay = null;
 
   function refreshPlayerDisplay(authParsed) {
     const params = getRgsParams();
+    if (authParsed) {
+      lastAuthCurrencyDisplay = authParsed.currencyDisplay ?? null;
+    }
     const code = authParsed?.currency ?? getPlayerCurrency(params.currency);
     setPlayerCurrency(code);
     currency = createCurrencyFormatter({
       currency: code,
       language: params.language,
+      currencyDisplay: lastAuthCurrencyDisplay,
     });
     copy = createCopyPolicy({
       lang: params.language,

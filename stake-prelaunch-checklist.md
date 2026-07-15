@@ -46,7 +46,8 @@ SUKI_RGS_URL=rgs.stake-engine.com SUKI_SESSION_ID=<id> SUKI_GAME_ID=<game-id> np
 | Local dev | `?dev=true` |
 | Social copy (Stake.US) | `?dev=true&social=true` |
 | GC currency | `?dev=true&social=true&currency=XGC` |
-| SC currency | `?dev=true&social=true&currency=XSC` |
+| SC currency (Stake US) | `?dev=true&social=true&currency=XSC` |
+| SC currency (Stake EU / XEC) | `?dev=true&social=true&currency=XEC` |
 | Screen sizes | `?dev=true&screen=desktop` · `popout-s` · `mobile-l` · `mobile-s` |
 | Strict jurisdiction | `?dev=true&jurisdiction=strict` |
 
@@ -75,7 +76,7 @@ See also [`DEV-URLS.md`](DEV-URLS.md) and [`STAKE-REVIEW-FEEDBACK.md`](STAKE-REV
 | Done | Item | Owner | Engine | Notes |
 |:----:|------|-------|--------|-------|
 | [ ] | Each enabled currency displays correctly (symbol or code: USD, EUR, ARS, CAD, …) | Game + QA | ⚠️ | Fiat via `Intl.NumberFormat`; test each currency Stake enables for the title |
-| [ ] | Social GC / SC display without `$` prefix | Engine + QA | ✅ | `XGC` → GC, `XSC` → SC in `currency.js` |
+| [ ] | Social GC / SC / XEC display without `$` prefix | Engine + QA | ✅ | `XGC` → GC, `XSC`/`XEC` → SC in `currency.js`; optional `balance.currencyDisplay` fallback |
 | [ ] | Sub-cent payouts shown with full RGS precision | Engine + Game | ✅ | `formatWinAmount()` up to 6 dp; balance 2 dp |
 | [ ] | Win display matches RGS settlement amount | Game + QA | 🔧 | Use `game.formatWin()` for payouts, not rounded balance formatter |
 
@@ -160,7 +161,7 @@ Preview: `?dev=true&social=true&currency=XGC`
 | [ ] | Bonus/feature label avoids “BUY” | Engine | ✅ | Social: “Feature ×N” |
 | [ ] | Mode confirmation avoids “buy” and “bet” | Engine | ❌ | Depends on > 2× confirm modal |
 | [ ] | Insufficient funds error uses allowed wording | Engine | ✅ | “Insufficient Balance.” (social) |
-| [ ] | GC and SC supported and displayed (no `$`) | Engine + QA | ✅ | `?currency=XGC` / `XSC` |
+| [ ] | GC, SC, and XEC supported and displayed (no `$`) | Engine + QA | ✅ | `?currency=XGC` / `XSC` / `XEC` |
 | [ ] | Mode naming in UI, replay, and player-facing strings avoids buy/bet/pay | Engine + Game | ⚠️ | Internal math keys (`base`, `bonus`) OK; sweep game-specific strings |
 | [ ] | Replay UI free of restricted words | Engine + Game | ✅ | Recent replay disclaimer work |
 

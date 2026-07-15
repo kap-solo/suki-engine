@@ -36,6 +36,9 @@ npm start
 | Local dev | http://127.0.0.1:5174/?dev=true |
 | Strict jurisdiction (timer, buy blocked, etc.) | http://127.0.0.1:5174/?dev=true&jurisdiction=strict |
 | Social casino copy preview | http://127.0.0.1:5174/?dev=true&social=true |
+| Social GC currency | http://127.0.0.1:5174/?dev=true&social=true&currency=XGC |
+| Social SC currency (Stake US) | http://127.0.0.1:5174/?dev=true&social=true&currency=XSC |
+| Social SC currency (Stake EU / XEC) | http://127.0.0.1:5174/?dev=true&social=true&currency=XEC |
 | German UI | http://127.0.0.1:5174/?dev=true&lang=de |
 
 ---

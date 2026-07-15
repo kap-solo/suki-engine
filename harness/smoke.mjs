@@ -897,6 +897,12 @@ function runCurrencyCopyTests() {
   const xgc = formatCurrencyAmount(100, 'XGC');
   assert(xgc === 'GC 100.00', 'XGC social currency label');
 
+  const xec = formatCurrencyAmount(1000, 'XEC');
+  assert(xec === 'SC 1000.00', 'XEC social currency label');
+
+  const xsc = formatCurrencyAmount(50, 'XSC');
+  assert(xsc === 'SC 50.00', 'XSC social currency label');
+
   const winUsd = formatWinAmount(1.234567, 'USD', { locale: 'en' });
   assert(winUsd.includes('1.234567'), 'USD win preserves full precision');
   assert(winUsd.includes('4567'), 'USD win shows sub-cent digits');
@@ -906,6 +912,21 @@ function runCurrencyCopyTests() {
 
   const winXgc = formatWinAmount(0.123456, 'XGC');
   assert(winXgc === 'GC 0.123456', 'XGC win preserves full precision');
+
+  const winXec = formatWinAmount(0.5, 'XEC');
+  assert(winXec === 'SC 0.50', 'XEC win uses SC label');
+
+  const rgsFallback = formatCurrencyAmount(10, 'XYZ', { currencyDisplay: 'SC' });
+  assert(rgsFallback === 'SC 10.00', 'RGS display fallback when Intl fails');
+
+  const formatterFallback = createCurrencyFormatter({ currency: 'XYZ', currencyDisplay: 'SC' });
+  assert(formatterFallback.formatBalance(12.5) === 'SC 12.50', 'formatter RGS display fallback');
+
+  const parsedXec = parseAuthResponse({
+    balance: { amount: API, currency: 'XEC', currencyDisplay: 'SC' },
+  });
+  assert(parsedXec.currency === 'XEC', 'auth keeps internal XEC code');
+  assert(parsedXec.currencyDisplay === 'SC', 'auth reads balance.currencyDisplay');
 
   const eur = createCurrencyFormatter({ currency: 'EUR', language: 'en' });
   assert(eur.format(1).includes('1.00'), 'EUR formatter balance');
