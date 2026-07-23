@@ -40,6 +40,27 @@ export function sliceEventsForResume(events, lastEventIndex) {
 }
 
 /**
+ * Events to present on resume — avoid replaying the full book when progress exists.
+ * Prevents feature trigger boards (e.g. scatter reveal at index 0) from replaying
+ * after refresh when all bet/event steps were already reported.
+ *
+ * @param {BookEvent[]} events — sorted
+ * @param {number} lastEventIndex — last reported index, or -1
+ * @param {{ active?: boolean }} [round]
+ * @returns {BookEvent[]}
+ */
+export function resolveEventsToPlay(events, lastEventIndex, round = {}) {
+  const { remaining } = sliceEventsForResume(events, lastEventIndex);
+  if (lastEventIndex >= 0) return remaining;
+
+  const enterBonus = events.find((event) => event.type === 'enterBonus');
+  if (enterBonus && round.active) {
+    return events.filter((event) => event.index >= enterBonus.index);
+  }
+  return events;
+}
+
+/**
  * @param {object} options
  * @param {Record<string, (event: BookEvent, ctx: object) => Promise<void>>} options.handlers
  * @param {(index: number) => Promise<void>} [options.reportEvent] — defaults to reportBetEvent

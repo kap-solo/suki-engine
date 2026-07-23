@@ -15,6 +15,7 @@
   ],
   "scripts": {
     "test:smoke": "node harness/smoke.mjs",
+    "test:resume": "node harness/resume-events.mjs",
     "test:errors": "node harness/err-scenarios.mjs",
     "test:integration": "node harness/integration-smoke.mjs",
     "validate-math": "node tools/validate-math.mjs",

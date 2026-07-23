@@ -5,7 +5,7 @@
 
 import { endRound, play } from '../rgs.js';
 import { messageForRgsCode, classifyRgsError } from './errors.js';
-import { createBookPlayer, resolveLastEventIndex, sortBookEvents, sliceEventsForResume } from './bookPlayer.js';
+import { createBookPlayer, resolveLastEventIndex, resolveEventsToPlay, sortBookEvents, sliceEventsForResume } from './bookPlayer.js';
 import { shouldReportBetEvents } from './environment.js';
 import { assertSufficientBalanceForPlay } from './balanceGuard.js';
 import { shouldSkipBetEventReporting, shouldSkipEndRound } from './roundReporting.js';
@@ -105,7 +105,7 @@ export function createSukiLifecycle(deps) {
       setMessage(playingMessage);
     }
 
-    const eventsToPlay = remaining.length ? remaining : events;
+    const eventsToPlay = resolveEventsToPlay(events, lastEventIndex, round);
 
     if (eventsToPlay.length) {
       await bookPlayer.playEvents(eventsToPlay, handlerCtx, {

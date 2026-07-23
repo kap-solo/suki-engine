@@ -193,6 +193,7 @@ export function createMockRgs(config) {
         session.lastEvent = null;
         session.activeRound = null;
       } else {
+        session.lastEvent = null;
         session.activeRound = round;
       }
 
