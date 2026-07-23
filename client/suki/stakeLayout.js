@@ -85,6 +85,39 @@ export function applyStakeScreenContext(root, context = {}) {
 }
 
 /**
+ * Match a known Stake iframe size when dev preview is off (production).
+ *
+ * @param {HTMLElement} root
+ * @returns {import('./stakeScreens.js').StakeScreen | null}
+ */
+function inferStakeScreenFromViewport(root) {
+  const rect = root.getBoundingClientRect();
+  const w = Math.round(rect.width);
+  const h = Math.round(rect.height);
+  if (w < 1 || h < 1) return null;
+
+  const tolerance = Math.max(12, Math.round(Math.min(w, h) * 0.06));
+
+  /** @type {import('./stakeScreens.js').StakeScreen | null} */
+  let best = null;
+  let bestScore = Infinity;
+
+  for (const screen of STAKE_SCREENS) {
+    const dw = Math.abs(w - screen.width);
+    const dh = Math.abs(h - screen.height);
+    if (dw <= tolerance && dh <= tolerance) {
+      const score = dw + dh;
+      if (score < bestScore) {
+        best = screen;
+        bestScore = score;
+      }
+    }
+  }
+
+  return best;
+}
+
+/**
  * Keep layout context in sync with the active Stake screen (dev preview) or viewport.
  *
  * @param {object} options
@@ -96,7 +129,7 @@ export function initStakeLayout(options) {
   const shellClock = createShellClock({ root });
 
   function refresh() {
-    const screen = getActiveScreen();
+    const screen = getActiveScreen() ?? inferStakeScreenFromViewport(root);
     applyStakeScreenContext(root, { screen });
   }
 

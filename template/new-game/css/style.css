@@ -108,22 +108,12 @@ body {
 }
 
 .replay-banner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.65rem;
-  border-radius: 8px;
-  border: 1px solid #3d2a14;
-  background: rgba(26, 18, 8, 0.9);
-  font-size: 0.75rem;
+  width: 100%;
 }
 
-.replay-label {
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #fbbf24;
+/* Replay footer hidden unless replay mode — overlay rules live in stakeLayout.css */
+.suki-footer:not(:has(#replay-banner:not([hidden]))) {
+  display: none;
 }
 
 .stats,
