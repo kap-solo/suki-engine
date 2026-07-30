@@ -55,9 +55,11 @@ export async function bootstrapPlayMode(ctx) {
     setRgsReady(true);
     notifyRgsConnectionRestored();
 
-    const authOutcome = await lifecycle.handleAuthRound(data.round, {
-      lastEvent: data.meta?.lastEvent,
-    });
+    const authOutcome = await lifecycle.handleAuthRound(
+      data.round,
+      { lastEvent: data.meta?.lastEvent },
+      { deferPlayback: Boolean(data.round?.active && data.round?.state?.length) },
+    );
 
     ctx.onAuthRound?.(authOutcome);
 
@@ -103,9 +105,11 @@ export function attachBalanceRefresh(ctx) {
       withRgsCall(() => authenticate())
         .then(async (data) => {
           ctx.applyAuthConfig?.(data);
-          await ctx.lifecycle?.handleAuthRound(data.round, {
-            lastEvent: data.meta?.lastEvent,
-          });
+          await ctx.lifecycle?.handleAuthRound(
+            data.round,
+            { lastEvent: data.meta?.lastEvent },
+            { deferPlayback: Boolean(data.round?.active && data.round?.state?.length) },
+          );
           notifyRgsConnectionRestored();
         })
         .catch((err) => {
@@ -122,6 +126,7 @@ export function attachBalanceRefresh(ctx) {
       .then((balanceObj) => {
         ctx.applyBalance(balanceObj);
         ctx.syncHud();
+        ctx.onBalanceRefresh?.();
         notifyRgsConnectionRestored();
       })
       .catch((err) => {

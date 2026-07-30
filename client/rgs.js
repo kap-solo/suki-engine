@@ -369,6 +369,32 @@ export {
 } from './suki/rgsGate.js';
 export { applyMobileTouchPolicy, SUKI_VIEWPORT_CONTENT } from './suki/mobileTouch.js';
 export {
+  createAutoplayController,
+  AUTOPLAY_STOP_LABEL,
+} from './suki/autoplay.js';
+export {
+  createAutoplayPanelPolicy,
+  syncAutoplayChromeHidden,
+} from './suki/autoplayVisibility.js';
+export {
+  flashAutoplayStopClick,
+  syncAutoplayBetControl,
+} from './suki/betChromeAutoplay.js';
+export {
+  attachBetChromeResync,
+  BET_CHROME_RESYNC_DELAYS_MS,
+} from './suki/betChromeResync.js';
+export {
+  readViewportSize,
+  isPopoutSSize,
+  inferPopoutSScreen,
+  inferPopoutSFromRoot,
+  applyInferredStakeScreen,
+  schedulePopoutSInference,
+  patchStakeLayoutForProduction,
+  isPopoutSViewport,
+} from './suki/stakeScreenInfer.js';
+export {
   getLaunchRgsUrlParam,
   getCurrentRgsUrlParam,
   hasRgsUrlChangedSinceLaunch,

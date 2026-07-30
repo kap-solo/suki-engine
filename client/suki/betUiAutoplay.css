@@ -1,0 +1,77 @@
+/* Autoplay stop — shared across game bet chrome (apply .suki-autoplay-btn on auto button). */
+
+.suki-autoplay-btn--stop {
+  transition: transform 120ms ease, background 120ms ease, box-shadow 120ms ease;
+}
+
+.suki-autoplay-btn--stop:active:not(:disabled):not(.suki-autoplay-btn--stop-pending) {
+  transform: scale(0.88);
+}
+
+.suki-autoplay-btn--stop-flash {
+  animation: suki-autoplay-stop-flash 320ms ease-out;
+}
+
+@keyframes suki-autoplay-stop-flash {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(232, 160, 32, 0.9);
+    background: #0a0a0a;
+  }
+
+  45% {
+    transform: scale(0.84);
+    box-shadow: 0 0 0 0.38rem rgba(232, 160, 32, 0.65);
+    background: #3a2808;
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(232, 160, 32, 0);
+    background: #2a1806;
+  }
+}
+
+.suki-autoplay-btn--stop-pending {
+  cursor: default;
+  background: #2a1806;
+  animation: suki-autoplay-stop-pending 1.15s ease-in-out infinite;
+}
+
+.suki-autoplay-btn--stop-pending .suki-autoplay-btn__icon,
+.suki-autoplay-btn--stop-pending > .bet-ui-desktop__icon,
+.suki-autoplay-btn--stop-pending > .bet-ui-mobile__icon {
+  color: #e8a020;
+}
+
+@keyframes suki-autoplay-stop-pending {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(232, 160, 32, 0.35);
+  }
+
+  50% {
+    box-shadow: 0 0 0 0.32rem rgba(232, 160, 32, 0.78);
+  }
+}
+
+.suki-autoplay-panel--stop-pending {
+  background: rgba(42, 24, 6, 0.98);
+}
+
+.suki-autoplay-progress--pending {
+  color: #e8a020;
+  letter-spacing: 0.04em;
+  animation: suki-autoplay-stop-label 1.15s ease-in-out infinite;
+}
+
+@keyframes suki-autoplay-stop-label {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}

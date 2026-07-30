@@ -38,6 +38,7 @@ import { applyReplayModeChrome } from './replayUi.js';
  * @param {() => void} [options.ui.onReady]
  * @param {(outcome: object) => void} [options.ui.onAuthRound]
  * @param {() => void} [options.ui.onSyncDevTools]
+ * @param {() => void} [options.ui.onBalanceRefresh]
  * @param {() => void} [options.onJurisdictionChange]
  * @param {{ start: () => void | Promise<void> }} [options.replay]
  */
@@ -300,6 +301,7 @@ export function createGameBootstrap(options) {
     applyAuthConfig,
     lifecycle,
     syncHud: ui.syncHud ?? (() => {}),
+    onBalanceRefresh: ui.onBalanceRefresh,
   });
 
   return {

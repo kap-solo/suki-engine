@@ -47,14 +47,15 @@ export function sliceEventsForResume(events, lastEventIndex) {
  * @param {BookEvent[]} events — sorted
  * @param {number} lastEventIndex — last reported index, or -1
  * @param {{ active?: boolean }} [round]
+ * @param {{ isResume?: boolean }} [options]
  * @returns {BookEvent[]}
  */
-export function resolveEventsToPlay(events, lastEventIndex, round = {}) {
+export function resolveEventsToPlay(events, lastEventIndex, round = {}, { isResume = false } = {}) {
   const { remaining } = sliceEventsForResume(events, lastEventIndex);
   if (lastEventIndex >= 0) return remaining;
 
   const enterBonus = events.find((event) => event.type === 'enterBonus');
-  if (enterBonus && round.active) {
+  if (isResume && enterBonus && round.active) {
     return events.filter((event) => event.index >= enterBonus.index);
   }
   return events;

@@ -74,9 +74,37 @@ export function createSukiLifecycle(deps) {
 
   /**
    * @param {object} round
-   * @param {{ animate?: boolean, recordSession?: boolean, lastEvent?: string | null, meta?: object }} [options]
+   * @param {{ lastEvent?: string | null, meta?: object }} [options]
    */
-  async function completeRound(round, { animate = true, recordSession = true, lastEvent = null, meta = {} } = {}) {
+  async function presentResumeStaticSnapshot(round, { lastEvent = null, meta = {} } = {}) {
+    const events = sortBookEvents(round.state);
+    const lastEventIndex =
+      lastEvent !== null && lastEvent !== undefined
+        ? Number(lastEvent)
+        : resolveLastEventIndex(meta, round);
+    const { completed } = sliceEventsForResume(events, lastEventIndex);
+    const resumePreview = resolveEventsToPlay(events, lastEventIndex, round, { isResume: true });
+    const shouldShowResumeStatic =
+      onResumeStatic &&
+      (lastEventIndex >= 0 || (round.active && resumePreview.length > 0));
+
+    if (shouldShowResumeStatic) {
+      await onResumeStatic(round, completed);
+    }
+    return { lastEventIndex, completed, events };
+  }
+
+  /**
+   * @param {object} round
+   * @param {{ animate?: boolean, recordSession?: boolean, lastEvent?: string | null, meta?: object, isResume?: boolean }} [options]
+   */
+  async function completeRound(round, {
+    animate = true,
+    recordSession = true,
+    lastEvent = null,
+    meta = {},
+    isResume = false,
+  } = {}) {
     syncBaseBetFromRound(round);
 
     const events = sortBookEvents(round.state);
@@ -87,25 +115,33 @@ export function createSukiLifecycle(deps) {
     const { completed, remaining } = sliceEventsForResume(events, lastEventIndex);
     const fullBookLastIndex = events.length ? events[events.length - 1].index : -1;
     const roundStart = Date.now();
+    const resumePlayback = isResume || lastEventIndex >= 0;
+    const eventsToPlayPreview = resolveEventsToPlay(events, lastEventIndex, round, {
+      isResume: resumePlayback,
+    });
 
     const skipEventReporting =
       !shouldReportBetEvents() || shouldSkipBetEventReporting(round);
     const handlerCtx = {
       round,
       animate,
-      isResume: lastEventIndex >= 0,
+      isResume: resumePlayback,
       skipEventReporting,
     };
 
-    if (lastEventIndex >= 0 && onResumeStatic) {
-      onResumeStatic(round, completed);
+    const shouldShowResumeStatic =
+      onResumeStatic &&
+      (lastEventIndex >= 0 || (resumePlayback && round.active && eventsToPlayPreview.length > 0));
+
+    if (shouldShowResumeStatic) {
+      await onResumeStatic(round, completed);
     } else if (!animate && onStaticRound) {
-      onStaticRound(round);
+      await onStaticRound(round);
     } else if (remaining.length && animate) {
       setMessage(playingMessage);
     }
 
-    const eventsToPlay = resolveEventsToPlay(events, lastEventIndex, round);
+    const eventsToPlay = eventsToPlayPreview;
 
     if (eventsToPlay.length) {
       await bookPlayer.playEvents(eventsToPlay, handlerCtx, {
@@ -155,8 +191,17 @@ export function createSukiLifecycle(deps) {
     const lastIndex = lastEvent !== null && lastEvent !== undefined
       ? Number(lastEvent)
       : resolveLastEventIndex(meta, round);
-    const animate = lastIndex < 0;
-    return completeRound(round, { animate, lastEvent: lastEvent ?? meta?.lastEvent, meta });
+    const events = sortBookEvents(round.state);
+    const { completed } = sliceEventsForResume(events, lastIndex);
+    const eventsToPlay = resolveEventsToPlay(events, lastIndex, round, { isResume: true });
+    const hasPassedBonusIntro = completed.some((event) => event.type === 'enterBonus');
+    const animate = eventsToPlay.length > 0 && hasPassedBonusIntro;
+    return completeRound(round, {
+      animate,
+      lastEvent: lastEvent ?? meta?.lastEvent,
+      meta,
+      isResume: true,
+    });
   }
 
   function showCompletedRound(round) {
@@ -166,8 +211,13 @@ export function createSukiLifecycle(deps) {
     return buildSettledResult(round);
   }
 
-  async function handleAuthRound(round, meta = {}) {
+  async function handleAuthRound(round, meta = {}, { deferPlayback = false } = {}) {
     if (round?.active && round.state?.length) {
+      if (deferPlayback) {
+        syncBaseBetFromRound(round);
+        await presentResumeStaticSnapshot(round, { lastEvent: meta?.lastEvent ?? null, meta });
+        return { status: 'resumed', result: null, deferred: true, round, meta };
+      }
       const result = await resumeRound(round, { meta, lastEvent: meta?.lastEvent ?? null });
       return { status: 'resumed', result };
     }

@@ -32,6 +32,7 @@ export const en = {
   autoplayStart: 'Start autoplay',
   autoplayCancel: 'Cancel',
   autoplayProgress: 'Autoplay {current}/{total}…',
+  autoplayStopping: 'Stopping…',
   autoplayComplete: 'Autoplay complete — {count} plays.',
   connectionLost: 'Connection lost',
   connectionRetry: 'Retry',
