@@ -2,6 +2,8 @@
  * Game audio — background music loop + one-shot SFX, driven by audioPrefs.
  */
 
+import { getSfxBus } from './sfxBus.js';
+
 /**
  * @typedef {object} GameAudioAssets
  * @property {string} [music] — looping background track URL
@@ -35,6 +37,7 @@ export function createGameAudio(options) {
   let unlocked = false;
   /** @type {(() => void) | null} */
   let unlockHandler = null;
+  const sfxBus = getSfxBus(audioPrefs);
 
   function effectiveMusicVolume() {
     return audioPrefs.musicVolume.value;
@@ -66,13 +69,20 @@ export function createGameAudio(options) {
     }
   }
 
+  function primeSfx() {
+    const urls = Object.values(assets.sfx ?? {}).filter(Boolean);
+    if (urls.length) sfxBus.primeUrls(urls);
+  }
+
   function unlock() {
+    sfxBus.resumeContextSync();
     if (unlocked) return;
     unlocked = true;
     if (unlockHandler) {
       document.removeEventListener('pointerdown', unlockHandler);
       unlockHandler = null;
     }
+    primeSfx();
     syncMusic();
   }
 
@@ -83,17 +93,13 @@ export function createGameAudio(options) {
   }
 
   function playSfx(name) {
-    const sfxLevel = audioPrefs.sfxVolume.value;
-    if (sfxLevel <= 0) return;
+    if (audioPrefs.sfxVolume.value <= 0) return;
     const url = assets.sfx?.[name];
     if (!url) return;
-
-    const el = new Audio(url);
-    el.volume = sfxLevel;
     if (!unlocked) {
       unlock();
     }
-    el.play().catch(() => {});
+    sfxBus.playOneShot(url);
   }
 
   function setAssets(next) {
@@ -104,6 +110,9 @@ export function createGameAudio(options) {
     if (musicEl && assets.music && musicEl.src !== new URL(assets.music, window.location.href).href) {
       musicEl.pause();
       musicEl = null;
+    }
+    if (unlocked) {
+      primeSfx();
     }
     syncMusic();
   }

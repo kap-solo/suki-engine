@@ -262,6 +262,10 @@ export {
   createGameAudio,
 } from './suki/gameAudio.js';
 export {
+  getSfxBus,
+  resumeGameSfxContext,
+} from './suki/sfxBus.js';
+export {
   createGamePreloader,
 } from './suki/gamePreloader.js';
 export {
