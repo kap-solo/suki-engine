@@ -67,7 +67,7 @@ import {
   readLaunchEventId,
   readLaunchSearchParams,
 } from '../client/suki/launchParams.js';
-import { normalizeReplayRound } from '../client/rgs.js';
+import { normalizeReplayRound, appendGeneralDisclaimer } from '../client/rgs.js';
 import { createBookPlayer } from '../client/suki/bookPlayer.js';
 import {
   createFatalRgsError,
@@ -437,6 +437,7 @@ function runReplayLaunchTests() {
   assert(flat.amount === 10_000_000, 'flat replay uses launch amount');
   assert(flat.payout === 25_000_000, 'flat replay derives payout from multiplier');
   assert(flat.roundID === '20', 'flat replay uses launch event as round id');
+  assert(typeof appendGeneralDisclaimer === 'function', 'rgs re-exports appendGeneralDisclaimer');
 }
 
 function runBootstrapTests() {
