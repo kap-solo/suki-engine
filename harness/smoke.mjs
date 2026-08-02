@@ -60,7 +60,7 @@ import {
   sanitizeAutoplayRoundDigits,
   shouldBlockAutoplayRoundKey,
 } from '../client/suki/autoplayConfirm.js';
-import { formatReplayStartSummary, applyReplayModeChrome } from '../client/suki/replayUi.js';
+import { formatReplayStartSummary, applyReplayModeChrome, resolveReplayBaseBetDisplay } from '../client/suki/replayUi.js';
 import {
   detectReplayLaunch,
   normalizeStakeLaunchAliases,
@@ -438,6 +438,12 @@ function runReplayLaunchTests() {
   assert(flat.payout === 25_000_000, 'flat replay derives payout from multiplier');
   assert(flat.roundID === '20', 'flat replay uses launch event as round id');
   assert(typeof appendGeneralDisclaimer === 'function', 'rgs re-exports appendGeneralDisclaimer');
+
+  const replayBet = resolveReplayBaseBetDisplay(
+    { amount: 100_000_000, mode: 'BASE' },
+    { baseBetApiFromPlayAmount: (amountApi) => amountApi },
+  );
+  assert(replayBet === 100, 'replay base bet preserves full launch amount');
 }
 
 function runBootstrapTests() {

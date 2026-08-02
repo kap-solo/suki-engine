@@ -439,7 +439,12 @@ export function roundPayoutMultiplier(round) {
 
 export { shouldSkipBetEventReporting, shouldSkipEndRound } from './suki/roundReporting.js';
 export { canAffordPlayAmount, assertSufficientBalanceForPlay } from './suki/balanceGuard.js';
-export { formatReplayStartSummary, applyReplayModeChrome } from './suki/replayUi.js';
+export {
+  formatReplayStartSummary,
+  applyReplayModeChrome,
+  resolveReplayBaseBetApi,
+  resolveReplayBaseBetDisplay,
+} from './suki/replayUi.js';
 export {
   ERR_RGS_CONFIG,
   checkRgsGate,

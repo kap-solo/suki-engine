@@ -23,6 +23,7 @@ import {
   messageForRgsCode,
   normalizeReplayRound,
   requestReplay,
+  resolveReplayBaseBetDisplay,
   startNewRgsSession,
 } from '@kap-solo/suki-engine/client/rgs.js';
 import { buildPreloadAssets, wireTemplateAudio, primeTemplateAudio } from './audio.js';
@@ -477,6 +478,7 @@ async function bootstrapReplay() {
       amountApi: params.amountApi,
     });
     replayRound = normalizeReplayRound(data, params);
+    bet = resolveReplayBaseBetDisplay(replayRound, game.betModes);
     game.setRgsReady(true);
     syncControls();
     syncHud();

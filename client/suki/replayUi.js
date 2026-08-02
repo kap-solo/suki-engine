@@ -2,6 +2,22 @@
  * Replay chrome — Stake checklist: not a live bet, play amount, multiplier, final amount.
  */
 
+import { apiToDisplay } from '../money.js';
+
+/**
+ * Base bet for replay presentation — use the recorded round amount, not authenticate ladder snap.
+ * @param {object} round
+ * @param {{ baseBetApiFromPlayAmount: (amountApi: number, mode?: string) => number }} betModePolicy
+ */
+export function resolveReplayBaseBetApi(round, betModePolicy) {
+  return betModePolicy.baseBetApiFromPlayAmount(round.amount, round.mode);
+}
+
+/** @param {object} round @param {{ baseBetApiFromPlayAmount: (amountApi: number, mode?: string) => number }} betModePolicy */
+export function resolveReplayBaseBetDisplay(round, betModePolicy) {
+  return apiToDisplay(resolveReplayBaseBetApi(round, betModePolicy));
+}
+
 /**
  * Mark the shell and replay banner as active replay mode.
  *
