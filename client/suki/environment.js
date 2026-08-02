@@ -5,7 +5,7 @@
  * sandbox     — ?sandbox=true (real remote RGS; compliance footer, no mock flags)
  * development — ?dev=true (local mock RGS, test URLs, mock flags)
  * hostedDemo  — direct URL visit (e.g. Render demo); same-origin mock RGS, no dev UI
- * replay      — ?replay=true (recorded round, no live bet/event)
+ * replay      — replay launch (replay=true or game+version+event params)
  */
 
 import { isReplayMode, isDevMode, isSandboxMode } from './config.js';

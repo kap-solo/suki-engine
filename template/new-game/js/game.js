@@ -21,7 +21,9 @@ import {
   getSessionID,
   isReplayMode,
   messageForRgsCode,
+  normalizeReplayRound,
   requestReplay,
+  resolveReplayBaseBetDisplay,
   startNewRgsSession,
 } from '@kap-solo/suki-engine/client/rgs.js';
 import { buildPreloadAssets, wireTemplateAudio, primeTemplateAudio } from './audio.js';
@@ -475,7 +477,8 @@ async function bootstrapReplay() {
       event: params.event,
       amountApi: params.amountApi,
     });
-    replayRound = data.round;
+    replayRound = normalizeReplayRound(data, params);
+    bet = resolveReplayBaseBetDisplay(replayRound, game.betModes);
     game.setRgsReady(true);
     syncControls();
     syncHud();

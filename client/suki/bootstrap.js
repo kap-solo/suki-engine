@@ -143,6 +143,7 @@ export { createGameBootstrap } from './gameBootstrap.js';
 export { createSessionTimer, formatSessionElapsed } from './sessionTimer.js';
 export { createShellClock, formatShellClockTime } from './shellClock.js';
 export { createGameAudio } from './gameAudio.js';
+export { getSfxBus, resumeGameSfxContext } from './sfxBus.js';
 export { createGamePreloader } from './gamePreloader.js';
 export { createAssetLoader, preloadAssets } from './assetLoader.js';
 export {
@@ -164,6 +165,20 @@ export {
   REAL_MONEY_COPY,
   SOCIAL_CASINO_COPY,
 } from './copy.js';
+export {
+  DEV_SOCIAL_CASINO_STORAGE_KEY,
+  getDevSocialCasinoOverride,
+  setDevSocialCasinoOverride,
+  clearDevSocialCasinoOverride,
+  resolveSocialCasinoMode,
+  toggleDevSocialCasinoMode,
+  isDevSocialCasinoActive,
+} from './devSocialMode.js';
+export {
+  ensureDevToolbarStyles,
+  createDevToolbarShell,
+  mountDevSocialModeToggle,
+} from './devToolbar.js';
 export { setPlayerCurrency, getPlayerCurrency, clearPlayerCurrency } from './playerCurrency.js';
 export { createI18n, resolveLang, SUPPORTED_LOCALES } from './i18n.js';
 export {

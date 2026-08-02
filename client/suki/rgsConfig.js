@@ -4,6 +4,8 @@
  * Stake passes rgs_url as host-only (no scheme), e.g. rgs_url=rgs.example.com
  */
 
+import { readLaunchSearchParams } from './launchParams.js';
+
 /** @typedef {'production' | 'sandbox' | 'development' | 'hostedDemo' | 'replay'} RgsEnvironment */
 
 /**
@@ -179,7 +181,7 @@ export function describeRgsMode(environment) {
 
 function readSearchParams() {
   if (typeof window !== 'undefined') {
-    return new URLSearchParams(window.location.search);
+    return readLaunchSearchParams(window.location);
   }
   return new URLSearchParams();
 }

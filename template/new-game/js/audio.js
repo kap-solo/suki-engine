@@ -8,6 +8,8 @@
  * (0–1). `gameAudio.playSfx()` respects SFX volume automatically.
  */
 
+import { getSfxBus, resumeGameSfxContext } from '@kap-solo/suki-engine/client/rgs.js';
+
 export const GAME_AUDIO_ASSETS = {
   music: 'assets/audio/music.mp3',
   sfx: {
@@ -37,19 +39,12 @@ export function wireTemplateAudio(gameAudio) {
 }
 
 /**
- * Warm the first SFX decode after the preloader tap — cuts mobile start latency.
+ * Warm SFX decode after the preloader tap — Web Audio buffers (iOS-safe).
  * @param {ReturnType<import('@kap-solo/suki-engine/client/rgs.js').createAudioPrefs>} audioPrefs
  */
 export function primeTemplateAudio(audioPrefs) {
-  if (audioPrefs.sfxVolume.value <= 0) return;
-  const url = GAME_AUDIO_ASSETS.sfx?.play;
-  if (!url) return;
-  const el = new Audio(url);
-  el.volume = 0;
-  el.play()
-    .then(() => {
-      el.pause();
-      el.currentTime = 0;
-    })
-    .catch(() => {});
+  resumeGameSfxContext(audioPrefs);
+  const urls = Object.values(GAME_AUDIO_ASSETS.sfx ?? {}).filter(Boolean);
+  if (!urls.length || audioPrefs.sfxVolume.value <= 0) return;
+  getSfxBus(audioPrefs).primeUrls(urls);
 }

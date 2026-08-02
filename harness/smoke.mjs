@@ -50,6 +50,7 @@ import { formatSessionElapsed, createSessionTimer } from '../client/suki/session
 import { formatShellClockTime } from '../client/suki/shellClock.js';
 import { formatCurrencyAmount, formatWinAmount, createCurrencyFormatter } from '../client/suki/currency.js';
 import { createCopyPolicy, applyCopyLabels, pickSocialCopy, isSocialCasino } from '../client/suki/copy.js';
+import { resolveSocialCasinoMode } from '../client/suki/devSocialMode.js';
 import { shouldSkipBetEventReporting, shouldSkipEndRound } from '../client/suki/roundReporting.js';
 import { canAffordPlayAmount, assertSufficientBalanceForPlay } from '../client/suki/balanceGuard.js';
 import {
@@ -59,7 +60,14 @@ import {
   sanitizeAutoplayRoundDigits,
   shouldBlockAutoplayRoundKey,
 } from '../client/suki/autoplayConfirm.js';
-import { formatReplayStartSummary, applyReplayModeChrome } from '../client/suki/replayUi.js';
+import { formatReplayStartSummary, applyReplayModeChrome, resolveReplayBaseBetDisplay, formatReplayPayoutMultiplier, replaySettlementMultiplier } from '../client/suki/replayUi.js';
+import {
+  detectReplayLaunch,
+  normalizeStakeLaunchAliases,
+  readLaunchEventId,
+  readLaunchSearchParams,
+} from '../client/suki/launchParams.js';
+import { normalizeReplayRound, appendGeneralDisclaimer } from '../client/rgs.js';
 import { createBookPlayer } from '../client/suki/bookPlayer.js';
 import {
   createFatalRgsError,
@@ -384,6 +392,66 @@ function runRgsConfigTests() {
   assert(validateLaunchRgsUrlStable('hostedDemo').ok, 'hosted demo skips launch lock');
 }
 
+function runReplayLaunchTests() {
+  console.log('\nUnit — replay launch params');
+
+  const hashOnly = readLaunchSearchParams({
+    search: '',
+    hash: '#game=reflecting-pool&eventId=20&version=1&mode=bb&amount=10000000',
+  });
+  assert(hashOnly.get('eventId') === '20', 'hash params merge into launch params');
+  assert(readLaunchEventId(hashOnly) === '20', 'eventId maps to replay event');
+
+  const aliased = new URLSearchParams('eventId=20&language=de-DE');
+  normalizeStakeLaunchAliases(aliased);
+  assert(aliased.get('event') === '20', 'eventId alias promotes to event');
+  assert(aliased.get('lang') === 'de', 'language alias promotes to lang');
+
+  const previewer = new URLSearchParams(
+    'game=reflecting-pool&eventId=20&version=1&mode=bb&amount=10000000',
+  );
+  assert(detectReplayLaunch(previewer), 'Stake previewer params detect replay without replay=true');
+
+  const explicit = new URLSearchParams('replay=true&event=1&game=g&version=1');
+  assert(detectReplayLaunch(explicit), 'replay=true still detects replay');
+
+  const play = new URLSearchParams('sessionID=abc&rgs_url=rgs.example.com');
+  assert(!detectReplayLaunch(play), 'normal launch is not replay');
+
+  const launchParams = {
+    mode: 'bb',
+    event: '20',
+    amountApi: 10_000_000,
+  };
+  const wrapped = normalizeReplayRound(
+    { round: { amount: 10_000_000, mode: 'BB', state: [{ type: 'reveal' }], payout: 0 } },
+    launchParams,
+  );
+  assert(wrapped.amount === 10_000_000, 'wrapped replay round keeps amount');
+
+  const flat = normalizeReplayRound(
+    { state: [{ type: 'reveal' }], payoutMultiplier: 2.5 },
+    launchParams,
+  );
+  assert(flat.state.length === 1, 'flat replay payload normalizes state');
+  assert(flat.amount === 10_000_000, 'flat replay uses launch amount');
+  assert(flat.payout === 25_000_000, 'flat replay derives payout from multiplier');
+  assert(flat.roundID === '20', 'flat replay uses launch event as round id');
+  assert(typeof appendGeneralDisclaimer === 'function', 'rgs re-exports appendGeneralDisclaimer');
+
+  const replayBet = resolveReplayBaseBetDisplay(
+    { amount: 100_000_000, mode: 'BASE' },
+    { baseBetApiFromPlayAmount: (amountApi) => amountApi },
+  );
+  assert(replayBet === 100, 'replay base bet preserves full launch amount');
+
+  assert(
+    formatReplayPayoutMultiplier({ amount: 100_000_000, payout: 4_068_000_000 }) === '40.68×',
+    'replay payout mult reconciles with settled amounts',
+  );
+  assert(replaySettlementMultiplier({ amount: 100_000_000, payout: 4_068_000_000 }) === 40.68, 'replay settlement mult');
+}
+
 function runBootstrapTests() {
   console.log('\nUnit — game bootstrap');
   assert(typeof createGameBootstrap === 'function', 'createGameBootstrap exported');
@@ -642,6 +710,19 @@ function runGameMenuTests() {
   );
   assert(isSocialCasino({ copy: { socialCasino: true } }), 'isSocialCasino true');
   assert(!isSocialCasino({ copy: { socialCasino: false } }), 'isSocialCasino false');
+
+  assert(
+    resolveSocialCasinoMode({ devMode: true, devOverride: false, jurisdictionSocial: true }) === false,
+    'dev social override beats jurisdiction',
+  );
+  assert(
+    resolveSocialCasinoMode({ devMode: true, urlSocial: true, jurisdictionSocial: false }) === true,
+    'dev url social param',
+  );
+  assert(
+    resolveSocialCasinoMode({ devMode: false, jurisdictionSocial: true }) === true,
+    'jurisdiction social in production',
+  );
 }
 
 function runBetModeTests() {
@@ -1198,6 +1279,7 @@ async function main() {
   console.log('Suki Engine — compliance smoke');
   runUnitTests();
   runRgsConfigTests();
+  runReplayLaunchTests();
   runBootstrapTests();
   runScreenPreviewTests();
   runStakeLayoutTests();

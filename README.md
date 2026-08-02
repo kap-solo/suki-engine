@@ -93,7 +93,8 @@ CI on `main` runs full `npm run check` (smoke + ERR + compliance report + templa
 - `createGameMenu()` / `gameMenu.css` — burger pop-up (How to Play, Paytable, Stats, Recent Results, Music + SFX volume sliders)
 - `createModalHost()` — pop-up overlay for menu content
 - `createAudioPrefs()` — persisted `musicVolume` / `sfxVolume` (0–1; mute icon sets volume to 0)
-- `createGameAudio({ audioPrefs })` — background music loop + `playSfx(name)` scaled to SFX volume
+- `createGameAudio({ audioPrefs })` — background music loop + `playSfx(name)` via Web Audio (iOS-safe)
+- `getSfxBus(audioPrefs)` / `resumeGameSfxContext(audioPrefs)` — shared one-shot SFX bus for custom game audio
 - `createGamePreloader({ shell, onContinue })` — tap-to-continue overlay (audio unlock + `game.start()`)
 - `createRecentResultsStore()` — in-memory round history for Recent Results modal
 - `STAKE_SCREENS` / `createScreenRegistry()` / `initStakeScreenPreview()` — dev toolbar for Stake Engine iframe sizes (`?dev=true`)

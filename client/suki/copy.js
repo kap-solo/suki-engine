@@ -3,9 +3,9 @@
  * Built on createI18n(); use game.t() or copy.term() in games.
  */
 
-import { isDevMode } from './config.js';
 import { createI18n } from './i18n.js';
 import { en, enSocial } from './strings/en.js';
+import { isDevSocialCasinoActive } from './devSocialMode.js';
 
 /** @typedef {keyof typeof en} CopyTerm */
 
@@ -16,15 +16,11 @@ export const REAL_MONEY_COPY = { ...en };
 export const SOCIAL_CASINO_COPY = { ...en, ...enSocial };
 
 /**
- * Dev override: ?social=true (Stake convention for social casino preview).
+ * Dev override: toolbar toggle + ?social=true, then jurisdiction.socialCasino.
  * @param {{ socialCasino?: boolean } | null | undefined} jurisdictionState
  */
 export function isSocialCasinoMode(jurisdictionState) {
-  if (jurisdictionState?.socialCasino) return true;
-  if (typeof window !== 'undefined' && isDevMode()) {
-    return new URLSearchParams(window.location.search).get('social') === 'true';
-  }
-  return false;
+  return isDevSocialCasinoActive(jurisdictionState);
 }
 
 /**
