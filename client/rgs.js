@@ -324,6 +324,7 @@ export {
   detectReplayLaunch,
   syncLaunchParamsFromHash,
 } from './suki/launchParams.js';
+export { appendGeneralDisclaimer } from './suki/gameInfo.js';
 
 /** @returns {{ game: string, version: string, mode: string, event: string, amountApi: number }} */
 export function getReplayParams() {
