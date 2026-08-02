@@ -126,4 +126,6 @@ export const enSocial = {
   paytableTitle: 'Win table',
   howToPlayIntro:
     'Choose a play amount and press {drop}. One ball, one bucket — the win amount is decided before the animation runs.',
+  generalDisclaimer:
+    'Malfunction voids all earns and plays. A consistent internet connection is required. In the event of a disconnection, reload the game to finish any uncompleted rounds. The expected return is calculated over many plays. The game display is not representative of any physical device and is for illustrative purposes only. Amounts are settled according to the value received from the Remote Game Server and not from events within the web browser. TM and © 2026 Stake Engine.',
 };

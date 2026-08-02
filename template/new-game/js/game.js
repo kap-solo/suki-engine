@@ -21,6 +21,7 @@ import {
   getSessionID,
   isReplayMode,
   messageForRgsCode,
+  normalizeReplayRound,
   requestReplay,
   startNewRgsSession,
 } from '@kap-solo/suki-engine/client/rgs.js';
@@ -475,7 +476,7 @@ async function bootstrapReplay() {
       event: params.event,
       amountApi: params.amountApi,
     });
-    replayRound = data.round;
+    replayRound = normalizeReplayRound(data, params);
     game.setRgsReady(true);
     syncControls();
     syncHud();

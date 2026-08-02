@@ -1,5 +1,7 @@
 /** Per-game identifiers and URL-driven test flags. */
 
+import { detectReplayLaunch, readLaunchSearchParams } from './launchParams.js';
+
 /** @type {{ gameId: string, replayVersion: string, sessionStorageKey: string }} */
 let engineConfig = {
   gameId: 'unknown',
@@ -49,7 +51,7 @@ export function isSandboxMode() {
 
 export function isReplayMode() {
   if (typeof window === 'undefined') return false;
-  return new URLSearchParams(window.location.search).get('replay') === 'true';
+  return detectReplayLaunch(readLaunchSearchParams(window.location));
 }
 
 /** Dev-only mock flags sent to prototype RGS (ignored in production Stake). */

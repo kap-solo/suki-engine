@@ -14,6 +14,11 @@ import { withRgsCall } from './suki/rgsTransport.js';
 import { ERR_RGS_CONFIG } from './suki/rgsGate.js';
 import { validateLaunchRgsUrlStable } from './suki/rgsLaunchLock.js';
 import {
+  readLaunchEventId,
+  readLaunchSearchParams,
+  normalizeStakeLaunchAliases,
+} from './suki/launchParams.js';
+import {
   isConnectionFailure,
   notifyRgsConnectionLost,
   notifyRgsConnectionRestored,
@@ -222,6 +227,16 @@ export {
   isSocialCasinoMode,
   isSocialCasino,
   pickSocialCopy,
+  DEV_SOCIAL_CASINO_STORAGE_KEY,
+  getDevSocialCasinoOverride,
+  setDevSocialCasinoOverride,
+  clearDevSocialCasinoOverride,
+  resolveSocialCasinoMode,
+  toggleDevSocialCasinoMode,
+  isDevSocialCasinoActive,
+  ensureDevToolbarStyles,
+  createDevToolbarShell,
+  mountDevSocialModeToggle,
 } from './suki/bootstrap.js';
 export { setPlayerCurrency, getPlayerCurrency, clearPlayerCurrency } from './suki/playerCurrency.js';
 export { createI18n, resolveLang, SUPPORTED_LOCALES } from './suki/i18n.js';
@@ -302,18 +317,78 @@ export {
   filterVisibleMenuItems,
   resolveGameMenuItems,
 } from './suki/gameMenu.js';
-export { appendGeneralDisclaimer } from './suki/gameInfo.js';
+export {
+  readLaunchSearchParams,
+  readLaunchEventId,
+  normalizeStakeLaunchAliases,
+  detectReplayLaunch,
+  syncLaunchParamsFromHash,
+} from './suki/launchParams.js';
 
 /** @returns {{ game: string, version: string, mode: string, event: string, amountApi: number }} */
 export function getReplayParams() {
-  const params = new URLSearchParams(window.location.search);
+  const params = readLaunchSearchParams(window.location);
+  normalizeStakeLaunchAliases(params);
   return {
     game: params.get('game') || getGameId(),
     version: params.get('version') || getReplayVersion(),
     mode: (params.get('mode') || 'base').toLowerCase(),
-    event: params.get('event') || '',
+    event: readLaunchEventId(params),
     amountApi: Number(params.get('amount')) || API_AMOUNT_MULTIPLIER,
   };
+}
+
+/**
+ * Stake RGS replay may return { round } or a flat { state, payoutMultiplier, costMultiplier }.
+ * @param {object} data
+ * @param {ReturnType<typeof getReplayParams>} launchParams
+ * @param {{ resolvePayout?: (amountApi: number, payoutMultiplier: number, mode: string) => number }} [options]
+ */
+export function normalizeReplayRound(data, launchParams, options = {}) {
+  if (!data || typeof data !== 'object') {
+    throw new Error('ERR_BNF');
+  }
+
+  const source = data.round && typeof data.round === 'object' ? data.round : data;
+  const mode = String(source.mode ?? launchParams.mode ?? 'base').toUpperCase();
+  const amountApi = Number(source.amount ?? launchParams.amountApi);
+  if (!Number.isFinite(amountApi) || amountApi <= 0) {
+    throw new Error('ERR_VAL');
+  }
+
+  const state = source.state ?? data.state ?? [];
+  if (!Array.isArray(state) || state.length === 0) {
+    throw new Error('ERR_BNF');
+  }
+
+  const payoutMultiplier = typeof source.payoutMultiplier === 'number'
+    ? source.payoutMultiplier
+    : typeof data.payoutMultiplier === 'number'
+      ? data.payoutMultiplier
+      : undefined;
+
+  let payout = source.payout;
+  if (payout == null && payoutMultiplier != null) {
+    payout = options.resolvePayout
+      ? options.resolvePayout(amountApi, payoutMultiplier, mode)
+      : Math.round(amountApi * payoutMultiplier);
+  }
+
+  const round = {
+    ...source,
+    amount: amountApi,
+    mode,
+    state,
+    payout: payout ?? 0,
+    active: false,
+    roundID: source.roundID ?? source.betID ?? launchParams.event,
+  };
+
+  if (payoutMultiplier != null) {
+    round.payoutMultiplier = payoutMultiplier;
+  }
+
+  return round;
 }
 
 export function buildReplayUrl({ event, amountApi, mode = 'base', lang } = {}) {
