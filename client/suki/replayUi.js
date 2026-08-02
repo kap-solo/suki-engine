@@ -18,6 +18,28 @@ export function resolveReplayBaseBetDisplay(round, betModePolicy) {
   return apiToDisplay(resolveReplayBaseBetApi(round, betModePolicy));
 }
 
+/** @param {number} mult — display multiplier (payout ÷ cost). */
+export function formatReplaySummaryMultiplier(mult) {
+  if (!Number.isFinite(mult)) return '—';
+  return `${mult.toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  })}×`;
+}
+
+/** Payout multiplier derived from settled RGS amounts (matches total cost × mult = total win). */
+export function replaySettlementMultiplier(round) {
+  const amountApi = Number(round?.amount);
+  const payoutApi = Number(round?.payout ?? 0);
+  if (!Number.isFinite(amountApi) || amountApi <= 0) return Number.NaN;
+  return payoutApi / amountApi;
+}
+
+/** @param {object} round */
+export function formatReplayPayoutMultiplier(round) {
+  return formatReplaySummaryMultiplier(replaySettlementMultiplier(round));
+}
+
 /**
  * Mark the shell and replay banner as active replay mode.
  *

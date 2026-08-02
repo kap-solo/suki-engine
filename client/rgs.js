@@ -444,6 +444,9 @@ export {
   applyReplayModeChrome,
   resolveReplayBaseBetApi,
   resolveReplayBaseBetDisplay,
+  formatReplaySummaryMultiplier,
+  replaySettlementMultiplier,
+  formatReplayPayoutMultiplier,
 } from './suki/replayUi.js';
 export {
   ERR_RGS_CONFIG,

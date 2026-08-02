@@ -60,7 +60,7 @@ import {
   sanitizeAutoplayRoundDigits,
   shouldBlockAutoplayRoundKey,
 } from '../client/suki/autoplayConfirm.js';
-import { formatReplayStartSummary, applyReplayModeChrome, resolveReplayBaseBetDisplay } from '../client/suki/replayUi.js';
+import { formatReplayStartSummary, applyReplayModeChrome, resolveReplayBaseBetDisplay, formatReplayPayoutMultiplier, replaySettlementMultiplier } from '../client/suki/replayUi.js';
 import {
   detectReplayLaunch,
   normalizeStakeLaunchAliases,
@@ -444,6 +444,12 @@ function runReplayLaunchTests() {
     { baseBetApiFromPlayAmount: (amountApi) => amountApi },
   );
   assert(replayBet === 100, 'replay base bet preserves full launch amount');
+
+  assert(
+    formatReplayPayoutMultiplier({ amount: 100_000_000, payout: 4_068_000_000 }) === '40.68×',
+    'replay payout mult reconciles with settled amounts',
+  );
+  assert(replaySettlementMultiplier({ amount: 100_000_000, payout: 4_068_000_000 }) === 40.68, 'replay settlement mult');
 }
 
 function runBootstrapTests() {
